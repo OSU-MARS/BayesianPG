@@ -1,0 +1,10 @@
+# build and test results
+bin/
+obj/
+PerformanceResults/
+TestResults/
+
+# Visual Studio cache/options directory and RStudio user file
+.vs/
+.Rhistory
+.Rproj.user
