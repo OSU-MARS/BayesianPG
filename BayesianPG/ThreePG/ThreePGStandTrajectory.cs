@@ -1,30 +1,46 @@
-﻿using System;
+﻿using BayesianPG.Extensions;
+using System;
 
 namespace BayesianPG.ThreePG
 {
+    // base class for typing WriteStandTrajectory's -Trajectory parameter
     public class ThreePGStandTrajectory
     {
-        public int Capacity { get; private set; }
+        public int Capacity { get; protected set; }
         public DateTime From { get; set; }
-        public int n_m { get; set; }
+        public ThreePGStandTrajectoryColumnGroups ColumnGroups { get; protected set; }
+        public int MonthCount { get; set; }
 
-        public float[] AvailableSoilWater { get; private set; }
-        // TODO public float[] DayLength { get; private set; }
-        public float[] evapo_transp { get; private set; } // total evapotranspiration
-        public float[] f_transp_scale { get; private set; }
-        public float[] irrig_supl { get; private set; }
-        public float[] prcp_runoff { get; private set; }
-        public float[] conduct_soil { get; private set; }
-        public float[] evapotra_soil { get; private set; }
-        public TreeSpeciesTrajectory Species { get; private set; }
+        protected ThreePGStandTrajectory(DateTime from, int capacity)
+        {
+            this.Capacity = capacity;
+            this.ColumnGroups = ThreePGStandTrajectoryColumnGroups.Core;
+            this.From = from;
+            this.MonthCount = 0;
+        }
+    }
 
-        public ThreePGStandTrajectory(string speciesName, DateTime from)
-            : this(new string[] { speciesName }, from, Constant.DefaultTimestepCapacity)
+    public class ThreePGStandTrajectory<TFloat, TInteger> : ThreePGStandTrajectory 
+        where TFloat : struct
+        where TInteger : struct
+    {
+        public TFloat[] AvailableSoilWater { get; private set; }
+        public TFloat[] evapo_transp { get; private set; } // total evapotranspiration
+        public TFloat[] f_transp_scale { get; private set; }
+        public TFloat[] irrig_supl { get; private set; }
+        public TFloat[] prcp_runoff { get; private set; }
+        public TFloat[] conduct_soil { get; private set; }
+        public TFloat[] evapotra_soil { get; private set; }
+
+        public TreeSpeciesTrajectory<TFloat, TInteger> Species { get; private set; }
+
+        public ThreePGStandTrajectory(string speciesName, DateTime from, ThreePGStandTrajectoryColumnGroups columns)
+            : this(new string[] { speciesName }, from, Constant.DefaultTimestepCapacity, columns)
         {
         }
 
-        public ThreePGStandTrajectory(string[] speciesNames, DateTime from, DateTime to)
-            : this(speciesNames, from, 12 * (to.Year - from.Year) + to.Month - from.Month + 1)
+        public ThreePGStandTrajectory(string[] speciesNames, DateTime from, DateTime to, ThreePGStandTrajectoryColumnGroups columns)
+            : this(speciesNames, from, 12 * (to.Year - from.Year) + to.Month - from.Month + 1, columns)
         {
             if (to < from)
             {
@@ -32,21 +48,33 @@ namespace BayesianPG.ThreePG
             }
         }
 
-        protected ThreePGStandTrajectory(string[] speciesNames, DateTime from, int capacity)
+        protected ThreePGStandTrajectory(string[] speciesNames, DateTime from, int capacity, ThreePGStandTrajectoryColumnGroups columns)
+            : base(from, capacity)
         {
-            this.Capacity = capacity;
-            this.From = from;
-            this.n_m = 0;
+            // core columns
+            // (Species level columns are handled by this.Species).
+            this.AvailableSoilWater = new TFloat[capacity];
+            this.evapo_transp = new TFloat[capacity];
+            this.f_transp_scale = new TFloat[capacity];
+            this.ColumnGroups = columns;
+            this.irrig_supl = new TFloat[capacity];
+            this.prcp_runoff = new TFloat[capacity];
+            this.conduct_soil = new TFloat[capacity];
+            this.evapotra_soil = new TFloat[capacity];
+            this.Species = new(speciesNames, capacity, columns);
 
-            this.AvailableSoilWater = new float[capacity];
-            // this.DayLength = new float[capacity];
-            this.evapo_transp = new float[capacity];
-            this.f_transp_scale = new float[capacity];
-            this.irrig_supl = new float[capacity];
-            this.prcp_runoff = new float[capacity];
-            this.conduct_soil = new float[capacity];
-            this.evapotra_soil = new float[capacity];
-            this.Species = new(speciesNames, capacity);
+            // all bias correction columns are species level
+
+            // extended columns not currently supported in C#
+            // co2
+            // day_length
+            // delta13c
+            // solar_rad
+            // tmp_ave
+            // tmp_max
+            // tmp_min
+            // vpd_day
+            // water_runoff_pooled
         }
 
         public void AllocateDecade()

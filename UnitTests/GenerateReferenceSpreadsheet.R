@@ -64,13 +64,13 @@ run_3PG_on_site = function(siteName, sites, species, climates, thinning, paramet
   return(out3PG)
 }
 
-sites = read_xlsx(file.path(getwd(), "UnitTests/r3PG.xlsx"), "site")
-species = read_xlsx(file.path(getwd(), "UnitTests/r3PG.xlsx"), "species")
-climates = read_xlsx(file.path(getwd(), "UnitTests/r3PG.xlsx"), "climate")
-thinning = read_xlsx(file.path(getwd(), "UnitTests/r3PG.xlsx"), "thinning")
-parameters = read_xlsx(file.path(getwd(), "UnitTests/r3PG.xlsx"), "parameters")
-sizeDist = read_xlsx(file.path(getwd(), "UnitTests/r3PG.xlsx"), "sizeDist")
-settings = read_xlsx(file.path(getwd(), "UnitTests/r3PG.xlsx"), "settings")
+sites = read_xlsx(file.path(getwd(), "UnitTests/r3PG validation scenarios.xlsx"), "site")
+species = read_xlsx(file.path(getwd(), "UnitTests/r3PG validation scenarios.xlsx"), "species")
+climates = read_xlsx(file.path(getwd(), "UnitTests/r3PG validation scenarios.xlsx"), "climate")
+thinning = read_xlsx(file.path(getwd(), "UnitTests/r3PG validation scenarios.xlsx"), "thinning")
+parameters = read_xlsx(file.path(getwd(), "UnitTests/r3PG validation scenarios.xlsx"), "parameters")
+sizeDist = read_xlsx(file.path(getwd(), "UnitTests/r3PG validation scenarios.xlsx"), "sizeDist")
+settings = read_xlsx(file.path(getwd(), "UnitTests/r3PG validation scenarios.xlsx"), "settings")
 
 broadleafMix = run_3PG_on_site("broadleaf_mix", sites, species, climates, thinning, parameters, sizeDist, settings)
 broadleafPjs = run_3PG_on_site("broadleaf_pjs", sites, species, climates, thinning, parameters, sizeDist, settings)
@@ -79,10 +79,10 @@ evergreenPjs = run_3PG_on_site("evergreen_pjs", sites, species, climates, thinni
 mixturesEurope = run_3PG_on_site("mixtures_eu", sites, species, climates, thinning, parameters, sizeDist, settings)
 mixturesOther = run_3PG_on_site("mixtures_other", sites, species, climates, thinning, parameters, sizeDist, settings)
 
-write_xlsx(list("broadleaf_mix" = broadleafMix, "broadleaf_pjs" = broadleafPjs,
-                "evergreen_mix" = evergreenMix, "evergreen_pjs" = evergreenPjs,
-                "mixtures_eu" = mixturesEurope, "mixtures_other" = mixturesOther), 
-           file.path(getwd(), "TestResults/reference.xlsx"))
+write_xlsx(list("broadleaf_mix_r3PG" = broadleafMix, "broadleaf_pjs_r3PG" = broadleafPjs,
+                "evergreen_mix_r3PG" = evergreenMix, "evergreen_pjs_r3PG" = evergreenPjs,
+                "mixtures_eu_r3PG" = mixturesEurope, "mixtures_other_r3PG" = mixturesOther), 
+           file.path(getwd(), "TestResults/r3PG scenarios.xslx"))
 
 # figure for # https://github.com/trotsiuk/r3PG/issues/70
 ggplot(mixturesOther) +

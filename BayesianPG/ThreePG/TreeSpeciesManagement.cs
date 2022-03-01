@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BayesianPG.Extensions;
+using System;
 
 namespace BayesianPG.ThreePG
 {

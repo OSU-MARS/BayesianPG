@@ -6,7 +6,7 @@ using System.Xml;
 
 namespace BayesianPG.Xlsx
 {
-    internal class ThreePGSettingsWorksheet : XlsxWorksheet<ThreePGSettingsWorksheetHeader>
+    internal class ThreePGSettingsWorksheet : XlsxWorksheet<ThreePGSettingsHeader>
     {
         public SortedList<string, ThreePGSettings> Settings { get; private init; }
 
@@ -23,10 +23,12 @@ namespace BayesianPG.Xlsx
                 throw new XmlException("Site's name is null or whitespace.", null, row.Number, this.Header.Site);
             }
 
+            // bias correction iterations is not currently a parseable setting
             ThreePGSettings settings = new()
             {
-                calculate_d13c = Boolean.Parse(row.Row[this.Header.CalculateD13C]),
-                correct_bias = Boolean.Parse(row.Row[this.Header.CorrectSizeDistribution]),
+                CalculateD13C = Boolean.Parse(row.Row[this.Header.CalculateD13C]),
+                ColumnGroups = Enum.Parse<ThreePGStandTrajectoryColumnGroups>(row.Row[this.Header.TrajectoryColumns]),
+                CorrectSizeDistribution = Boolean.Parse(row.Row[this.Header.CorrectSizeDistribution]),
                 height_model = Enum.Parse<ThreePGHeightModel>(row.Row[this.Header.HeightModel], ignoreCase: true),
                 light_model = Enum.Parse<ThreePGModel>(row.Row[this.Header.LightModel], ignoreCase: true),
                 phys_model = Enum.Parse<ThreePGModel>(row.Row[this.Header.PhysiologicalModel], ignoreCase: true),

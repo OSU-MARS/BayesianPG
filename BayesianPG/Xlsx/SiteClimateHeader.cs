@@ -3,7 +3,7 @@ using System.Xml;
 
 namespace BayesianPG.Xlsx
 {
-    internal class SiteClimateWorksheetHeader : IXlsxWorksheetHeader
+    internal class SiteClimateHeader : IXlsxWorksheetHeader
     {
         public int ClimateID { get; private set; }
         public int Year { get; private set; }
@@ -17,7 +17,7 @@ namespace BayesianPG.Xlsx
         public int CO2 { get; private set; }
         public int D13CAtm { get; private set; }
 
-        public SiteClimateWorksheetHeader()
+        public SiteClimateHeader()
         {
             this.ClimateID = -1;
             this.Year = -1;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BayesianPG.Extensions;
+using System;
 
 namespace BayesianPG.ThreePG
 {
@@ -175,9 +176,9 @@ namespace BayesianPG.ThreePG
             this.wslocationC = Array.Empty<float>();
         }
 
-        public override void AllocateSpecies(string[] names)
+        public override void AllocateSpecies(int additionalSpecies)
         {
-            base.AllocateSpecies(names);
+            base.AllocateSpecies(additionalSpecies);
 
             this.Dscale0 = this.Dscale0.Resize(this.n_sp);
             this.DscaleB = this.DscaleB.Resize(this.n_sp);
@@ -216,14 +217,21 @@ namespace BayesianPG.ThreePG
             this.wslocationC = this.wslocationC.Resize(this.n_sp);
         }
 
+        public override void AllocateSpecies(string[] names)
+        {
+            int existingSpecies = this.n_sp;
+            this.AllocateSpecies(names.Length);
+            Array.Copy(names, 0, this.Species, existingSpecies, names.Length);
+        }
+
         public TreeSpeciesSizeDistribution Filter(SiteTreeSpecies treeSpecies)
         {
             TreeSpeciesSizeDistribution filteredDistribution = new();
-            filteredDistribution.AllocateSpecies(treeSpecies.Name);
+            filteredDistribution.AllocateSpecies(treeSpecies.Species);
 
             for (int destinationIndex = 0; destinationIndex < treeSpecies.n_sp; ++destinationIndex)
             {
-                int sourceIndex = this.Name.FindIndex(treeSpecies.Name[destinationIndex]);
+                int sourceIndex = this.Species.FindIndex(treeSpecies.Species[destinationIndex]);
                 if (sourceIndex == -1)
                 {
                     throw new ArgumentOutOfRangeException(nameof(treeSpecies));

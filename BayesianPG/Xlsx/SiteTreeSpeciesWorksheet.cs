@@ -6,7 +6,7 @@ using System.Xml;
 
 namespace BayesianPG.Xlsx
 {
-    internal class SiteTreeSpeciesWorksheet : XlsxWorksheet<SiteTreeSpeciesWorksheetHeader>
+    internal class SiteTreeSpeciesWorksheet : XlsxWorksheet<SiteTreeSpeciesHeader>
     {
         public SortedList<string, SiteTreeSpecies> SpeciesBySite { get; private init; }
 
@@ -34,12 +34,12 @@ namespace BayesianPG.Xlsx
                 this.SpeciesBySite.Add(siteName, treeSpecies);
             }
 
-            float initialFoliageBiomass = Single.Parse(row.Row[this.Header.Biom_foliage]);
-            float initialRootBiomass = Single.Parse(row.Row[this.Header.Biom_root]);
-            float initialStemBiomass = Single.Parse(row.Row[this.Header.Biom_stem]);
-            float fertility = Single.Parse(row.Row[this.Header.Fertility]);
+            float initialFoliageBiomass = Single.Parse(row.Row[this.Header.Biom_foliage], CultureInfo.InvariantCulture);
+            float initialRootBiomass = Single.Parse(row.Row[this.Header.Biom_root], CultureInfo.InvariantCulture);
+            float initialStemBiomass = Single.Parse(row.Row[this.Header.Biom_stem], CultureInfo.InvariantCulture);
+            float fertility = Single.Parse(row.Row[this.Header.Fertility], CultureInfo.InvariantCulture);
             DateTime planted = DateTime.ParseExact(row.Row[this.Header.Planted], "yyyy-MM", CultureInfo.InvariantCulture);
-            float stems_n = Single.Parse(row.Row[this.Header.Stems_n]);
+            float stems_n = Single.Parse(row.Row[this.Header.Stems_n], CultureInfo.InvariantCulture);
 
             if (initialFoliageBiomass < 0.0F)
             {
@@ -66,13 +66,13 @@ namespace BayesianPG.Xlsx
             int newSpeciesIndex = treeSpecies.n_sp;
             treeSpecies.AllocateSpecies(new string[] { speciesName });
 
-            treeSpecies.biom_foliage_i[newSpeciesIndex] = initialFoliageBiomass;
-            treeSpecies.biom_root_i[newSpeciesIndex] = initialRootBiomass;
-            treeSpecies.biom_stem_i[newSpeciesIndex] = initialStemBiomass;
-            treeSpecies.fertility[newSpeciesIndex] = fertility;
-            treeSpecies.month_p[newSpeciesIndex] = planted.Month;
-            treeSpecies.stems_n_i[newSpeciesIndex] = stems_n;
-            treeSpecies.year_p[newSpeciesIndex] = planted.Year;
+            treeSpecies.InitialFoliageBiomass[newSpeciesIndex] = initialFoliageBiomass;
+            treeSpecies.InitialRootBiomass[newSpeciesIndex] = initialRootBiomass;
+            treeSpecies.InitialStemBiomass[newSpeciesIndex] = initialStemBiomass;
+            treeSpecies.SoilFertility[newSpeciesIndex] = fertility;
+            treeSpecies.MonthPlanted[newSpeciesIndex] = planted.Month;
+            treeSpecies.InitialStemsPerHectare[newSpeciesIndex] = stems_n;
+            treeSpecies.YearPlanted[newSpeciesIndex] = planted.Year;
         }
     }
 }

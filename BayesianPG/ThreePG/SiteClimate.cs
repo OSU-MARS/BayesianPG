@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BayesianPG.Extensions;
+using System;
 
 namespace BayesianPG.ThreePG
 {
@@ -9,80 +10,81 @@ namespace BayesianPG.ThreePG
     public class SiteClimate
     {
         public int Capacity { get; private set; }
-        public int n_m { get; set; }
+        public DateTime From { get; set; }
+        public int MonthCount { get; set; }
 
         /// <summary>
-        /// minimum daily temperature (forcingInputs[0])
-        /// TODO: figure out why tmp_min is unused in Fortran
+        /// atmospheric CO₂ in ppm (Fortan forcingInputs[7])
         /// </summary>
-        // public float[] tmp_min { get; private set; }
+        public float[] AtmosphericCO2 { get; private set; }
 
         /// <summary>
-        /// maximum daily temperature (forcingInputs[1])
+        /// added δ¹³C of atmospheric CO₂ per mil (Fortan forcingInputs[8])
         /// </summary>
-        public float[] tmp_max { get; private set; }
+        public float[] D13Catm { get; private set; }
 
         /// <summary>
-        /// forcingInputs[2]
+        /// number of frost days per month (Fortan forcingInputs[5])
         /// </summary>
-        public float[] tmp_ave { get; private set; }
+        public float[] FrostDays { get; private set; }
 
         /// <summary>
-        /// monthly precipitation sum (forcingInputs[3])
+        /// mean daily incident solar radiation (Fortan forcingInputs[4])
         /// </summary>
-        public float[] prcp { get; private set; }
+        public float[] MeanDailySolarRadiation { get; private set; }
 
         /// <summary>
-        /// mean daily incident solar radiation (forcingInputs[4])
+        /// monthly mean temperature (Fortran forcingInputs[2])
         /// </summary>
-        public float[] solar_rad { get; private set; }
+        public float[] MeanDailyTemp { get; private set; }
 
         /// <summary>
-        /// number of frost days per month (forcingInputs[5])
+        /// monthly mean maximum daily temperature (Fortan forcingInputs[1])
         /// </summary>
-        public float[] frost_days { get; private set; }
+        public float[] MeanDailyTempMax { get; private set; }
 
         /// <summary>
-        /// forcingInputs[6]
+        /// monthly mean minimum daily temperature (Fortan forcingInputs[0])
         /// </summary>
-        public float[] vpd_day { get; private set; }
+        // public float[] MeanDailyTempMin { get; private set; }
 
         /// <summary>
-        /// atmospheric CO₂ (forcingInputs[7])
+        /// monthly mean vapor pressure deficit (Fortan forcingInputs[6])
         /// </summary>
-        public float[] co2 { get; private set; }
+        public float[] MeanDailyVpd { get; private set; }
 
         /// <summary>
-        /// added δ¹³C of atmospheric CO₂ (per mil) (forcingInputs[8])
+        /// monthly precipitation sum (Fortan forcingInputs[3])
         /// </summary>
-        public float[] d13Catm { get; private set; }
+        public float[] TotalPrecipitation { get; private set; }
 
         public SiteClimate()
         {
             this.Capacity = Constant.DefaultTimestepCapacity;
-            this.n_m = 0;
+            this.From = DateTime.MinValue;
+            this.MonthCount = 0;
 
-            this.co2 = new float[this.Capacity];
-            this.d13Catm = new float[this.Capacity];
-            this.frost_days = new float[this.Capacity];
-            this.prcp = new float[this.Capacity];
-            this.solar_rad = new float[this.Capacity];
-            this.tmp_ave = new float[this.Capacity];
-            this.tmp_max = new float[this.Capacity];
-            this.vpd_day = new float[this.Capacity];
+            this.AtmosphericCO2 = new float[this.Capacity];
+            this.D13Catm = new float[this.Capacity];
+            this.FrostDays = new float[this.Capacity];
+            this.MeanDailySolarRadiation = new float[this.Capacity];
+            this.MeanDailyTemp = new float[this.Capacity];
+            this.MeanDailyTempMax = new float[this.Capacity];
+            this.MeanDailyVpd = new float[this.Capacity];
+            this.TotalPrecipitation = new float[this.Capacity];
         }
 
         public void AllocateDecade()
         {
             this.Capacity += 10 * 12;
-            this.co2 = this.co2.Resize(this.Capacity);
-            this.d13Catm = this.d13Catm.Resize(this.Capacity);
-            this.frost_days = this.frost_days.Resize(this.Capacity);
-            this.prcp = this.prcp.Resize(this.Capacity);
-            this.solar_rad = this.solar_rad.Resize(this.Capacity);
-            this.tmp_ave = this.tmp_ave.Resize(this.Capacity);
-            this.tmp_max = this.tmp_max.Resize(this.Capacity);
-            this.vpd_day = this.vpd_day.Resize(this.Capacity);
+            this.AtmosphericCO2 = this.AtmosphericCO2.Resize(this.Capacity);
+            this.D13Catm = this.D13Catm.Resize(this.Capacity);
+            this.FrostDays = this.FrostDays.Resize(this.Capacity);
+            this.MeanDailySolarRadiation = this.MeanDailySolarRadiation.Resize(this.Capacity);
+            this.MeanDailyTemp = this.MeanDailyTemp.Resize(this.Capacity);
+            this.MeanDailyTempMax = this.MeanDailyTempMax.Resize(this.Capacity);
+            this.MeanDailyVpd = this.MeanDailyVpd.Resize(this.Capacity);
+            this.TotalPrecipitation = this.TotalPrecipitation.Resize(this.Capacity);
         }
     }
 }

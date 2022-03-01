@@ -12,6 +12,9 @@ theme_set(theme_bw() + theme(axis.line = element_line(size = 0.25),
 
 get_column_ratios = function(actual, expected)
 {
+  actualColumns = colnames(actual)
+  expectedColumns = colnames(actual)
+  
   if ("Year & month" %in% colnames(expected))
   {
     # legacy case: expected values read from r3PG_input.xls in https://github.com/trotsiuk/r3PG/tree/master/pkg/tests/r_vba_compare
@@ -112,7 +115,8 @@ get_column_ratios = function(actual, expected)
         layer_id = if_else((actual$layer_id != 0) & (expected$layer_id != 0), actual$layer_id / expected$layer_id, 1),
         mort_stress = if_else((actual$mort_stress != 0) & (expected$mort_stress != 0), actual$mort_stress / expected$mort_stress, 1),
         mort_thinn = if_else((actual$mort_thinn != 0) & (expected$mort_thinn != 0), actual$mort_thinn / expected$mort_thinn, 1),
-        npp_f = if_else((actual$npp_f != 0) & (expected$npp != 0), actual$npp_f / expected$npp, 1), # r3PG calls npp_f npp in its output, https://github.com/trotsiuk/r3PG/issues/69
+        #npp_f = if_else((actual$npp_f != 0) & (expected$npp != 0), actual$npp_f / expected$npp, 1), # r3PG calls npp_f npp in its output, https://github.com/trotsiuk/r3PG/issues/69
+        npp_f = if_else((actual$npp_f != 0) & (expected$npp_f != 0), actual$npp_f / expected$npp_f, 1), # r3PG calls npp_f npp in its output, https://github.com/trotsiuk/r3PG/issues/69
         npp_fract_foliage = if_else((actual$npp_fract_foliage != 0) & (expected$npp_fract_foliage != 0), actual$npp_fract_foliage / expected$npp_fract_foliage, 1),
         npp_fract_root = if_else((actual$npp_fract_root != 0) & (expected$npp_fract_root != 0), actual$npp_fract_root / expected$npp_fract_root, 1),
         npp_fract_stem = if_else((actual$npp_fract_stem != 0) & (expected$npp_fract_stem != 0), actual$npp_fract_stem / expected$npp_fract_stem, 1),
@@ -130,25 +134,35 @@ get_column_ratios = function(actual, expected)
         irrig_supl = if_else((actual$irrig_supl != 0) & (expected$irrig_supl != 0), actual$irrig_supl / expected$irrig_supl, 1),
         prcp_runoff = if_else((actual$prcp_runoff != 0) & (expected$prcp_runoff != 0), actual$prcp_runoff / expected$prcp_runoff, 1),
         #volume_cum = if_else((actual$volume_cum != 0) & (expected$volume_cum != 0), actual$volume_cum / expected$volume_cum, 1),
-        #wood_density = if_else((actual$wood_density != 0) & (expected$wood_density != 0), actual$wood_density / expected$wood_density, 1),
-        #wue = if_else((actual$wue != 0) & (expected$wue != 0), actual$wue / expected$wue, 1),
-        #wue_transp = if_else((actual$wue_transp != 0) & (expected$wue_transp != 0), actual$wue_transp / expected$wue_transp,  1),
-        CVdbhDistribution = if_else((actual$CVdbhDistribution != 0) & (expected$CVdbhDistribution != 0), actual$CVdbhDistribution / expected$CVdbhDistribution, 1),
-        CVwsDistribution = if_else((actual$CVwsDistribution != 0) & (expected$CVwsDistribution != 0), actual$CVwsDistribution / expected$CVwsDistribution, 1),
-        height_rel = if_else((actual$height_rel != 0) & (expected$height_rel != 0), actual$height_rel / expected$height_rel, 1),
-        DWeibullScale = if_else((actual$DWeibullScale != 0) & (expected$Dweibullscale != 0), actual$DWeibullScale / expected$Dweibullscale, 1),
-        DWeibullShape = if_else((actual$DWeibullShape != 0) & (expected$Dweibullshape != 0), actual$DWeibullShape / expected$Dweibullshape, 1),
-        DWeibullLocation = if_else((actual$DWeibullLocation != 0) & (expected$Dweibulllocation != 0), actual$DWeibullLocation / expected$Dweibulllocation, 1),
-        wsWeibullScale = if_else((actual$wsWeibullScale != 0) & (expected$wsweibullscale != 0), actual$wsWeibullScale / expected$wsweibullscale, 1),
-        wsWeibullShape = if_else((actual$wsWeibullShape != 0) & (expected$wsweibullshape != 0), actual$wsWeibullShape / expected$wsweibullshape, 1),
-        wsWeibullLocation = if_else((actual$wsWeibullLocation != 0) & (expected$wsweibulllocation != 0), actual$wsWeibullLocation / expected$wsweibulllocation, 1),
-        DrelBiaspFS = if_else((actual$DrelBiaspFS != 0) & (expected$DrelBiaspFS != 0), actual$DrelBiaspFS / expected$DrelBiaspFS, 1),
-        DrelBiasheight = if_else((actual$DrelBiasheight != 0) & (expected$DrelBiasheight != 0), actual$DrelBiasheight / expected$DrelBiasheight, 1),
-        DrelBiasBasArea = if_else((actual$DrelBiasBasArea != 0) & (expected$DrelBiasBasArea != 0), actual$DrelBiasBasArea / expected$DrelBiasBasArea, 1),
-        DrelBiasLCL = if_else((actual$DrelBiasLCL != 0) & (expected$DrelBiasLCL != 0), actual$DrelBiasLCL / expected$DrelBiasLCL, 1),
-        DrelBiasCrowndiameter = if_else((actual$DrelBiasCrowndiameter != 0) & (expected$DrelBiasCrowndiameter != 0), actual$DrelBiasCrowndiameter / expected$DrelBiasCrowndiameter, 1),
-        wsrelBias = if_else((actual$wsrelBias != 0) & (expected$wsrelBias != 0), actual$wsrelBias / expected$wsrelBias, 1)) %>%
-      slice(2:n()) # exclude first row as it's not fully populated
+        wood_density = if_else((actual$wood_density != 0) & (expected$wood_density != 0), actual$wood_density / expected$wood_density, 1),
+        wue = if_else((actual$wue != 0) & (expected$wue != 0), actual$wue / expected$wue, 1),
+        wue_transp = if_else((actual$wue_transp != 0) & (expected$wue_transp != 0), actual$wue_transp / expected$wue_transp,  1))
+    if (("CVdbhDistribution" %in% actualColumns) & ("CVdbhDistribution" %in% expectedColumns))
+    {
+      ratios %<>%
+        mutate(CVdbhDistribution = if_else((actual$CVdbhDistribution != 0) & (expected$CVdbhDistribution != 0), actual$CVdbhDistribution / expected$CVdbhDistribution, 1),
+               CVwsDistribution = if_else((actual$CVwsDistribution != 0) & (expected$CVwsDistribution != 0), actual$CVwsDistribution / expected$CVwsDistribution, 1),
+               height_rel = if_else((actual$height_rel != 0) & (expected$height_rel != 0), actual$height_rel / expected$height_rel, 1),
+               DWeibullScale = if_else((actual$DWeibullScale != 0) & (expected$DWeibullScale != 0), actual$DWeibullScale / expected$DWeibullScale, 1),
+               DWeibullShape = if_else((actual$DWeibullShape != 0) & (expected$DWeibullShape != 0), actual$DWeibullShape / expected$DWeibullShape, 1),
+               DWeibullLocation = if_else((actual$DWeibullLocation != 0) & (expected$DWeibullLocation != 0), actual$DWeibullLocation / expected$DWeibullLocation, 1),
+               wsWeibullScale = if_else((actual$wsWeibullScale != 0) & (expected$wsWeibullScale != 0), actual$wsWeibullScale / expected$wsWeibullScale, 1),
+               wsWeibullShape = if_else((actual$wsWeibullShape != 0) & (expected$wsWeibullShape != 0), actual$wsWeibullShape / expected$wsWeibullShape, 1),
+               wsWeibullLocation = if_else((actual$wsWeibullLocation != 0) & (expected$wsWeibullLocation != 0), actual$wsWeibullLocation / expected$wsWeibullLocation, 1),
+               #DWeibullScale = if_else((actual$DWeibullScale != 0) & (expected$Dweibullscale != 0), actual$DWeibullScale / expected$Dweibullscale, 1),
+               #DWeibullShape = if_else((actual$DWeibullShape != 0) & (expected$Dweibullshape != 0), actual$DWeibullShape / expected$Dweibullshape, 1),
+               #DWeibullLocation = if_else((actual$DWeibullLocation != 0) & (expected$Dweibulllocation != 0), actual$DWeibullLocation / expected$Dweibulllocation, 1),
+               #wsWeibullScale = if_else((actual$wsWeibullScale != 0) & (expected$wsweibullscale != 0), actual$wsWeibullScale / expected$wsweibullscale, 1),
+               #wsWeibullShape = if_else((actual$wsWeibullShape != 0) & (expected$wsweibullshape != 0), actual$wsWeibullShape / expected$wsweibullshape, 1),
+               #wsWeibullLocation = if_else((actual$wsWeibullLocation != 0) & (expected$wsweibulllocation != 0), actual$wsWeibullLocation / expected$wsweibulllocation, 1),
+               DrelBiaspFS = if_else((actual$DrelBiaspFS != 0) & (expected$DrelBiaspFS != 0), actual$DrelBiaspFS / expected$DrelBiaspFS, 1),
+               DrelBiasheight = if_else((actual$DrelBiasheight != 0) & (expected$DrelBiasheight != 0), actual$DrelBiasheight / expected$DrelBiasheight, 1),
+               DrelBiasBasArea = if_else((actual$DrelBiasBasArea != 0) & (expected$DrelBiasBasArea != 0), actual$DrelBiasBasArea / expected$DrelBiasBasArea, 1),
+               DrelBiasLCL = if_else((actual$DrelBiasLCL != 0) & (expected$DrelBiasLCL != 0), actual$DrelBiasLCL / expected$DrelBiasLCL, 1),
+               DrelBiasCrowndiameter = if_else((actual$DrelBiasCrowndiameter != 0) & (expected$DrelBiasCrowndiameter != 0), actual$DrelBiasCrowndiameter / expected$DrelBiasCrowndiameter, 1),
+               wsrelBias = if_else((actual$wsrelBias != 0) & (expected$wsrelBias != 0), actual$wsrelBias / expected$wsrelBias, 1))
+    }
+    ratios %<>% slice(2:n()) # exclude first row as it's not fully populated
   }
   return(ratios)
 }
@@ -205,15 +219,14 @@ read_actual = function(spreadsheet)
 
 read_expected = function(worksheet)
 {
-  # stand age column is repeated: two warnings per load are therefore expected
-  #expected = read_xlsx(file.path(getwd(), "UnitTests/r3PG.xlsx"), worksheet) %>%
-  #  rename(standAge = `Stand age...2`)
-  expected = read_xlsx(file.path(getwd(), "UnitTests/r3PG.xlsx"), worksheet)
+  expected = read_xlsx(file.path(getwd(), "UnitTests/r3PG validation stands.xlsx"), worksheet)
   return(expected)
 }
 
 summarize_ratios = function(ratios)
 {
+  columns = colnames(ratios)
+  
   quantiles = c(0, 0.5, 1)
   summary = ratios %>% 
     group_by(species) %>%
@@ -277,22 +290,30 @@ summarize_ratios = function(ratios)
               f_transp_scale = quantile(f_transp_scale, probs = quantiles, na.rm = TRUE), 
               irrig_supl = quantile(irrig_supl, probs = quantiles, na.rm = TRUE), 
               prcp_runoff = quantile(prcp_runoff, probs = quantiles, na.rm = TRUE), 
-              CVdbhDistribution = quantile(CVdbhDistribution, probs = quantiles, na.rm = TRUE), 
-              CVwsDistribution = quantile(CVwsDistribution, probs = quantiles, na.rm = TRUE), 
-              height_rel = quantile(height_rel, probs = quantiles, na.rm = TRUE), 
-              DWeibullScale = quantile(DWeibullScale, probs = quantiles, na.rm = TRUE), 
-              DWeibullShape = quantile(DWeibullShape, probs = quantiles, na.rm = TRUE), 
-              DWeibullLocation = quantile(DWeibullLocation, probs = quantiles, na.rm = TRUE), 
-              wsWeibullScale = quantile(wsWeibullScale, probs = quantiles, na.rm = TRUE), 
-              wsWeibullShape = quantile(wsWeibullShape, probs = quantiles, na.rm = TRUE), 
-              wsWeibullLocation = quantile(wsWeibullLocation, probs = quantiles, na.rm = TRUE), 
-              DrelBiaspFS = quantile(DrelBiaspFS, probs = quantiles, na.rm = TRUE), 
-              DrelBiasheight = quantile(DrelBiasheight, probs = quantiles, na.rm = TRUE), 
-              DrelBiasBasArea = quantile(DrelBiasBasArea, probs = quantiles, na.rm = TRUE), 
-              DrelBiasLCL = quantile(DrelBiasLCL, probs = quantiles, na.rm = TRUE), 
-              DrelBiasCrowndiameter = quantile(DrelBiasCrowndiameter, probs = quantiles, na.rm = TRUE), 
-              wsrelBias = quantile(wsrelBias, probs = quantiles, na.rm = TRUE), 
               .groups = "drop")
+  if ("CVdbhDistribution" %in% columns)
+  {
+    biasSummary = ratios %>% 
+      group_by(species) %>%
+      summarize(quantile = quantiles,
+                CVdbhDistribution = quantile(CVdbhDistribution, probs = quantiles, na.rm = TRUE), 
+                CVwsDistribution = quantile(CVwsDistribution, probs = quantiles, na.rm = TRUE), 
+                height_rel = quantile(height_rel, probs = quantiles, na.rm = TRUE), 
+                DWeibullScale = quantile(DWeibullScale, probs = quantiles, na.rm = TRUE), 
+                DWeibullShape = quantile(DWeibullShape, probs = quantiles, na.rm = TRUE), 
+                DWeibullLocation = quantile(DWeibullLocation, probs = quantiles, na.rm = TRUE), 
+                wsWeibullScale = quantile(wsWeibullScale, probs = quantiles, na.rm = TRUE), 
+                wsWeibullShape = quantile(wsWeibullShape, probs = quantiles, na.rm = TRUE), 
+                wsWeibullLocation = quantile(wsWeibullLocation, probs = quantiles, na.rm = TRUE), 
+                DrelBiaspFS = quantile(DrelBiaspFS, probs = quantiles, na.rm = TRUE), 
+                DrelBiasheight = quantile(DrelBiasheight, probs = quantiles, na.rm = TRUE), 
+                DrelBiasBasArea = quantile(DrelBiasBasArea, probs = quantiles, na.rm = TRUE), 
+                DrelBiasLCL = quantile(DrelBiasLCL, probs = quantiles, na.rm = TRUE), 
+                DrelBiasCrowndiameter = quantile(DrelBiasCrowndiameter, probs = quantiles, na.rm = TRUE), 
+                wsrelBias = quantile(wsrelBias, probs = quantiles, na.rm = TRUE),
+                .groups = "drop")
+    summary = bind_rows(summary, biasSummary)
+  }
   return(summary)
 }
 

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
-namespace BayesianPG
+namespace BayesianPG.Extensions
 {
     public static class ArrayExtensions
     {
@@ -51,6 +53,17 @@ namespace BayesianPG
             int maxLength = Math.Min(array.Length, newLength);
             Array.Copy(array, resizedArray, maxLength);
             return resizedArray;
+        }
+
+        public static Vector128<float> Sum(this Vector128<float>[] array)
+        {
+            Vector128<float> sum = Vector128<float>.Zero;
+            for (int index = 0; index < array.Length; ++index)
+            {
+                sum = Avx.Add(sum, array[index]);
+            }
+
+            return sum;
         }
     }
 }

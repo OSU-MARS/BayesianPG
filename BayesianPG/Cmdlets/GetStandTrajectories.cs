@@ -18,11 +18,11 @@ namespace BayesianPG.Cmdlets
             Debug.Assert(this.Xlsx != null);
 
             using ThreePGReader reader = new(this.Xlsx);
-            SortedList<string, ThreePGpjsMix> sitesByName = reader.ReadSites();
+            SortedList<string, ThreePGScalar> sitesByName = reader.ReadSites();
 
             for (int index = 0; index < sitesByName.Count; ++index)
             {
-                ThreePGpjsMix threePG = sitesByName.Values[index];
+                ThreePGScalar threePG = sitesByName.Values[index];
                 threePG.PredictStandTrajectory();
             }
 

@@ -1,11 +1,27 @@
 ﻿using System;
+using System.Globalization;
 using System.Xml;
 
 namespace BayesianPG.Xlsx
 {
-    public abstract class TreeSpeciesWorksheet : XlsxWorksheet
+    internal static class TreeSpeciesWorksheet
     {
-        protected static bool ParseRow(string parameterName, XlsxRow row, float[] parameterValues, bool previouslyParsed, float minimumValue, float maximumValue)
+        public static float Parse(string parameterName, XlsxRow row, int columnIndex, float minimumValue, float maximumValue)
+        {
+            float value = Single.Parse(row.Row[columnIndex], CultureInfo.InvariantCulture);
+            if (value < minimumValue)
+            {
+                throw new XmlException("Value of " + value + " for " + parameterName + " is below the minimum value of " + minimumValue + ".", null, row.Number, columnIndex);
+            }
+            if (value > maximumValue)
+            {
+                throw new XmlException("Value of " + value + " for " + parameterName + " is above the maximum value of " + maximumValue + ".", null, row.Number, columnIndex);
+            }
+
+            return value;
+        }
+
+        public static bool Parse(string parameterName, XlsxRow row, float[] parameterValues, bool previouslyParsed, float minimumValue, float maximumValue)
         {
             if (previouslyParsed)
             {
@@ -14,7 +30,7 @@ namespace BayesianPG.Xlsx
 
             for (int destinationIndex = 0, sourceIndex = 1; sourceIndex < row.Columns; ++destinationIndex, ++sourceIndex)
             {
-                float value = Single.Parse(row.Row[sourceIndex]);
+                float value = Single.Parse(row.Row[sourceIndex], CultureInfo.InvariantCulture);
                 if (value < minimumValue)
                 {
                     throw new XmlException("Value of " + value + " for " + parameterName + " is below the minimum value of " + minimumValue + ".", null, row.Number, sourceIndex);
@@ -29,7 +45,7 @@ namespace BayesianPG.Xlsx
             return true;
         }
 
-        protected static void ValidateHeader(XlsxRow row)
+        public static void ValidateHeader(XlsxRow row)
         {
             if (row.Columns < 2)
             {

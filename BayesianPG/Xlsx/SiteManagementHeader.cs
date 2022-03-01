@@ -3,7 +3,7 @@ using System.Xml;
 
 namespace BayesianPG.Xlsx
 {
-    internal class SiteManagementHeader : IXlsxWorksheetHeader
+    public class SiteManagementHeader : IXlsxWorksheetHeader
     {
         public int Age { get; set; }
         public int Foliage { get; set; }

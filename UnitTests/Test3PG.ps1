@@ -5,10 +5,10 @@ $outputDirectory = ([System.IO.Path]::Combine($unitTestDirectory, "..\TestResult
 
 Import-Module -Name ([System.IO.Path]::Combine($buildDirectory, "BayesianPG.dll"));
 
-$stands = Get-StandTrajectories -Xlsx ([System.IO.Path]::Combine($unitTestDirectory, "r3PG.xlsx"))
-Write-StandTrajectory -Trajectory $stands["broadleaf_mix"].Trajectory -File ([System.IO.Path]::Combine($outputDirectory, "broadleaf_mix.csv"))
-Write-StandTrajectory -Trajectory $stands["broadleaf_pjs"].Trajectory -File ([System.IO.Path]::Combine($outputDirectory, "broadleaf_pjs.csv"))
-Write-StandTrajectory -Trajectory $stands["evergreen_mix"].Trajectory -File ([System.IO.Path]::Combine($outputDirectory, "evergreen_mix.csv"))
-Write-StandTrajectory -Trajectory $stands["evergreen_pjs"].Trajectory -File ([System.IO.Path]::Combine($outputDirectory, "evergreen_pjs.csv"))
-Write-StandTrajectory -Trajectory $stands["mixtures_eu"].Trajectory -File ([System.IO.Path]::Combine($outputDirectory, "mixtures_eu.csv"))
-Write-StandTrajectory -Trajectory $stands["mixtures_other"].Trajectory -File ([System.IO.Path]::Combine($outputDirectory, "mixtures_other.csv"))
+$stands = Get-StandTrajectories -Xlsx ([System.IO.Path]::Combine($unitTestDirectory, "r3PG validation stands.xlsx"))
+Write-StandTrajectory -ReferencePrecision -Trajectory $stands["broadleaf_mix"].Trajectory -File ([System.IO.Path]::Combine($outputDirectory, "broadleaf_mix.csv"))
+Write-StandTrajectory -ReferencePrecision -Trajectory $stands["broadleaf_pjs"].Trajectory -File ([System.IO.Path]::Combine($outputDirectory, "broadleaf_pjs.csv"))
+Write-StandTrajectory -ReferencePrecision -Trajectory $stands["evergreen_mix"].Trajectory -File ([System.IO.Path]::Combine($outputDirectory, "evergreen_mix.csv"))
+Write-StandTrajectory -ReferencePrecision -Trajectory $stands["evergreen_pjs"].Trajectory -File ([System.IO.Path]::Combine($outputDirectory, "evergreen_pjs.csv"))
+Write-StandTrajectory -ReferencePrecision -Trajectory $stands["mixtures_eu"].Trajectory -File ([System.IO.Path]::Combine($outputDirectory, "mixtures_eu.csv"))
+Write-StandTrajectory -ReferencePrecision -Trajectory $stands["mixtures_other"].Trajectory -File ([System.IO.Path]::Combine($outputDirectory, "mixtures_other.csv"))

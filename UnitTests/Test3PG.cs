@@ -1,3 +1,4 @@
+using BayesianPG.Extensions;
 using BayesianPG.Test.Xlsx;
 using BayesianPG.ThreePG;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -8,21 +9,23 @@ using System.Diagnostics;
 namespace BayesianPG.Test
 {
     [TestClass]
-    [DeploymentItem("r3PG.xlsx")]
+    [DeploymentItem("r3PG validation stands.xlsx")]
     public class Test3PG
     {
         /// <summary>
-        /// Verifies C# implementations of 3-PGpjs 2.7 and 3-PGmix against r3PG Fortran implementations.
+        /// Verifies C# implementations of 3-PGpjs 2.7 and 3-PGmix against reference data for the six r3PG 
+        /// validation stands (either as captured from C# in Test3PG.R or from r3PG Fortran via 
+        /// GenerateReferenceSpreadsheet.R).
         /// </summary>
         /// <remarks>
-        /// Ported from https://github.com/trotsiuk/r3PG/blob/master/pkg/tests/r_vba_compare/r3PG_VBA_compare.R.
+        /// Originally developed from https://github.com/trotsiuk/r3PG/blob/master/pkg/tests/r_vba_compare/.
         /// </remarks>
         [TestMethod]
-        public void CompareWithR3PG()
+        public void R3PGReferenceStands()
         {
-            using TestThreePGReader reader = new("r3PG.xlsx");
-            SortedList<string, ThreePGStandTrajectory> expectedTrajectoriesBySiteName = reader.ReadExpectations();
-            SortedList<string, ThreePGpjsMix> sitesByName = reader.ReadSites();
+            using TestThreePGReader reader = new("r3PG validation stands.xlsx");
+            SortedList<string, ThreePGStandTrajectory<float, int>> expectedTrajectoriesBySiteName = reader.ReadR3PGValidationOutput();
+            SortedList<string, ThreePGScalar> sitesByName = reader.ReadSites();
             SortedList<string, StandTrajectoryTolerance> tolerancesBySiteName = new()
             {
                 // see Test3PG.R for analysis
@@ -32,12 +35,14 @@ namespace BayesianPG.Test
                 { "evergreen_pjs", new() },
                 { "mixtures_eu", new()
                                  {
-                                     volume_cum = 0.015F // differs because r3PG.xlsx is based on r3PG 0.1.3, which does not have the fix for https://github.com/trotsiuk/r3PG/issues/63
+                                     // if testing against r3PG
+                                     // VolumeCumulative = 0.015F // differs because r3PG tabs in r3PG validation scenarios.xlsx are based on r3PG 0.1.3, which does not have the fix for https://github.com/trotsiuk/r3PG/issues/63
                                  }
                 },
                 { "mixtures_other", new()
-                                    {        
-                                        MaxTimestep = 10 * 12 // verify against only first 10 years due to https://github.com/trotsiuk/r3PG/issues/70
+                                    {      
+                                        // if testing against r3PG
+                                        // MaxTimestep = 10 * 12 // verify against only first 10 years due to https://github.com/trotsiuk/r3PG/issues/70
                                     }
                 },
             };
@@ -49,7 +54,7 @@ namespace BayesianPG.Test
                 //{
                 //    continue;
                 //}
-                ThreePGpjsMix threePG = sitesByName.Values[index];
+                ThreePGScalar threePG = sitesByName.Values[index];
                 threePG.PredictStandTrajectory();
 
                 Test3PG.VerifySpeciesParameters(threePG);
@@ -95,6 +100,28 @@ namespace BayesianPG.Test
                         float ratio = actualValue / expectedValue;
                         Assert.IsTrue((ratio >= minRatio) && (ratio <= maxRatio), name + "[" + timestepIndex + ", " + speciesIndex + "]: ratio = " + ratio + ".");
                     }
+                }
+            }
+        }
+
+        private static void VerifyArray(string name, int[,] actual, int expectedTimesteps, int[,] expectedValues, int tolerance, int maxTimestep)
+        {
+            Debug.Assert((tolerance >= 0) && (tolerance <= 1));
+            int actualMonths = actual.GetLength(0);
+            Assert.IsTrue(actualMonths == expectedTimesteps);
+
+            // for now, skip first month as not all values are computed
+            int maxTimestepVerified = Math.Min(expectedTimesteps, maxTimestep);
+            for (int timestepIndex = 1; timestepIndex < maxTimestepVerified; ++timestepIndex)
+            {
+                int expectedSpecies = expectedValues.GetLength(1);
+                Assert.IsTrue(actual.GetLength(1) == expectedSpecies);
+                for (int speciesIndex = 0; speciesIndex < expectedSpecies; ++speciesIndex)
+                {
+                    int actualValue = actual[timestepIndex, speciesIndex];
+                    int expectedValue = expectedValues[timestepIndex, speciesIndex];
+                    int difference = actualValue - expectedValue;
+                    Assert.IsTrue(MathF.Abs(difference) <= tolerance, name + "[" + timestepIndex + ", " + speciesIndex + "]: difference = " + difference + ".");
                 }
             }
         }
@@ -182,13 +209,13 @@ namespace BayesianPG.Test
             }
         }
 
-        private static void VerifySpeciesParameters(ThreePGpjsMix threePG)
+        private static void VerifySpeciesParameters(ThreePGScalar threePG)
         {
             TreeSpeciesParameters expectedParameters = TestConstant.TreeParameters; // shorthand for readability
             for (int speciesIndex = 0; speciesIndex < threePG.Parameters.n_sp; ++speciesIndex)
             {
-                string speciesName = threePG.Parameters.Name[speciesIndex];
-                int verificationIndex = expectedParameters.Name.FindIndex(speciesName);
+                string speciesName = threePG.Parameters.Species[speciesIndex];
+                int verificationIndex = expectedParameters.Species.FindIndex(speciesName);
                 if (verificationIndex != -1)
                 {
                     Assert.IsTrue(threePG.Parameters.pFS2[speciesIndex] == expectedParameters.pFS2[verificationIndex], nameof(expectedParameters.pFS2));
@@ -275,17 +302,17 @@ namespace BayesianPG.Test
             }
         }
 
-        private static void VerifySizeDistribution(ThreePGpjsMix threePG)
+        private static void VerifySizeDistribution(ThreePGScalar threePG)
         {
-            if (threePG.Settings.correct_bias)
+            if (threePG.Settings.CorrectSizeDistribution)
             {
                 Assert.IsTrue(threePG.Bias != null);
 
                 TreeSpeciesSizeDistribution expectedBias = TestConstant.TreeSizeDistributions; // shorthand for readability
                 for (int speciesIndex = 0; speciesIndex < threePG.Bias.n_sp; ++speciesIndex)
                 {
-                    string speciesName = threePG.Parameters.Name[speciesIndex];
-                    int verificationIndex = expectedBias.Name.FindIndex(speciesName);
+                    string speciesName = threePG.Parameters.Species[speciesIndex];
+                    int verificationIndex = expectedBias.Species.FindIndex(speciesName);
                     if (verificationIndex != -1)
                     {
                         Assert.IsTrue(threePG.Bias.Dscale0[speciesIndex] == expectedBias.Dscale0[verificationIndex], nameof(expectedBias.Dscale0));
@@ -324,93 +351,124 @@ namespace BayesianPG.Test
             // bias correction is disabled so, for now, ignore size distribution
         }
 
-        private static void VerifyStandTrajectory(ThreePGpjsMix threePG, ThreePGStandTrajectory expectedTrajectory, StandTrajectoryTolerance tolerances)
+        private static void VerifyStandTrajectory(ThreePGScalar threePG, ThreePGStandTrajectory<float, int> expectedTrajectory, StandTrajectoryTolerance tolerances)
         {
-            ThreePGStandTrajectory actualTrajectory = threePG.Trajectory;
+            ThreePGStandTrajectory<float, int> actualTrajectory = threePG.Trajectory;
 
             // verify array sizes and scalar properties
             // Reference trajectories in spreadsheet stop in January of end year rather than extend to February.
             // Also, January predictions are duplicated into February.
-            Assert.IsTrue(actualTrajectory.n_m >= expectedTrajectory.n_m);
+            Assert.IsTrue(actualTrajectory.MonthCount >= expectedTrajectory.MonthCount);
             Assert.IsTrue(actualTrajectory.Species.n_sp == expectedTrajectory.Species.n_sp);
 
             // verify species order matches
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.Name), actualTrajectory.Species.Name, expectedTrajectory.Species.Name);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.Species), actualTrajectory.Species.Species, expectedTrajectory.Species.Species);
 
             // verify stand trajectory
-            Test3PG.VerifyArray(nameof(actualTrajectory.AvailableSoilWater), actualTrajectory.AvailableSoilWater, actualTrajectory.n_m, expectedTrajectory.AvailableSoilWater, tolerances.AvailableSoilWater, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.DayLength), actualTrajectory.DayLength, actualTrajectory.n_m, expectedTrajectory.DayLength, tolerances.DayLength, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Evapotranspiration), actualTrajectory.Evapotranspiration, actualTrajectory.n_m, expectedTrajectory.Evapotranspiration, tolerances.Evapotranspiration, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.AvailableSoilWater), actualTrajectory.AvailableSoilWater, actualTrajectory.MonthCount, expectedTrajectory.AvailableSoilWater, tolerances.AvailableSoilWater, tolerances.MaxTimestep);
+            // Test3PG.VerifyArray(nameof(actualTrajectory.DayLength), actualTrajectory.DayLength, actualTrajectory.MonthCount, expectedTrajectory.DayLength, tolerances.DayLength, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.evapo_transp), actualTrajectory.evapo_transp, actualTrajectory.MonthCount, expectedTrajectory.evapo_transp, tolerances.Evapotranspiration, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.f_transp_scale), actualTrajectory.f_transp_scale, actualTrajectory.MonthCount, expectedTrajectory.f_transp_scale, tolerances.TranspirationScale, tolerances.MaxTimestep);
             Assert.IsTrue((actualTrajectory.From.Year == expectedTrajectory.From.Year) && (actualTrajectory.From.Month == expectedTrajectory.From.Month), nameof(actualTrajectory.From));
-            Test3PG.VerifyArray(nameof(actualTrajectory.irrig_supl), actualTrajectory.irrig_supl, actualTrajectory.n_m, expectedTrajectory.irrig_supl, tolerances.Irrigation, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.prcp_runoff), actualTrajectory.prcp_runoff, actualTrajectory.n_m, expectedTrajectory.prcp_runoff, tolerances.Runoff, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.conduct_soil), actualTrajectory.conduct_soil, actualTrajectory.n_m, expectedTrajectory.conduct_soil, tolerances.SoilConductance, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.evapotra_soil), actualTrajectory.evapotra_soil, actualTrajectory.n_m, expectedTrajectory.evapotra_soil, tolerances.SoilEvaporation, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.age), actualTrajectory.Species.age, actualTrajectory.n_m, expectedTrajectory.Species.age, tolerances.age, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.age_m), actualTrajectory.Species.age_m, actualTrajectory.n_m, expectedTrajectory.Species.age_m, tolerances.age_m, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.alpha_c), actualTrajectory.Species.alpha_c, actualTrajectory.n_m, expectedTrajectory.Species.alpha_c, tolerances.alpha_c, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.basal_area), actualTrajectory.Species.basal_area, actualTrajectory.n_m, expectedTrajectory.Species.basal_area, tolerances.basal_area, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.biom_foliage), actualTrajectory.Species.biom_foliage, actualTrajectory.n_m, expectedTrajectory.Species.biom_foliage, tolerances.biom_foliage, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.biom_root), actualTrajectory.Species.biom_root, actualTrajectory.n_m, expectedTrajectory.Species.biom_root, tolerances.biom_root, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.biom_stem), actualTrajectory.Species.biom_stem, actualTrajectory.n_m, expectedTrajectory.Species.biom_stem, tolerances.biom_stem, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.CanopyCover), actualTrajectory.Species.CanopyCover, actualTrajectory.n_m, expectedTrajectory.Species.CanopyCover, tolerances.CanopyCover, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.CanopyVolumeFraction), actualTrajectory.Species.CanopyVolumeFraction, actualTrajectory.n_m, expectedTrajectory.Species.CanopyVolumeFraction, tolerances.CanopyVolumeFraction, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.conduct_canopy), actualTrajectory.Species.conduct_canopy, actualTrajectory.n_m, expectedTrajectory.Species.conduct_canopy, tolerances.conduct_canopy, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.CrownDiameter), actualTrajectory.Species.CrownDiameter, actualTrajectory.n_m, expectedTrajectory.Species.CrownDiameter, tolerances.CrownDiameter, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.dbh), actualTrajectory.Species.dbh, actualTrajectory.n_m, expectedTrajectory.Species.dbh, tolerances.dbh, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.epsilon_gpp), actualTrajectory.Species.epsilon_gpp, actualTrajectory.n_m, expectedTrajectory.Species.epsilon_gpp, tolerances.epsilon_gpp, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.epsilon_npp), actualTrajectory.Species.epsilon_npp, actualTrajectory.n_m, expectedTrajectory.Species.epsilon_npp, tolerances.epsilon_npp, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.ExtractedVolume), actualTrajectory.Species.ExtractedVolume, actualTrajectory.n_m, expectedTrajectory.Species.ExtractedVolume, tolerances.ExtractedVolume, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.fi), actualTrajectory.Species.fi, actualTrajectory.n_m, expectedTrajectory.Species.fi, tolerances.fi, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.FoliageLitterFallRateOfPeriod), actualTrajectory.Species.FoliageLitterFallRateOfPeriod, actualTrajectory.n_m, expectedTrajectory.Species.FoliageLitterFallRateOfPeriod, tolerances.FoliageLitterFallRateOfPeriod, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.FR), actualTrajectory.Species.FR, actualTrajectory.n_m, expectedTrajectory.Species.FR, tolerances.FR, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.fracBB), actualTrajectory.Species.fracBB, actualTrajectory.n_m, expectedTrajectory.Species.fracBB, tolerances.fracBB, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.f_age), actualTrajectory.Species.f_age, actualTrajectory.n_m, expectedTrajectory.Species.f_age, tolerances.f_age, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.f_calpha), actualTrajectory.Species.f_calpha, actualTrajectory.n_m, expectedTrajectory.Species.f_calpha, tolerances.f_calpha, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.f_cg), actualTrajectory.Species.f_cg, actualTrajectory.n_m, expectedTrajectory.Species.f_cg, tolerances.f_cg, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.f_frost), actualTrajectory.Species.f_frost, actualTrajectory.n_m, expectedTrajectory.Species.f_frost, tolerances.f_frost, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.f_nutr), actualTrajectory.Species.f_nutr, actualTrajectory.n_m, expectedTrajectory.Species.f_nutr, tolerances.f_nutr, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.f_phys), actualTrajectory.Species.f_phys, actualTrajectory.n_m, expectedTrajectory.Species.f_phys, tolerances.f_phys, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.f_sw), actualTrajectory.Species.f_sw, actualTrajectory.n_m, expectedTrajectory.Species.f_sw, tolerances.f_sw, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.f_tmp), actualTrajectory.Species.f_tmp, actualTrajectory.n_m, expectedTrajectory.Species.f_tmp, tolerances.f_tmp, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.irrig_supl), actualTrajectory.irrig_supl, actualTrajectory.MonthCount, expectedTrajectory.irrig_supl, tolerances.IrrigationSupplied, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.prcp_runoff), actualTrajectory.prcp_runoff, actualTrajectory.MonthCount, expectedTrajectory.prcp_runoff, tolerances.PrecipitationRunoff, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.conduct_soil), actualTrajectory.conduct_soil, actualTrajectory.MonthCount, expectedTrajectory.conduct_soil, tolerances.SoilConductance, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.evapotra_soil), actualTrajectory.evapotra_soil, actualTrajectory.MonthCount, expectedTrajectory.evapotra_soil, tolerances.SoilEvaporation, tolerances.MaxTimestep);
+
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.aero_resist), actualTrajectory.Species.aero_resist, actualTrajectory.MonthCount, expectedTrajectory.Species.aero_resist, tolerances.AeroResist, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.age), actualTrajectory.Species.age, actualTrajectory.MonthCount, expectedTrajectory.Species.age, tolerances.Age, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.age_m), actualTrajectory.Species.age_m, actualTrajectory.MonthCount, expectedTrajectory.Species.age_m, tolerances.AgeM, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.alpha_c), actualTrajectory.Species.alpha_c, actualTrajectory.MonthCount, expectedTrajectory.Species.alpha_c, tolerances.AlphaC, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.basal_area), actualTrajectory.Species.basal_area, actualTrajectory.MonthCount, expectedTrajectory.Species.basal_area, tolerances.BasalArea, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.biom_foliage), actualTrajectory.Species.biom_foliage, actualTrajectory.MonthCount, expectedTrajectory.Species.biom_foliage, tolerances.BiomassFoliage, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.biom_foliage_debt), actualTrajectory.Species.biom_foliage_debt, actualTrajectory.MonthCount, expectedTrajectory.Species.biom_foliage_debt, tolerances.BiomassFoliageDebt, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.biom_root), actualTrajectory.Species.biom_root, actualTrajectory.MonthCount, expectedTrajectory.Species.biom_root, tolerances.BiomassRoot, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.biom_stem), actualTrajectory.Species.biom_stem, actualTrajectory.MonthCount, expectedTrajectory.Species.biom_stem, tolerances.BiomassStem, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.canopy_cover), actualTrajectory.Species.canopy_cover, actualTrajectory.MonthCount, expectedTrajectory.Species.canopy_cover, tolerances.CanopyCover, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.canopy_vol_frac), actualTrajectory.Species.canopy_vol_frac, actualTrajectory.MonthCount, expectedTrajectory.Species.canopy_vol_frac, tolerances.CanopyVolumeFraction, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.conduct_canopy), actualTrajectory.Species.conduct_canopy, actualTrajectory.MonthCount, expectedTrajectory.Species.conduct_canopy, tolerances.CanopyConductance, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.crown_width), actualTrajectory.Species.crown_width, actualTrajectory.MonthCount, expectedTrajectory.Species.crown_width, tolerances.CrownWidth, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.dbh), actualTrajectory.Species.dbh, actualTrajectory.MonthCount, expectedTrajectory.Species.dbh, tolerances.Dbh, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.epsilon_biom_stem), actualTrajectory.Species.epsilon_biom_stem, actualTrajectory.MonthCount, expectedTrajectory.Species.epsilon_biom_stem, tolerances.EpsilonStemBiomass, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.epsilon_gpp), actualTrajectory.Species.epsilon_gpp, actualTrajectory.MonthCount, expectedTrajectory.Species.epsilon_gpp, tolerances.EpsilonGpp, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.epsilon_npp), actualTrajectory.Species.epsilon_npp, actualTrajectory.MonthCount, expectedTrajectory.Species.epsilon_npp, tolerances.EpsilonNpp, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.fi), actualTrajectory.Species.fi, actualTrajectory.MonthCount, expectedTrajectory.Species.fi, tolerances.FractionApar, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.fracBB), actualTrajectory.Species.fracBB, actualTrajectory.MonthCount, expectedTrajectory.Species.fracBB, tolerances.FracBB, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.f_age), actualTrajectory.Species.f_age, actualTrajectory.MonthCount, expectedTrajectory.Species.f_age, tolerances.ModifierAge, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.f_calpha), actualTrajectory.Species.f_calpha, actualTrajectory.MonthCount, expectedTrajectory.Species.f_calpha, tolerances.ModiferCAlpha, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.f_cg), actualTrajectory.Species.f_cg, actualTrajectory.MonthCount, expectedTrajectory.Species.f_cg, tolerances.ModifierCG, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.f_frost), actualTrajectory.Species.f_frost, actualTrajectory.MonthCount, expectedTrajectory.Species.f_frost, tolerances.ModifierFrost, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.f_nutr), actualTrajectory.Species.f_nutr, actualTrajectory.MonthCount, expectedTrajectory.Species.f_nutr, tolerances.ModifierNutrition, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.f_phys), actualTrajectory.Species.f_phys, actualTrajectory.MonthCount, expectedTrajectory.Species.f_phys, tolerances.ModifierPhysiological, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.f_sw), actualTrajectory.Species.f_sw, actualTrajectory.MonthCount, expectedTrajectory.Species.f_sw, tolerances.ModifierSoilWater, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.f_tmp), actualTrajectory.Species.f_tmp, actualTrajectory.MonthCount, expectedTrajectory.Species.f_tmp, tolerances.ModifierTemperature, tolerances.MaxTimestep);
             if (threePG.Settings.phys_model == ThreePGModel.Mix)
             {
                 // f_tmp_gc is hard coded to 1 in 3-PGpjs but the reference worksheets contain the values calculated prior to pjs forcing it to 1
-                Test3PG.VerifyArray(nameof(actualTrajectory.Species.f_tmp_gc), actualTrajectory.Species.f_tmp_gc, actualTrajectory.n_m, expectedTrajectory.Species.f_tmp_gc, tolerances.f_tmp_gc, tolerances.MaxTimestep);
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.f_tmp_gc), actualTrajectory.Species.f_tmp_gc, actualTrajectory.MonthCount, expectedTrajectory.Species.f_tmp_gc, tolerances.ModifierTemperatureGC, tolerances.MaxTimestep);
             }
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.f_vpd), actualTrajectory.Species.f_vpd, actualTrajectory.n_m, expectedTrajectory.Species.f_vpd, tolerances.f_vpd, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.gammaF), actualTrajectory.Species.gammaF, actualTrajectory.n_m, expectedTrajectory.Species.gammaF, tolerances.gammaF, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.gammaN), actualTrajectory.Species.gammaN, actualTrajectory.n_m, expectedTrajectory.Species.gammaN, tolerances.gammaN, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.GPP), actualTrajectory.Species.GPP, actualTrajectory.n_m, expectedTrajectory.Species.GPP, tolerances.GPP, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.height), actualTrajectory.Species.height, actualTrajectory.n_m, expectedTrajectory.Species.height, tolerances.height, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.lai), actualTrajectory.Species.lai, actualTrajectory.n_m, expectedTrajectory.Species.lai, tolerances.lai, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.LAIabove), actualTrajectory.Species.LAIabove, actualTrajectory.n_m, expectedTrajectory.Species.LAIabove, tolerances.LAIabove, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.LambdaH1), actualTrajectory.Species.LambdaH1, actualTrajectory.n_m, expectedTrajectory.Species.LambdaH1, tolerances.LambdaH1, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.LambdaV1), actualTrajectory.Species.LambdaV1, actualTrajectory.n_m, expectedTrajectory.Species.LambdaV1, tolerances.LambdaV1, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.Layer), actualTrajectory.Species.Layer, actualTrajectory.n_m, expectedTrajectory.Species.Layer, tolerances.Layer, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.LCL), actualTrajectory.Species.LCL, actualTrajectory.n_m, expectedTrajectory.Species.LCL, tolerances.LCL, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.m1), actualTrajectory.Species.m1, actualTrajectory.n_m, expectedTrajectory.Species.m1, tolerances.m1, tolerances.MaxTimestep);
-            // TODO: investigation of biomass foliage debt, NPP, and NPPdebt in deciduous cases
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.NPP), actualTrajectory.Species.NPP, actualTrajectory.n_m, expectedTrajectory.Species.NPP, tolerances.NPP, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.NPPdebt), actualTrajectory.Species.NPPdebt, actualTrajectory.n_m, expectedTrajectory.Species.NPPdebt, tolerances.NPPdebt, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.PenmanTranspiration), actualTrajectory.Species.PenmanTranspiration, actualTrajectory.n_m, expectedTrajectory.Species.evapotra_soil, tolerances.evapotra_soil, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.pF), actualTrajectory.Species.pF, actualTrajectory.n_m, expectedTrajectory.Species.pF, tolerances.pF, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.pFS), actualTrajectory.Species.pFS, actualTrajectory.n_m, expectedTrajectory.Species.pFS, tolerances.pFS, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.pR), actualTrajectory.Species.pR, actualTrajectory.n_m, expectedTrajectory.Species.pR, tolerances.pR, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.pS), actualTrajectory.Species.pS, actualTrajectory.n_m, expectedTrajectory.Species.pS, tolerances.pS, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.RA), actualTrajectory.Species.RA, actualTrajectory.n_m, expectedTrajectory.Species.RA, tolerances.RA, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.RADint), actualTrajectory.Species.RADint, actualTrajectory.n_m, expectedTrajectory.Species.RADint, tolerances.RADint, tolerances.MaxTimestep);
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.RainInterception), actualTrajectory.Species.RainInterception, actualTrajectory.n_m, expectedTrajectory.Species.RainInterception, tolerances.RainInterception, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.SLA), actualTrajectory.Species.SLA, actualTrajectory.n_m, expectedTrajectory.Species.SLA, tolerances.SLA, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.stems_n), actualTrajectory.Species.stems_n, actualTrajectory.n_m, expectedTrajectory.Species.stems_n, tolerances.stems_n, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.f_vpd), actualTrajectory.Species.f_vpd, actualTrajectory.MonthCount, expectedTrajectory.Species.f_vpd, tolerances.ModifierVpd, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.gammaF), actualTrajectory.Species.gammaF, actualTrajectory.MonthCount, expectedTrajectory.Species.gammaF, tolerances.GammaF, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.gammaN), actualTrajectory.Species.gammaN, actualTrajectory.MonthCount, expectedTrajectory.Species.gammaN, tolerances.GammaN, tolerances.MaxTimestep);
+            // not currently logged from C# Test3PG.VerifyArray(nameof(actualTrajectory.Species.Gc_mol), actualTrajectory.Species.Gc_mol, actualTrajectory.MonthCount, expectedTrajectory.Species.Gc_mol, tolerances.GcMol, tolerances.MaxTimestep);
+            // not currently logged from C# Test3PG.VerifyArray(nameof(actualTrajectory.Species.Gw_mol), actualTrajectory.Species.Gw_mol, actualTrajectory.MonthCount, expectedTrajectory.Species.Gw_mol, tolerances.GwMol, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.GPP), actualTrajectory.Species.GPP, actualTrajectory.MonthCount, expectedTrajectory.Species.GPP, tolerances.Gpp, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.height), actualTrajectory.Species.height, actualTrajectory.MonthCount, expectedTrajectory.Species.height, tolerances.Height, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.lai), actualTrajectory.Species.lai, actualTrajectory.MonthCount, expectedTrajectory.Species.lai, tolerances.Lai, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.lai_above), actualTrajectory.Species.lai_above, actualTrajectory.MonthCount, expectedTrajectory.Species.lai_above, tolerances.LaiAbove, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.lai_sa_ratio), actualTrajectory.Species.lai_sa_ratio, actualTrajectory.MonthCount, expectedTrajectory.Species.lai_sa_ratio, tolerances.LaiToSurfaceAreaRatio, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.lambda_h), actualTrajectory.Species.lambda_h, actualTrajectory.MonthCount, expectedTrajectory.Species.lambda_h, tolerances.LambdaH, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.lambda_v), actualTrajectory.Species.lambda_v, actualTrajectory.MonthCount, expectedTrajectory.Species.lambda_v, tolerances.LambdaV, tolerances.MaxTimestep);
+            // TODO: handle Fortran using ones based layer numbering instead of zero based
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.layer_id), actualTrajectory.Species.layer_id, actualTrajectory.MonthCount, expectedTrajectory.Species.layer_id, tolerances.LayerID, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.NPP_f), actualTrajectory.Species.NPP_f, actualTrajectory.MonthCount, expectedTrajectory.Species.NPP_f, tolerances.NppF, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.prcp_interc), actualTrajectory.Species.prcp_interc, actualTrajectory.MonthCount, expectedTrajectory.Species.prcp_interc, tolerances.PrecipitationInterception, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.SLA), actualTrajectory.Species.SLA, actualTrajectory.MonthCount, expectedTrajectory.Species.SLA, tolerances.Sla, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.stems_n), actualTrajectory.Species.stems_n, actualTrajectory.MonthCount, expectedTrajectory.Species.stems_n, tolerances.StemsN, tolerances.MaxTimestep);
             // stems_n_ha is not in reference worksheets (but could potentially be calculated)
-            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.stems_n_ha), actualTrajectory.Species.stems_n_ha, actualTrajectory.n_m, expectedTrajectory.Species.stems_n_ha, tolerances.stems_n_ha, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.volume), actualTrajectory.Species.volume, actualTrajectory.n_m, expectedTrajectory.Species.volume, tolerances.volume, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.volume_cum), actualTrajectory.Species.volume_cum, actualTrajectory.n_m, expectedTrajectory.Species.volume_cum, tolerances.volume_cum, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.VPD_sp), actualTrajectory.Species.VPD_sp, actualTrajectory.n_m, expectedTrajectory.Species.VPD_sp, tolerances.VPD_sp, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.wood_density), actualTrajectory.Species.wood_density, actualTrajectory.n_m, expectedTrajectory.Species.wood_density, tolerances.wood_density, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.WUE), actualTrajectory.Species.WUE, actualTrajectory.n_m, expectedTrajectory.Species.WUE, tolerances.WUE, tolerances.MaxTimestep);
-            Test3PG.VerifyArray(nameof(actualTrajectory.Species.WUEtransp), actualTrajectory.Species.WUEtransp, actualTrajectory.n_m, expectedTrajectory.Species.WUEtransp, tolerances.WUEtransp, tolerances.MaxTimestep);
+            // Test3PG.VerifyArray(nameof(actualTrajectory.Species.stems_n_ha), actualTrajectory.Species.stems_n_ha, actualTrajectory.MonthCount, expectedTrajectory.Species.stems_n_ha, tolerances.stems_n_ha, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.transp_veg), actualTrajectory.Species.transp_veg, actualTrajectory.MonthCount, expectedTrajectory.Species.transp_veg, tolerances.TranspirationVegetation, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.volume), actualTrajectory.Species.volume, actualTrajectory.MonthCount, expectedTrajectory.Species.volume, tolerances.Volume, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.VPD_sp), actualTrajectory.Species.VPD_sp, actualTrajectory.MonthCount, expectedTrajectory.Species.VPD_sp, tolerances.VpdSp, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.wood_density), actualTrajectory.Species.wood_density, actualTrajectory.MonthCount, expectedTrajectory.Species.wood_density, tolerances.WoodDensity, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.WUE), actualTrajectory.Species.WUE, actualTrajectory.MonthCount, expectedTrajectory.Species.WUE, tolerances.Wue, tolerances.MaxTimestep);
+            Test3PG.VerifyArray(nameof(actualTrajectory.Species.WUEtransp), actualTrajectory.Species.WUEtransp, actualTrajectory.MonthCount, expectedTrajectory.Species.WUEtransp, tolerances.WueTransp, tolerances.MaxTimestep);
+
+            if (expectedTrajectory.ColumnGroups.HasFlag(ThreePGStandTrajectoryColumnGroups.BiasCorrection))
+            {
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.CVdbhDistribution), actualTrajectory.Species.CVdbhDistribution, actualTrajectory.MonthCount, expectedTrajectory.Species.CVdbhDistribution, tolerances.CVdbhDistribution, tolerances.MaxTimestep);
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.CVwsDistribution), actualTrajectory.Species.CVwsDistribution, actualTrajectory.MonthCount, expectedTrajectory.Species.CVwsDistribution, tolerances.CVwsDistribution, tolerances.MaxTimestep);
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.DWeibullScale), actualTrajectory.Species.DWeibullScale, actualTrajectory.MonthCount, expectedTrajectory.Species.DWeibullScale, tolerances.DWeibullScale, tolerances.MaxTimestep);
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.DWeibullShape), actualTrajectory.Species.DWeibullShape, actualTrajectory.MonthCount, expectedTrajectory.Species.DWeibullShape, tolerances.DWeibullShape, tolerances.MaxTimestep);
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.DWeibullLocation), actualTrajectory.Species.DWeibullLocation, actualTrajectory.MonthCount, expectedTrajectory.Species.DWeibullLocation, tolerances.DWeibullLocation, tolerances.MaxTimestep);
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.DrelBiaspFS), actualTrajectory.Species.DrelBiaspFS, actualTrajectory.MonthCount, expectedTrajectory.Species.DrelBiaspFS, tolerances.DrelBiaspFS, tolerances.MaxTimestep);
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.DrelBiasheight), actualTrajectory.Species.DrelBiasheight, actualTrajectory.MonthCount, expectedTrajectory.Species.DrelBiasheight, tolerances.DrelBiasheight, tolerances.MaxTimestep);
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.DrelBiasCrowndiameter), actualTrajectory.Species.DrelBiasCrowndiameter, actualTrajectory.MonthCount, expectedTrajectory.Species.DrelBiasCrowndiameter, tolerances.DrelBiasCrowndiameter, tolerances.MaxTimestep);
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.DrelBiasLCL), actualTrajectory.Species.DrelBiasLCL, actualTrajectory.MonthCount, expectedTrajectory.Species.DrelBiasLCL, tolerances.DrelBiasLCL, tolerances.MaxTimestep);
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.height_rel), actualTrajectory.Species.height_rel, actualTrajectory.MonthCount, expectedTrajectory.Species.height_rel, tolerances.HeightRelative, tolerances.MaxTimestep);
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.wsrelBias), actualTrajectory.Species.wsrelBias, actualTrajectory.MonthCount, expectedTrajectory.Species.wsrelBias, tolerances.WSRelBias, tolerances.MaxTimestep);
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.wsWeibullScale), actualTrajectory.Species.wsWeibullScale, actualTrajectory.MonthCount, expectedTrajectory.Species.wsWeibullScale, tolerances.WSWeibullScale, tolerances.MaxTimestep);
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.wsWeibullShape), actualTrajectory.Species.wsWeibullShape, actualTrajectory.MonthCount, expectedTrajectory.Species.wsWeibullShape, tolerances.WSWeibullShape, tolerances.MaxTimestep);
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.wsWeibullLocation), actualTrajectory.Species.wsWeibullLocation, actualTrajectory.MonthCount, expectedTrajectory.Species.wsWeibullLocation, tolerances.WSWeibullLocation, tolerances.MaxTimestep);
+            }
+
+            if (expectedTrajectory.ColumnGroups.HasFlag(ThreePGStandTrajectoryColumnGroups.D13C))
+            {
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.D13CNewPS), actualTrajectory.Species.D13CNewPS, actualTrajectory.MonthCount, expectedTrajectory.Species.D13CNewPS, tolerances.D13CNewPS, tolerances.MaxTimestep);
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.D13CTissue), actualTrajectory.Species.D13CTissue, actualTrajectory.MonthCount, expectedTrajectory.Species.D13CTissue, tolerances.D13CTissue, tolerances.MaxTimestep);
+                // TODO: handle Fortran multiplying InterCi by 1 million in i_write_out.h
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.InterCi), actualTrajectory.Species.InterCi, actualTrajectory.MonthCount, expectedTrajectory.Species.InterCi, tolerances.InterCi, tolerances.MaxTimestep);
+            }
+
+            if (expectedTrajectory.ColumnGroups.HasFlag(ThreePGStandTrajectoryColumnGroups.Extended))
+            {
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.biom_incr_foliage), actualTrajectory.Species.biom_incr_foliage, actualTrajectory.MonthCount, expectedTrajectory.Species.biom_incr_foliage, tolerances.BiomassIncrementFoliage, tolerances.MaxTimestep);
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.biom_incr_root), actualTrajectory.Species.biom_incr_root, actualTrajectory.MonthCount, expectedTrajectory.Species.biom_incr_root, tolerances.BiomassIncrementRoot, tolerances.MaxTimestep);
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.biom_incr_stem), actualTrajectory.Species.biom_incr_stem, actualTrajectory.MonthCount, expectedTrajectory.Species.biom_incr_stem, tolerances.BiomassIncrementStem, tolerances.MaxTimestep);
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.biom_loss_foliage), actualTrajectory.Species.biom_loss_foliage, actualTrajectory.MonthCount, expectedTrajectory.Species.biom_loss_foliage, tolerances.BiomassLossFoliage, tolerances.MaxTimestep);
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.biom_loss_root), actualTrajectory.Species.biom_loss_root, actualTrajectory.MonthCount, expectedTrajectory.Species.biom_loss_root, tolerances.BiomassLossRoot, tolerances.MaxTimestep);
+                Test3PG.VerifyArray(nameof(actualTrajectory.Species.volume_cum), actualTrajectory.Species.volume_cum, actualTrajectory.MonthCount, expectedTrajectory.Species.volume_cum, tolerances.VolumeCumulative, tolerances.MaxTimestep);
+            }
         }
     }
 }

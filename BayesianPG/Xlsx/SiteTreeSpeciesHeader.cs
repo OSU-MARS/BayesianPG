@@ -3,7 +3,7 @@ using System.Xml;
 
 namespace BayesianPG.Xlsx
 {
-    internal class SiteTreeSpeciesWorksheetHeader : IXlsxWorksheetHeader
+    internal class SiteTreeSpeciesHeader : IXlsxWorksheetHeader
     {
         public int Site { get; private set; }
         public int Species { get; private set; }
@@ -14,7 +14,7 @@ namespace BayesianPG.Xlsx
         public int Biom_root { get; private set; }
         public int Biom_foliage { get; private set; }
 
-        public SiteTreeSpeciesWorksheetHeader()
+        public SiteTreeSpeciesHeader()
         {
             this.Biom_foliage = -1;
             this.Biom_root = -1;

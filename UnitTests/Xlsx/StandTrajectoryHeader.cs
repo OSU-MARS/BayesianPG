@@ -1,248 +1,249 @@
-﻿using BayesianPG.Xlsx;
+﻿using BayesianPG.ThreePG;
+using BayesianPG.Xlsx;
 using System;
 using System.Xml;
 
 namespace BayesianPG.Test.Xlsx
 {
-    public class StandTrajectoryWorksheetHeader : IXlsxWorksheetHeader
+    public class StandTrajectoryHeader : IXlsxWorksheetHeader
     {
-        public const int R3PGColumns = 109;
+        public ThreePGStandTrajectoryColumnGroups ColumnGroups { get; private set; }
 
-        public int species { get; private set; }
+        public int aero_resist { get; private set; }
         public int age { get; private set; }
+        public int alpha_c { get; private set; }
+        public int asw { get; private set; }
+        public int basal_area { get; private set; }
+        public int basal_area_prop { get; private set; }
         public int biom_foliage { get; private set; }
+        public int biom_foliage_debt { get; private set; }
         public int biom_root { get; private set; }
         public int biom_stem { get; private set; }
-        public int date { get; private set; }
-        public int stems_n { get; private set; }
-        public int volume { get; private set; }
-        public int lai { get; private set; }
-        public int dbh { get; private set; }
-        public int day_length { get; private set; }
-        public int basal_area { get; private set; }
-        public int volume_cum { get; private set; }
-        public int height { get; private set; }
-        public int DrelBiasCrowndiameter { get; private set; }
-        public int lai_sa_ratio { get; private set; }
-        public int canopy_cover { get; private set; }
-        public int layer_id { get; private set; }
-        public int lai_above { get; private set; }
-        public int lambda_v { get; private set; }
-        public int lambda_h { get; private set; }
-        public int solar_rad { get; private set; }
-        public int vpd_sp { get; private set; }
         public int biom_tree { get; private set; }
         public int biom_tree_max { get; private set; }
-        public int wood_density { get; private set; }
-        public int fracBB { get; private set; }
-        public int f_age { get; private set; }
-        public int f_vpd { get; private set; }
-        public int f_tmp { get; private set; }
-        public int f_tmp_gc { get; private set; }
-        public int f_frost { get; private set; }
-        public int f_sw { get; private set; }
-        public int f_nutr { get; private set; }
-        public int f_calpha { get; private set; }
-        public int f_cg { get; private set; }
-        public int f_phys { get; private set; }
-        public int gpp { get; private set; }
-        public int npp { get; private set; }
-        public int fi1 { get; private set; }
-        public int epsilon_gpp { get; private set; }
-        public int epsilon_biom_stem { get; private set; }
-        public int epsilon_npp { get; private set; }
-        public int pFS { get; private set; }
-        public int biom_loss_foliage { get; private set; }
-        public int biom_loss_root { get; private set; }
-        public int biom_foliage_debt { get; private set; }
-        public int gammaN { get; private set; }
-        public int gammaF { get; private set; }
-        public int mort_thinn { get; private set; }
-        public int mort_stress { get; private set; }
-        public int irrig_supl { get; private set; }
-        public int precip_interc_fraction { get; private set; }
-        public int precip_interc { get; private set; }
+        public int canopy_cover { get; private set; }
+        public int canopy_vol_frac { get; private set; }
         public int conduct_canopy { get; private set; }
         public int conduct_soil { get; private set; }
+        public int crown_length { get; private set; }
+        public int crown_width { get; private set; }
+        public int CVdbhDistribution { get; private set; }
+        public int CVwsDistribution { get; private set; }
+        public int D13CNewPS { get; private set; }
+        public int D13CTissue { get; private set; }
+        public int date { get; private set; }
+        public int dbh { get; private set; }
+        public int DrelBiasBasArea { get; private set; }
+        public int DrelBiasCrowndiameter { get; private set; }
+        public int DrelBiasheight { get; private set; }
+        public int DrelBiasLCL { get; private set; }
+        public int DrelBiaspFS { get; private set; }
+        public int DWeibullLocation { get; private set; }
+        public int DWeibullScale { get; private set; }
+        public int DWeibullShape { get; private set; }
+        public int epsilon_biom_stem { get; private set; }
+        public int epsilon_gpp { get; private set; }
+        public int epsilon_npp { get; private set; }
+        public int evapo_transp { get; private set; }
         public int evapotra_soil { get; private set; }
+        public int f_age { get; private set; }
+        public int f_calpha { get; private set; }
+        public int f_cg { get; private set; }
+        public int f_frost { get; private set; }
+        public int f_nutr { get; private set; }
+        public int f_phys { get; private set; }
+        public int f_sw { get; private set; }
+        public int f_tmp { get; private set; }
+        public int f_tmp_gc { get; private set; }
+        public int f_transp_scale { get; private set; }
+        public int f_vpd { get; private set; }
+        public int fi { get; private set; }
+        public int fi1 { get; private set; }
+        public int fracBB { get; private set; }
+        public int frost_days { get; private set; }
+        public int gammaF { get; private set; }
+        public int gammaN { get; private set; }
+        public int Gc_mol { get; private set; }
+        public int gpp { get; private set; }
+        public int Gw_mol { get; private set; }
+        public int height { get; private set; }
+        public int height_rel { get; private set; }
+        public int InterCi { get; private set; }
+        public int irrig_supl { get; private set; }
+        public int lai { get; private set; }
+        public int lai_above { get; private set; }
+        public int lai_sa_ratio { get; private set; }
+        public int lambda_h { get; private set; }
+        public int lambda_v { get; private set; }
+        public int layer_id { get; private set; }
+        public int mort_stress { get; private set; }
+        public int mort_thinn { get; private set; }
+        public int npp_f { get; private set; }
+        public int npp_fract_foliage { get; private set; }
+        public int npp_fract_root { get; private set; }
+        public int npp_fract_stem { get; private set; }
+        public int prcp { get; private set; }
+        public int prcp_interc { get; private set; }
+        public int prcp_runoff { get; private set; }
+        public int sla { get; private set; }
+        public int species { get; private set; }
+        public int stems_n { get; private set; }
+        public int transp_veg { get; private set; }
+        public int volume { get; private set; }
+        public int vpd_day { get; private set; }
+        public int vpd_sp { get; private set; }
+        public int wood_density { get; private set; }
+        public int wsrelBias { get; private set; }
+        public int wsWeibullLocation { get; private set; }
+        public int wsWeibullScale { get; private set; }
+        public int wsWeibullShape { get; private set; }
         public int wue { get; private set; }
         public int wue_transp { get; private set; }
-        public int evapo_transp { get; private set; }
-        public int transp_veg { get; private set; }
-        public int asw { get; private set; }
-        public int tmp_min { get; private set; }
-        public int Gc_mol { get; private set; }
-        public int Dweibullscale { get; private set; }
+
+        // extended columns
+        // These are either increments either trivially computed from other columns or repetition of monthly
+        // "climate" that's already in the climate tables.
+        public int apar { get; private set; }
+        public int biom_incr_foliage { get; private set; }
+        public int biom_incr_root { get; private set; }
+        public int biom_incr_stem { get; private set; }
+        public int biom_loss_foliage { get; private set; }
+        public int biom_loss_root { get; private set; }
+        public int co2 { get; private set; }
+        public int day_length { get; private set; }
+        public int delta13c { get; private set; }
+        public int pFS { get; private set; }
+        public int prcp_interc_frac { get; private set; }
+        public int solar_rad { get; private set; }
         public int tmp_ave { get; private set; }
         public int tmp_max { get; private set; }
-        public int sla { get; private set; }
-        public int apar { get; private set; }
-        public int Gw_mol { get; private set; }
-        public int Dweibullshape { get; private set; }
-        public int D13CNewPS { get; private set; }
-        public int Dweibulllocation { get; private set; }
-        public int frost_days { get; private set; }
-        public int basal_area_prop { get; private set; }
-        public int fi { get; private set; }
-        public int prcp_interc { get; private set; }
-        public int D13CTissue { get; private set; }
-        public int wsweibullscale { get; private set; }
-        public int alpha_c { get; private set; }
-        public int prcp_interc_frac { get; private set; }
-        public int InterCi { get; private set; }
-        public int canopy_vol_frac { get; private set; }
-        public int prcp_runoff { get; private set; }
-        public int volume_extracted { get; private set; }
-        public int wsweibullshape { get; private set; }
-        public int wsweibulllocation { get; private set; }
-        public int prcp { get; private set; }
-        public int prcp_interc_fract { get; private set; }
-        public int height_rel { get; private set; }
-        public int CVdbhDistribution { get; private set; }
-        public int vpd_day { get; private set; }
-        public int crown_length { get; private set; }
-        public int CVwsDistribution { get; private set; }
-        public int crown_width { get; private set; }
-        public int biom_incr_foliage { get; private set; }
-        public int npp_fract_stem { get; private set; }
-        public int wsrelBias { get; private set; }
-        public int delta13c { get; private set; }
-        public int aero_resist { get; private set; }
-        public int biom_incr_root { get; private set; }
-        public int npp_fract_foliage { get; private set; }
-        public int co2 { get; private set; }
-        public int volume_mai { get; private set; }
-        public int npp_fract_root { get; private set; }
-        public int DrelBiasheight { get; private set; }
+        public int tmp_min { get; private set; }
         public int volume_change { get; private set; }
-        public int f_transp_scale { get; private set; }
-        public int DrelBiaspFS { get; private set; }
-        public int water_runoff_polled { get; private set; }
-        public int DrelBiasLCL { get; private set; }
-        public int DrelBiasBasArea { get; private set; }
-        public int biom_incr_stem { get; private set; }
+        public int volume_cum { get; private set; }
+        public int volume_extracted { get; private set; }
+        public int volume_mai { get; private set; }
+        public int water_runoff_pooled { get; private set; }
 
-        public StandTrajectoryWorksheetHeader()
+        public StandTrajectoryHeader()
         {
-            this.species = -1;
+            this.ColumnGroups = ThreePGStandTrajectoryColumnGroups.Core;
+
+            this.aero_resist = -1;
             this.age = -1;
-            this.biom_foliage = -1;
-            this.biom_root = -1;
-            this.biom_stem = -1;
-            this.date = -1;
-            this.stems_n = -1;
-            this.volume = -1;
-            this.lai = -1;
-            this.dbh = -1;
-            this.day_length = -1;
+            this.alpha_c = -1;
+            this.apar = -1;
+            this.asw = -1;
             this.basal_area = -1;
-            this.volume_cum = -1;
-            this.height = -1;
-            this.DrelBiasCrowndiameter = -1;
-            this.lai_sa_ratio = -1;
-            this.canopy_cover = -1;
-            this.layer_id = -1;
-            this.lai_above = -1;
-            this.lambda_v = -1;
-            this.lambda_h = -1;
-            this.solar_rad = -1;
-            this.vpd_sp = -1;
-            this.biom_tree = -1;
-            this.biom_tree_max = -1;
-            this.wood_density = -1;
-            this.fracBB = -1;
-            this.f_age = -1;
-            this.f_vpd = -1;
-            this.f_tmp = -1;
-            this.f_tmp_gc = -1;
-            this.f_frost = -1;
-            this.f_sw = -1;
-            this.f_nutr = -1;
-            this.f_calpha = -1;
-            this.f_cg = -1;
-            this.f_phys = -1;
-            this.gpp = -1;
-            this.npp = -1;
-            this.fi1 = -1;
-            this.epsilon_gpp = -1;
-            this.epsilon_biom_stem = -1;
-            this.epsilon_npp = -1;
-            this.pFS = -1;
+            this.basal_area_prop = -1;
+            this.biom_foliage = -1;
+            this.biom_foliage_debt = -1;
+            this.biom_incr_foliage = -1;
+            this.biom_incr_root = -1;
+            this.biom_incr_stem = -1;
             this.biom_loss_foliage = -1;
             this.biom_loss_root = -1;
-            this.biom_foliage_debt = -1;
-            this.gammaN = -1;
-            this.gammaF = -1;
-            this.mort_thinn = -1;
-            this.mort_stress = -1;
-            this.irrig_supl = -1;
-            this.precip_interc_fraction = -1;
-            this.precip_interc = -1;
+            this.biom_root = -1;
+            this.biom_stem = -1;
+            this.biom_tree = -1;
+            this.biom_tree_max = -1;
+            this.canopy_cover = -1;
+            this.canopy_vol_frac = -1;
+            this.co2 = -1;
             this.conduct_canopy = -1;
             this.conduct_soil = -1;
-            this.evapotra_soil = -1;
-            this.wue = -1;
-            this.wue_transp = -1;
+            this.crown_length = -1;
+            this.crown_width = -1;
+            this.CVdbhDistribution = -1;
+            this.CVwsDistribution = -1;
+            this.D13CNewPS = -1;
+            this.D13CTissue = -1;
+            this.date = -1;
+            this.day_length = -1;
+            this.dbh = -1;
+            this.delta13c = -1;
+            this.DrelBiasBasArea = -1;
+            this.DrelBiasCrowndiameter = -1;
+            this.DrelBiasheight = -1;
+            this.DrelBiasLCL = -1;
+            this.DrelBiaspFS = -1;
+            this.DWeibullLocation = -1;
+            this.DWeibullScale = -1;
+            this.DWeibullShape = -1;
+            this.epsilon_biom_stem = -1;
+            this.epsilon_gpp = -1;
+            this.epsilon_npp = -1;
             this.evapo_transp = -1;
-            this.transp_veg = -1;
-            this.asw = -1;
-            this.tmp_min = -1;
+            this.evapotra_soil = -1;
+            this.f_age = -1;
+            this.f_calpha = -1;
+            this.f_cg = -1;
+            this.f_frost = -1;
+            this.f_nutr = -1;
+            this.f_phys = -1;
+            this.f_sw = -1;
+            this.f_tmp = -1;
+            this.f_tmp_gc = -1;
+            this.f_transp_scale = -1;
+            this.f_vpd = -1;
+            this.fi = -1;
+            this.fi1 = -1;
+            this.fracBB = -1;
+            this.frost_days = -1;
+            this.gammaF = -1;
+            this.gammaN = -1;
             this.Gc_mol = -1;
-            this.Dweibullscale = -1;
+            this.gpp = -1;
+            this.Gw_mol = -1;
+            this.height = -1;
+            this.height_rel = -1;
+            this.InterCi = -1;
+            this.irrig_supl = -1;
+            this.lai = -1;
+            this.lai_above = -1;
+            this.lai_sa_ratio = -1;
+            this.lambda_h = -1;
+            this.lambda_v = -1;
+            this.layer_id = -1;
+            this.mort_stress = -1;
+            this.mort_thinn = -1;
+            this.npp_f = -1;
+            this.npp_fract_foliage = -1;
+            this.npp_fract_root = -1;
+            this.npp_fract_stem = -1;
+            this.pFS = -1;
+            this.prcp = -1;
+            this.prcp_interc = -1;
+            this.prcp_interc_frac = -1;
+            this.prcp_runoff = -1;
+            this.sla = -1;
+            this.solar_rad = -1;
+            this.species = -1;
+            this.stems_n = -1;
             this.tmp_ave = -1;
             this.tmp_ave = -1;
             this.tmp_max = -1;
-            this.sla = -1;
-            this.apar = -1;
-            this.Gw_mol = -1;
-            this.Dweibullshape = -1;
-            this.D13CNewPS = -1;
-            this.Dweibulllocation = -1;
-            this.frost_days = -1;
-            this.basal_area_prop = -1;
-            this.fi = -1;
-            this.prcp_interc = -1;
-            this.D13CTissue = -1;
-            this.wsweibullscale = -1;
-            this.alpha_c = -1;
-            this.prcp_interc_frac = -1;
-            this.InterCi = -1;
-            this.canopy_vol_frac = -1;
-            this.prcp_runoff = -1;
-            this.volume_extracted = -1;
-            this.wsweibullshape = -1;
-            this.wsweibulllocation = -1;
-            this.prcp = -1;
-            this.prcp_interc_fract = -1;
-            this.height_rel = -1;
-            this.CVdbhDistribution = -1;
-            this.vpd_day = -1;
-            this.crown_length = -1;
-            this.CVwsDistribution = -1;
-            this.crown_width = -1;
-            this.biom_incr_foliage = -1;
-            this.npp_fract_stem = -1;
-            this.wsrelBias = -1;
-            this.delta13c = -1;
-            this.aero_resist = -1;
-            this.biom_incr_root = -1;
-            this.npp_fract_foliage = -1;
-            this.co2 = -1;
-            this.volume_mai = -1;
-            this.npp_fract_root = -1;
-            this.DrelBiasheight = -1;
+            this.tmp_min = -1;
+            this.transp_veg = -1;
+            this.volume = -1;
             this.volume_change = -1;
-            this.f_transp_scale = -1;
-            this.DrelBiaspFS = -1;
-            this.water_runoff_polled = -1;
-            this.DrelBiasLCL = -1;
-            this.DrelBiasBasArea = -1;
-            this.biom_incr_stem = -1;
+            this.volume_cum = -1;
+            this.volume_extracted = -1;
+            this.volume_mai = -1;
+            this.vpd_day = -1;
+            this.vpd_sp = -1;
+            this.water_runoff_pooled = -1;
+            this.wood_density = -1;
+            this.wsrelBias = -1;
+            this.wsWeibullLocation = -1;
+            this.wsWeibullScale = -1;
+            this.wsWeibullShape = -1;
+            this.wue = -1;
+            this.wue_transp = -1;
         }
 
         public void Parse(XlsxRow header)
         {
-            for (int index = 0; index <header.Columns; ++index)
+            for (int index = 0; index < header.Columns; ++index)
             {
                 string column = header.Row[index];
                 switch (column)
@@ -280,8 +281,9 @@ namespace BayesianPG.Test.Xlsx
                     case "Gc_mol":
                         this.Gc_mol = index;
                         break;
-                    case "Dweibullscale":
-                        this.Dweibullscale = index;
+                    case "Dweibullscale": // r3PG output (versus internal) casing
+                    case "DWeibullScale":
+                        this.DWeibullScale = index;
                         break;
                     case "tmp_max":
                         this.tmp_max = index;
@@ -298,8 +300,10 @@ namespace BayesianPG.Test.Xlsx
                     case "f_vpd":
                         this.f_vpd = index;
                         break;
+                    // for now, handle // https://github.com/trotsiuk/r3PG/issues/69 by assuming npp means npp_f
                     case "npp":
-                        this.npp = index;
+                    case "npp_f":
+                        this.npp_f = index;
                         break;
                     case "conduct_soil":
                         this.conduct_soil = index;
@@ -310,8 +314,9 @@ namespace BayesianPG.Test.Xlsx
                     case "Gw_mol":
                         this.Gw_mol = index;
                         break;
-                    case "Dweibullshape":
-                        this.Dweibullshape = index;
+                    case "Dweibullshape": // r3PG output (versus internal) casing
+                    case "DWeibullShape":
+                        this.DWeibullShape = index;
                         break;
                     case "tmp_ave":
                         this.tmp_ave = index;
@@ -340,8 +345,9 @@ namespace BayesianPG.Test.Xlsx
                     case "D13CNewPS":
                         this.D13CNewPS = index;
                         break;
-                    case "Dweibulllocation":
-                        this.Dweibulllocation = index;
+                    case "Dweibulllocation": // r3PG output (versus internal) casing
+                    case "DWeibullLocation":
+                        this.DWeibullLocation = index;
                         break;
                     case "frost_days":
                         this.frost_days = index;
@@ -370,8 +376,9 @@ namespace BayesianPG.Test.Xlsx
                     case "D13CTissue":
                         this.D13CTissue = index;
                         break;
-                    case "wsweibullscale":
-                        this.wsweibullscale = index;
+                    case "wsweibullscale": // r3PG output (versus internal) casing
+                    case "wsWeibullScale":
+                        this.wsWeibullScale = index;
                         break;
                     case "solar_rad":
                         this.solar_rad = index;
@@ -391,14 +398,12 @@ namespace BayesianPG.Test.Xlsx
                     case "alpha_c":
                         this.alpha_c = index;
                         break;
-                    case "prcp_interc_fract":
-                        this.prcp_interc_fract = index;
-                        break;
                     case "InterCi":
                         this.InterCi = index;
                         break;
-                    case "wsweibullshape":
-                        this.wsweibullshape = index;
+                    case "wsweibullshape": // r3PG output (versus Fortran) casing
+                    case "wsWeibullShape":
+                        this.wsWeibullShape = index;
                         break;
                     case "day_length":
                         this.day_length = index;
@@ -424,8 +429,9 @@ namespace BayesianPG.Test.Xlsx
                     case "volume_extracted":
                         this.volume_extracted = index;
                         break;
-                    case "wsweibulllocation":
-                        this.wsweibulllocation = index;
+                    case "wsweibulllocation": // r3PG output (versus Fortran) casing
+                    case "wsWeibullLocation":
+                        this.wsWeibullLocation = index;
                         break;
                     case "prcp":
                         this.prcp = index;
@@ -565,8 +571,8 @@ namespace BayesianPG.Test.Xlsx
                     case "biom_foliage_debt":
                         this.biom_foliage_debt = index;
                         break;
-                    case "water_runoff_polled":
-                        this.water_runoff_polled = index;
+                    case "water_runoff_polled": // Fortran typo
+                        this.water_runoff_pooled = index;
                         break;
                     case "DrelBiasLCL":
                         this.DrelBiasLCL = index;
@@ -579,7 +585,11 @@ namespace BayesianPG.Test.Xlsx
                 }
             }
 
-            // verify presence of columns which are parsed by StandTrajectoryWorksheet
+            // verify presence of required columns
+            if (this.aero_resist < 0)
+            {
+                throw new XmlException("Aerodynamic resistance column not found in stand trajectory header.");
+            }
             if (this.age < 0)
             {
                 throw new XmlException("Age column not found in stand trajectory header.");
@@ -596,41 +606,73 @@ namespace BayesianPG.Test.Xlsx
             {
                 throw new XmlException("Basal area column not found in stand trajectory header.");
             }
+            if (this.basal_area_prop < 0)
+            {
+                throw new XmlException("Basal area proportion column not found in stand trajectory header.");
+            }
             if (this.biom_foliage < 0)
             {
-                throw new XmlException("Size correction column not found in stand trajectory header.");
+                throw new XmlException("Foliage biomass column not found in stand trajectory header.");
+            }
+            if (this.biom_foliage_debt < 0)
+            {
+                throw new XmlException("Foliage biomass debt column not found in stand trajectory header.");
             }
             if (this.biom_stem < 0)
             {
-                throw new XmlException("d¹³C column not found in stand trajectory header.");
+                throw new XmlException("Stem biomass column not found in stand trajectory header.");
             }
             if (this.biom_root < 0)
             {
-                throw new XmlException("Height model column not found in stand trajectory header.");
+                throw new XmlException("Root biomass column not found in stand trajectory header.");
+            }
+            if (this.biom_tree < 0)
+            {
+                throw new XmlException("Mean tree biomass column not found in stand trajectory header.");
+            }
+            if (this.biom_tree_max < 0)
+            {
+                throw new XmlException("Maximum tree biomass column not found in stand trajectory header.");
             }
             if (this.conduct_canopy < 0)
             {
                 throw new XmlException("Canopy conductance column not found in stand trajectory header.");
             }
+            if (this.canopy_vol_frac < 0)
+            {
+                throw new XmlException("Canopy volume fraction column not found in stand trajectory header.");
+            }
             if (this.conduct_soil < 0)
             {
                 throw new XmlException("Soil conductivity column not found in stand trajectory header.");
             }
+            if (this.crown_length < 0)
+            {
+                throw new XmlException("Crown length column not found in stand trajectory header.");
+            }
+            if (this.crown_width < 0)
+            {
+                throw new XmlException("Crown width column not found in stand trajectory header.");
+            }
             if (this.date < 0)
             {
-                throw new XmlException("Site name column not found in stand trajectory header.");
+                throw new XmlException("Date column not found in stand trajectory header.");
             }
             if (this.dbh < 0)
             {
                 throw new XmlException("DBH column not found in stand trajectory header.");
             }
+            if (this.epsilon_biom_stem < 0)
+            {
+                throw new XmlException("Epsilon column for stem biomass not found in stand trajectory header.");
+            }
             if (this.epsilon_gpp < 0)
             {
-                throw new XmlException("GPP epsilon column not found in stand trajectory header.");
+                throw new XmlException("Epsilon column for GPP (gross primary productivity) not found in stand trajectory header.");
             }
             if (this.epsilon_npp < 0)
             {
-                throw new XmlException("NPP epsilon column not found in stand trajectory header.");
+                throw new XmlException("Epsilon column for NPP (net primary productivity) not found in stand trajectory header.");
             }
             if (this.evapotra_soil < 0)
             {
@@ -708,9 +750,57 @@ namespace BayesianPG.Test.Xlsx
             {
                 throw new XmlException("Leaf area index column not found in stand trajectory header.");
             }
-            if (this.npp < 0)
+            if (this.lai_above < 0)
+            {
+                throw new XmlException("Leaf area above species column not found in stand trajectory header.");
+            }
+            if (this.lai_sa_ratio < 0)
+            {
+                throw new XmlException("Leaf area to surface area ratio column not found in stand trajectory header.");
+            }
+            if (this.lambda_h < 0)
+            {
+                throw new XmlException("lambdaH column not found in stand trajectory header.");
+            }
+            if (this.lambda_v < 0)
+            {
+                throw new XmlException("lambdaV column not found in stand trajectory header.");
+            }
+            if (this.layer_id < 0)
+            {
+                throw new XmlException("Layer ID column not found in stand trajectory header.");
+            }
+            if (this.mort_stress < 0)
+            {
+                throw new XmlException("Stress mortality column not found in stand trajectory header.");
+            }
+            if (this.mort_thinn < 0)
+            {
+                throw new XmlException("Thinning mortality not found in stand trajectory header.");
+            }
+            if (this.npp_fract_foliage < 0)
+            {
+                throw new XmlException("Foliage NPP fraction column not found in stand trajectory header.");
+            }
+            if (this.npp_f < 0)
             {
                 throw new XmlException("NPP column not found in stand trajectory header.");
+            }
+            if (this.npp_fract_foliage < 0)
+            {
+                throw new XmlException("Foliage NPP fraction column not found in stand trajectory header.");
+            }
+            if (this.npp_fract_root < 0)
+            {
+                throw new XmlException("Root NPP fraction column not found in stand trajectory header.");
+            }
+            if (this.npp_fract_stem < 0)
+            {
+                throw new XmlException("Stem NPP fraction column not found in stand trajectory header.");
+            }
+            if (this.prcp_interc < 0)
+            {
+                throw new XmlException("Precipitation interception column not found in stand trajectory header.");
             }
             if (this.prcp_runoff < 0)
             {
@@ -724,13 +814,17 @@ namespace BayesianPG.Test.Xlsx
             {
                 throw new XmlException("Stem count column not found in stand trajectory header.");
             }
+            if (this.species < 0)
+            {
+                throw new XmlException("Species column not found in stand trajectory header.");
+            }
+            if (this.stems_n < 0)
+            {
+                throw new XmlException("Stems per hectare column not found in stand trajectory header.");
+            }
             if (this.volume < 0)
             {
                 throw new XmlException("Volume column not found in stand trajectory header.");
-            }
-            if (this.volume_cum < 0)
-            {
-                throw new XmlException("Cumulative volume column not found in stand trajectory header.");
             }
             if (this.vpd_sp < 0)
             {
@@ -748,9 +842,229 @@ namespace BayesianPG.Test.Xlsx
             {
                 throw new XmlException("Water transpiration efficiency column not found in stand trajectory header.");
             }
+
+            // bias correction columns
+            bool hasBiasColumns = (this.CVdbhDistribution >= 0) ||
+                                  (this.CVwsDistribution >= 0) ||
+                                  (this.DrelBiasBasArea >= 0) ||
+                                  (this.DrelBiasCrowndiameter >= 0) ||
+                                  (this.DrelBiasLCL >= 0) ||
+                                  (this.DrelBiaspFS >= 0) ||
+                                  (this.DWeibullLocation >= 0) ||
+                                  (this.DWeibullScale >= 0) ||
+                                  (this.DWeibullShape >= 0) ||
+                                  (this.height_rel >= 0) ||
+                                  (this.wsrelBias >= 0) ||
+                                  (this.wsWeibullLocation >= 0) ||
+                                  (this.wsWeibullScale >= 0) ||
+                                  (this.wsWeibullShape >= 0);
+            if (hasBiasColumns)
+            {
+                if (this.CVdbhDistribution < 0)
+                {
+                    throw new XmlException("CVdbhDistribution column not found in stand trajectory header.");
+                }
+                if (this.CVwsDistribution < 0)
+                {
+                    throw new XmlException("CVwsDistribution column not found in stand trajectory header.");
+                }
+                if (this.DrelBiasBasArea < 0)
+                {
+                    throw new XmlException("DrelBiasBasArea column not found in stand trajectory header.");
+                }
+                if (this.DrelBiasCrowndiameter < 0)
+                {
+                    throw new XmlException("DrelBiasCrowndiameter column not found in stand trajectory header.");
+                }
+                if (this.DrelBiasheight < 0)
+                {
+                    throw new XmlException("DrelBiasheight column not found in stand trajectory header.");
+                }
+                if (this.DrelBiasLCL < 0)
+                {
+                    throw new XmlException("Day length column not found in stand trajectory header.");
+                }
+                if (this.DrelBiaspFS < 0)
+                {
+                    throw new XmlException("DrelBiaspFS column not found in stand trajectory header.");
+                }
+                if (this.DWeibullLocation < 0)
+                {
+                    throw new XmlException("DWeibullLocation column not found in stand trajectory header.");
+                }
+                if (this.DWeibullScale < 0)
+                {
+                    throw new XmlException("DWeibullScale column not found in stand trajectory header.");
+                }
+                if (this.DWeibullShape < 0)
+                {
+                    throw new XmlException("DWeibullShape column not found in stand trajectory header.");
+                }
+                if (this.height_rel < 0)
+                {
+                    throw new XmlException("Relative height column not found in stand trajectory header.");
+                }
+                if (this.wsrelBias < 0)
+                {
+                    throw new XmlException("wsrelBias column not found in stand trajectory header.");
+                }
+                if (this.wsWeibullLocation < 0)
+                {
+                    throw new XmlException("WS Weibull location column not found in stand trajectory header.");
+                }
+                if (this.wsWeibullScale < 0)
+                {
+                    throw new XmlException("WS Weibull scale column not found in stand trajectory header.");
+                }
+                if (this.wsWeibullShape < 0)
+                {
+                    throw new XmlException("WS Weibull shape column not found in stand trajectory header.");
+                }
+
+                this.ColumnGroups |= ThreePGStandTrajectoryColumnGroups.BiasCorrection;
+            }
+
+            // δ13C columns
+            bool hasD13Ccolumns = (this.D13CNewPS >= 0) ||
+                                  (this.D13CTissue >= 0) ||
+                                  (this.InterCi >= 0);
+            if (hasD13Ccolumns)
+            {
+                if (this.D13CNewPS < 0)
+                {
+                    throw new XmlException("D13CNewPS column not found in stand trajectory header.");
+                }
+                if (this.D13CTissue < 0)
+                {
+                    throw new XmlException("D13CTissue column not found in stand trajectory header.");
+                }
+                if (this.InterCi < 0)
+                {
+                    throw new XmlException("InterCi column not found in stand trajectory header.");
+                }
+
+                this.ColumnGroups |= ThreePGStandTrajectoryColumnGroups.D13C;
+            }
+
+            // extended columns logged from r3PG but not currently logged from C#
+            // If any extended column is present require all columns be present.
+            bool hasBayesianPGextendedColumns = (this.biom_incr_foliage >= 0) ||
+                                                (this.biom_incr_root >= 0) ||
+                                                (this.biom_incr_stem >= 0) ||
+                                                (this.biom_loss_foliage >= 0) ||
+                                                (this.biom_loss_root >= 0) ||
+                                                (this.volume_cum >= 0);
+            if (hasBayesianPGextendedColumns)
+            {
+                if (this.biom_incr_foliage < 0)
+                {
+                    throw new XmlException("Foliage biomass increment column not found in stand trajectory header.");
+                }
+                if (this.biom_incr_root < 0)
+                {
+                    throw new XmlException("Root biomass increment column not found in stand trajectory header.");
+                }
+                if (this.biom_incr_stem < 0)
+                {
+                    throw new XmlException("Stem biomass increment column not found in stand trajectory header.");
+                }
+                if (this.biom_loss_foliage < 0)
+                {
+                    throw new XmlException("Foliage biomass loss column not found in stand trajectory header.");
+                }
+                if (this.biom_loss_root < 0)
+                {
+                    throw new XmlException("Root biomass loss column not found in stand trajectory header.");
+                }
+                if (this.volume_cum < 0)
+                {
+                    throw new XmlException("Cumulative volume column not found in stand trajectory header.");
+                }
+
+                this.ColumnGroups |= ThreePGStandTrajectoryColumnGroups.Extended;
+            }
+
+            bool hasR3PGextendedColumns = (this.apar >= 0) ||
+                                          (this.co2 >= 0) ||
+                                          (this.day_length >= 0) ||
+                                          (this.delta13c >= 0) ||
+                                          (this.pFS >= 0) ||
+                                          (this.prcp_interc_frac >= 0) ||
+                                          (this.solar_rad >= 0) ||
+                                          (this.tmp_ave >= 0) ||
+                                          (this.tmp_max >= 0) ||
+                                          (this.tmp_min >= 0) ||
+                                          (this.volume_change >= 0) ||
+                                          (this.volume_extracted >= 0) ||
+                                          (this.volume_mai >= 0) ||
+                                          (this.vpd_day >= 0) ||
+                                          (this.water_runoff_pooled >= 0);
+            if (hasR3PGextendedColumns)
+            {
+                if (this.apar < 0)
+                {
+                    throw new XmlException("Absorbed photosynthetically active radiation column not found in stand trajectory header.");
+                }
+                if (this.co2 < 0)
+                {
+                    throw new XmlException("CO₂ column not found in stand trajectory header.");
+                }
+                if (this.day_length < 0)
+                {
+                    throw new XmlException("Day length column not found in stand trajectory header.");
+                }
+                if (this.delta13c < 0)
+                {
+                    throw new XmlException("δ13C column not found in stand trajectory header.");
+                }
+                if (this.pFS < 0)
+                {
+                    throw new XmlException("pFS column not found in stand trajectory header.");
+                }
+                if (this.prcp_interc_frac < 0)
+                {
+                    throw new XmlException("Precipitation interception frac column not found in stand trajectory header.");
+                }
+                if (this.solar_rad < 0)
+                {
+                    throw new XmlException("Solar radiation column not found in stand trajectory header.");
+                }
+                if (this.tmp_ave < 0)
+                {
+                    throw new XmlException("Average temperature column not found in stand trajectory header.");
+                }
+                if (this.tmp_max < 0)
+                {
+                    throw new XmlException("Maximum temperature column not found in stand trajectory header.");
+                }
+                if (this.tmp_min < 0)
+                {
+                    throw new XmlException("Minimum temperature column not found in stand trajectory header.");
+                }
+                if (this.volume_change < 0)
+                {
+                    throw new XmlException("Volume change column not found in stand trajectory header.");
+                }
+                if (this.volume_extracted < 0)
+                {
+                    throw new XmlException("Extracted volume column not found in stand trajectory header.");
+                }
+                if (this.volume_mai < 0)
+                {
+                    throw new XmlException("MAI (mean annual increment) column not found in stand trajectory header.");
+                }
+                if (this.vpd_day < 0)
+                {
+                    throw new XmlException("Daily vapor pressure deficit column not found in stand trajectory header.");
+                }
+                if (this.water_runoff_pooled < 0)
+                {
+                    throw new XmlException("Pooled runoff column not found in stand trajectory header.");
+                }
+            }
         }
 
-        // parse Visual Basic reference output from https://github.com/trotsiuk/r3PG/tree/master/pkg/tests/r_vba_compare/r3PG_input.xls
+        // parse Visual Basic reference output in https://github.com/trotsiuk/r3PG/tree/master/pkg/tests/r_vba_compare/r3PG_input.xls
         //private void Parse(string[] header)
         //{
         //    // get column indices

@@ -208,7 +208,7 @@ namespace BayesianPG.Xlsx
                                 if (rowReader.ReadToDescendant(valueElement, Constant.OpenXml.Namespace))
                                 {
                                     string value = rowReader.ReadElementContentAsString();
-
+                                    
                                     if (String.Equals(cellType, Constant.OpenXml.CellType.SharedString, StringComparison.Ordinal))
                                     {
                                         int sharedStringIndex = 0;

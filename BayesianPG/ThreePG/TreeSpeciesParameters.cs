@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BayesianPG.Extensions;
+using System;
 
 namespace BayesianPG.ThreePG
 {
@@ -10,343 +11,343 @@ namespace BayesianPG.ThreePG
     {
         // biomass partitioning and turnover
         /// <summary>
-        /// Foliage:stem partitioning ratio at D=2 cm (pars_i[0])
+        /// Foliage:stem partitioning ratio at D=2 cm (Fortran pars_i[0])
         /// </summary>
         public float[] pFS2 { get; private set; }
         /// <summary>
-        /// Foliage:stem partitioning ratio at D=20 cm (pars_i[1])
+        /// Foliage:stem partitioning ratio at D=20 cm (Fortran pars_i[1])
         /// </summary>
         public float[] pFS20 { get; private set; } // pars_i[1]
         /// <summary>
-        /// Constant in the stem mass v.diam.relationship (pars_i[2])
+        /// Constant in the stem mass v.diam.relationship (Fortran pars_i[2])
         /// </summary>
         public float[] aWS { get; private set; }
         /// <summary>
-        /// Power in the stem mass v.diam.relationship (pars_i[3])
+        /// Power in the stem mass v.diam.relationship (Fortran pars_i[3])
         /// </summary>
         public float[] nWS { get; private set; }
         /// <summary>
-        /// Maximum fraction of NPP to roots (pars_i[4])
+        /// Maximum fraction of NPP to roots (Fortran pars_i[4])
         /// </summary>
         public float[] pRx { get; private set; }
         /// <summary>
-        /// Minimum fraction of NPP to roots (pars_i[5])
+        /// Minimum fraction of NPP to roots (Fortran pars_i[5])
         /// </summary>
         public float[] pRn { get; private set; }
         /// <summary>
-        /// Coefficients in monthly litterfall rate (pars_i[6])
+        /// Coefficients in monthly litterfall rate (Fortran pars_i[6])
         /// </summary>
         public float[] gammaF1 { get; private set; }
         /// <summary>
-        /// Coefficients in monthly litterfall rate (pars_i[7])
+        /// Coefficients in monthly litterfall rate (Fortran pars_i[7])
         /// </summary>
         public float[] gammaF0 { get; private set; }
         /// <summary>
-        /// Coefficients in monthly litterfall rate (pars_i[8])
+        /// Coefficients in monthly litterfall rate (Fortran pars_i[8])
         /// </summary>
         public float[] tgammaF { get; private set; }
         /// <summary>
-        /// Average monthly root turnover rate (pars_i[9])
+        /// Average monthly root turnover rate (Fortran pars_i[9])
         /// </summary>
         public float[] gammaR { get; private set; }
         /// <summary>
-        /// If deciduous, leaves are produced at end of this month (pars_i[10])
+        /// If deciduous, leaves are produced at end of this month (Fortran pars_i[10])
         /// </summary>
         public int[] leafgrow { get; private set; }
         /// <summary>
-        /// If deciduous, leaves all fall at start of this month (pars_i[11])
+        /// If deciduous, leaves all fall at start of this month (Fortran pars_i[11])
         /// </summary>
         public int[] leaffall { get; private set; }
 
         // NPP & conductance modifiers
         /// <summary>
-        /// Minimum temperature for growth (pars_i[12])
+        /// Minimum temperature for growth (Fortran pars_i[12])
         /// </summary>
         public float[] Tmin { get; private set; }
         /// <summary>
-        /// Optimum temperature for growth (pars_i[13])
+        /// Optimum temperature for growth (Fortran pars_i[13])
         /// </summary>
         public float[] Topt { get; private set; }
         /// <summary>
-        /// Maximum temperature for growth (pars_i[14])
+        /// Maximum temperature for growth (Fortran pars_i[14])
         /// </summary>
         public float[] Tmax { get; private set; }
         /// <summary>
-        /// Days production lost per frost day (pars_i[15])
+        /// Days production lost per frost day (Fortran pars_i[15])
         /// </summary>
         public float[] kF { get; private set; }
         /// <summary>
-        /// Moisture ratio deficit for fq = 0.5 (pars_i[16])
+        /// Moisture ratio deficit for fq = 0.5 (Fortran pars_i[16])
         /// </summary>
         public float[] SWconst0 { get; private set; }
         /// <summary>
-        /// Power of moisture ratio deficit (pars_i[17])
+        /// Power of moisture ratio deficit (Fortran pars_i[17])
         /// </summary>
         public float[] SWpower0 { get; private set; }
         /// <summary>
-        /// Assimilation enhancement factor at 700 ppm (pars_i[18])
+        /// Assimilation enhancement factor at 700 ppm (Fortran pars_i[18])
         /// </summary>
         public float[] fCalpha700 { get; private set; }
         /// <summary>
-        /// Canopy conductance enhancement factor at 700 ppm (pars_i[19])
+        /// Canopy conductance enhancement factor at 700 ppm (Fortran pars_i[19])
         /// </summary>
         public float[] fCg700 { get; private set; }
         /// <summary>
-        /// Value of 'm' when FR = 0 (pars_i[20])
+        /// Value of 'm' when FR = 0 (Fortran pars_i[20])
         /// </summary>
         public float[] m0 { get; private set; }
         /// <summary>
-        /// Value of 'fNutr' when FR = 0 (pars_i[21])
+        /// Value of 'fNutr' when FR = 0 (Fortran pars_i[21])
         /// </summary>
         public float[] fN0 { get; private set; }
         /// <summary>
-        /// Power of(1-FR) in 'fNutr' (pars_i[22])
+        /// Power of(1-FR) in 'fNutr' (Fortran pars_i[22])
         /// </summary>
         public float[] fNn { get; private set; }
         /// <summary>
-        /// Maximum stand age used in age modifier (pars_i[23])
+        /// Maximum stand age used in age modifier (Fortran pars_i[23])
         /// </summary>
         public float[] MaxAge { get; private set; }
         /// <summary>
-        /// Power of relative age in function for f_age (pars_i[24])
+        /// Power of relative age in function for f_age (Fortran pars_i[24])
         /// </summary>
         public float[] nAge { get; private set; }
         /// <summary>
-        /// Relative age to give f_age = 0.5 (pars_i[25])
+        /// Relative age to give f_age = 0.5 (Fortran pars_i[25])
         /// </summary>
         public float[] rAge { get; private set; }
 
         // Stem mortality & self-thinning
         /// <summary>
-        /// Mortality rate for large t (pars_i[26])
+        /// Mortality rate for large t (Fortran pars_i[26])
         /// </summary>
         public float[] gammaN1 { get; private set; }
         /// <summary>
-        /// Seedling mortality rate(t = 0) (pars_i[27])
+        /// Seedling mortality rate(t = 0) (Fortran pars_i[27])
         /// </summary>
         public float[] gammaN0 { get; private set; }
         /// <summary>
-        /// Age at which mortality rate has median value (pars_i[28])
+        /// Age at which mortality rate has median value (Fortran pars_i[28])
         /// </summary>
         public float[] tgammaN { get; private set; }
         /// <summary>
-        /// Shape of mortality response (pars_i[29])
+        /// Shape of mortality response (Fortran pars_i[29])
         /// </summary>
         public float[] ngammaN { get; private set; }
         /// <summary>
-        /// Max.stem mass per tree @ 1000 trees/hectare (pars_i[30])
+        /// Max.stem mass per tree @ 1000 trees/hectare (Fortran pars_i[30])
         /// </summary>
         public float[] wSx1000 { get; private set; }
         /// <summary>
-        /// Power in self-thinning rule (pars_i[31])
+        /// Power in self-thinning rule (Fortran pars_i[31])
         /// </summary>
         public float[] thinPower { get; private set; }
         /// <summary>
-        /// Fraction mean single-tree foliage biomass lost per dead tree (pars_i[32])
+        /// Fraction mean single-tree foliage biomass lost per dead tree (Fortran pars_i[32])
         /// </summary>
         public float[] mF { get; private set; }
         /// <summary>
-        /// Fraction mean single-tree root biomass lost per dead tree (pars_i[33])
+        /// Fraction mean single-tree root biomass lost per dead tree (Fortran pars_i[33])
         /// </summary>
         public float[] mR { get; private set; }
         /// <summary>
-        /// Fraction mean single-tree stem biomass lost per dead tree (pars_i[34])
+        /// Fraction mean single-tree stem biomass lost per dead tree (Fortran pars_i[34])
         /// </summary>
         public float[] mS { get; private set; }
 
         // canopy structure and processes
         /// <summary>
-        /// Specific leaf area at age 0 (pars_i[35])
+        /// Specific leaf area at age 0 (Fortran pars_i[35])
         /// </summary>
         public float[] SLA0 { get; private set; }
         /// <summary>
-        /// Specific leaf area for mature leaves (pars_i[36])
+        /// Specific leaf area for mature leaves (Fortran pars_i[36])
         /// </summary>
         public float[] SLA1 { get; private set; }
         /// <summary>
-        /// Age at which specific leaf area = (SLA0 + SLA1) / 2 (pars_i[37])
+        /// Age at which specific leaf area = (SLA0 + SLA1) / 2 (Fortran pars_i[37])
         /// </summary>
         public float[] tSLA { get; private set; }
         /// <summary>
-        /// Extinction coefficient for absorption of PAR by canopy (pars_i[38])
+        /// Extinction coefficient for absorption of PAR by canopy (Fortran pars_i[38])
         /// </summary>
         public float[] k { get; private set; }
         /// <summary>
-        /// Age at canopy closure (pars_i[39])
+        /// Age at canopy closure (Fortran pars_i[39])
         /// </summary>
         public float[] fullCanAge { get; private set; }
         /// <summary>
-        /// Maximum proportion of rainfall evaporated from canopy (pars_i[40])
+        /// Maximum proportion of rainfall evaporated from canopy (Fortran pars_i[40])
         /// </summary>
         public float[] MaxIntcptn { get; private set; }
         /// <summary>
-        /// LAI for maximum rainfall interception (pars_i[41])
+        /// LAI for maximum rainfall interception (Fortran pars_i[41])
         /// </summary>
         public float[] LAImaxIntcptn { get; private set; }
         /// <summary>
-        /// 'DF LAI for 50% reduction of VPD in canopy (pars_i[42])
+        /// 'DF LAI for 50% reduction of VPD in canopy (Fortran pars_i[42])
         /// </summary>
         public float[] cVPD { get; private set; }
         /// <summary>
-        /// Canopy quantum efficiency (pars_i[43])
+        /// Canopy quantum efficiency (Fortran pars_i[43])
         /// </summary>
         public float[] alphaCx { get; private set; }
         /// <summary>
-        /// Ratio NPP/GPP (pars_i[44])
+        /// Ratio NPP/GPP (Fortran pars_i[44])
         /// </summary>
         public float[] Y { get; private set; }
         /// <summary>
-        /// Minimum canopy conductance (pars_i[45])
+        /// Minimum canopy conductance (Fortran pars_i[45])
         /// </summary>
         public float[] MinCond { get; private set; }
         /// <summary>
-        /// Maximum canopy conductance (pars_i[46])
+        /// Maximum canopy conductance (Fortran pars_i[46])
         /// </summary>
         public float[] MaxCond { get; private set; }
         /// <summary>
-        /// LAI for maximum canopy conductance (pars_i[47])
+        /// LAI for maximum canopy conductance (Fortran pars_i[47])
         /// </summary>
         public float[] LAIgcx { get; private set; }
         /// <summary>
-        /// Defines stomatal response to VPD (pars_i[48])
+        /// Defines stomatal response to VPD (Fortran pars_i[48])
         /// </summary>
         public float[] CoeffCond { get; private set; }
         /// <summary>
-        /// Canopy boundary layer conductance (pars_i[49])
+        /// Canopy boundary layer conductance (Fortran pars_i[49])
         /// </summary>
         public float[] BLcond { get; private set; }
         /// <summary>
-        /// The ratio of diffusivities of CO2 and water vapour in air (pars_i[50])
+        /// The ratio of diffusivities of CO2 and water vapour in air (Fortran pars_i[50])
         /// </summary>
         public float[] RGcGw { get; private set; }
         /// <summary>
-        /// δ¹³C difference of modelled tissue and new photosynthate (pars_i[51])
+        /// δ¹³C difference of modelled tissue and new photosynthate (Fortran pars_i[51])
         /// </summary>
         public float[] D13CTissueDif { get; private set; }
         /// <summary>
-        /// Fractionation against ¹³C in diffusion (pars_i[52])
+        /// Fractionation against ¹³C in diffusion (Fortran pars_i[52])
         /// </summary>
         public float[] aFracDiffu { get; private set; }
         /// <summary>
-        /// Enzymatic fractionation by Rubisco (pars_i[53])
+        /// Enzymatic fractionation by Rubisco (Fortran pars_i[53])
         /// </summary>
         public float[] bFracRubi { get; private set; }
 
         // wood and stand properties
         /// <summary>
-        /// Branch and bark fraction at age 0 (pars_i[54])
+        /// Branch and bark fraction at age 0 (Fortran pars_i[54])
         /// </summary>
         public float[] fracBB0 { get; private set; }
         /// <summary>
-        /// Branch and bark fraction for mature stands (pars_i[55])
+        /// Branch and bark fraction for mature stands (Fortran pars_i[55])
         /// </summary>
         public float[] fracBB1 { get; private set; }
         /// <summary>
-        /// Age at which fracBB = (fracBB0 + fracBB1) / 2 (pars_i[56])
+        /// Age at which fracBB = (fracBB0 + fracBB1) / 2 (Fortran pars_i[56])
         /// </summary>
         public float[] tBB { get; private set; }
         /// <summary>
-        /// Minimum basic density - for young trees (pars_i[57])
+        /// Minimum basic density - for young trees (Fortran pars_i[57])
         /// </summary>
         public float[] rhoMin { get; private set; }
         /// <summary>
-        /// Maximum basic density - for older trees (pars_i[58])
+        /// Maximum basic density - for older trees (Fortran pars_i[58])
         /// </summary>
         public float[] rhoMax { get; private set; }
         /// <summary>
-        /// Age at which rho = (rhoMin + rhoMax) / 2 (pars_i[59])
+        /// Age at which rho = (rhoMin + rhoMax) / 2 (Fortran pars_i[59])
         /// </summary>
         public float[] tRho { get; private set; }
         /// <summary>
-        /// 3-PGmix: crown shape of species (pars_i[60])
+        /// 3-PGmix: crown shape of species (Fortran pars_i[60])
         /// </summary>
         public TreeCrownShape[] CrownShape { get; private set; }
 
         // height and volume
         /// <summary>
-        ///  (pars_i[61])
+        ///  (Fortran pars_i[61])
         /// </summary>
         public float[] aH { get; private set; }
         /// <summary>
-        ///  (pars_i[62])
+        ///  (Fortran pars_i[62])
         /// </summary>
         public float[] nHB { get; private set; }
         /// <summary>
-        ///  (pars_i[63])
+        ///  (Fortran pars_i[63])
         /// </summary>
         public float[] nHC { get; private set; }
         /// <summary>
-        ///  (pars_i[64])
+        ///  (Fortran pars_i[64])
         /// </summary>
         public float[] aV { get; private set; }
         /// <summary>
-        ///  (pars_i[65])
+        ///  (Fortran pars_i[65])
         /// </summary>
         public float[] nVB { get; private set; }
         /// <summary>
-        ///  (pars_i[66])
+        ///  (Fortran pars_i[66])
         /// </summary>
         public float[] nVH { get; private set; }
         /// <summary>
-        ///  (pars_i[67])
+        ///  (Fortran pars_i[67])
         /// </summary>
         public float[] nVBH { get; private set; }
         /// <summary>
-        ///  (pars_i[68])
+        ///  (Fortran pars_i[68])
         /// </summary>
         public float[] aK { get; private set; }
         /// <summary>
-        ///  (pars_i[69])
+        ///  (Fortran pars_i[69])
         /// </summary>
         public float[] nKB { get; private set; }
         /// <summary>
-        ///  (pars_i[70])
+        ///  (Fortran pars_i[70])
         /// </summary>
         public float[] nKH { get; private set; }
         /// <summary>
-        ///  (pars_i[71])
+        ///  (Fortran pars_i[71])
         /// </summary>
         public float[] nKC { get; private set; }
         /// <summary>
-        ///  (pars_i[72])
+        ///  (Fortran pars_i[72])
         /// </summary>
         public float[] nKrh { get; private set; }
         /// <summary>
-        ///  (pars_i[73])
+        ///  (Fortran pars_i[73])
         /// </summary>
         public float[] aHL { get; private set; }
         /// <summary>
-        ///  (pars_i[74])
+        ///  (Fortran pars_i[74])
         /// </summary>
         public float[] nHLB { get; private set; }
         /// <summary>
-        ///  (pars_i[75])
+        ///  (Fortran pars_i[75])
         /// </summary>
         public float[] nHLL { get; private set; }
         /// <summary>
-        ///  (pars_i[76])
+        ///  (Fortran pars_i[76])
         /// </summary>
         public float[] nHLC { get; private set; }
         /// <summary>
-        ///  (pars_i[77])
+        ///  (Fortran pars_i[77])
         /// </summary>
         public float[] nHLrh { get; private set; }
 
         // δ¹³C
         /// <summary>
-        ///  (pars_i[78])
+        ///  (Fortran pars_i[78])
         /// </summary>
         public float[] Qa { get; private set; }
         /// <summary>
-        ///  (pars_i[79])
+        ///  (Fortran pars_i[79])
         /// </summary>
         public float[] Qb { get; private set; }
         /// <summary>
-        ///  (pars_i[80])
+        ///  (Fortran pars_i[80])
         /// </summary>
         public float[] gDM_mol { get; private set; }
         /// <summary>
-        ///  (pars_i[81])
+        ///  (Fortran pars_i[81])
         /// </summary>
         public float[] molPAR_MJ { get; private set; }
 
@@ -449,9 +450,9 @@ namespace BayesianPG.ThreePG
             this.molPAR_MJ = Array.Empty<float>();
         }
 
-        public override void AllocateSpecies(string[] names)
+        public override void AllocateSpecies(int additionalSpecies)
         {
-            base.AllocateSpecies(names);
+            base.AllocateSpecies(additionalSpecies);
 
             // biomass partitioning and turnover
             this.pFS2 = this.pFS2.Resize(this.n_sp);
@@ -548,17 +549,23 @@ namespace BayesianPG.ThreePG
             this.Qb = this.Qb.Resize(this.n_sp);
             this.gDM_mol = this.gDM_mol.Resize(this.n_sp);
             this.molPAR_MJ = this.molPAR_MJ.Resize(this.n_sp);
+        }
 
+        public override void AllocateSpecies(string[] names)
+        {
+            int existingSpecies = this.n_sp;
+            this.AllocateSpecies(names.Length);
+            Array.Copy(names, 0, this.Species, existingSpecies, names.Length);
         }
 
         public TreeSpeciesParameters Filter(SiteTreeSpecies treeSpecies)
         {
             TreeSpeciesParameters filteredParameters = new();
-            filteredParameters.AllocateSpecies(treeSpecies.Name);
+            filteredParameters.AllocateSpecies(treeSpecies.Species);
 
             for (int destinationIndex = 0; destinationIndex < treeSpecies.n_sp; ++destinationIndex)
             {
-                int sourceIndex = this.Name.FindIndex(treeSpecies.Name[destinationIndex]);
+                int sourceIndex = this.Species.FindIndex(treeSpecies.Species[destinationIndex]);
                 if (sourceIndex == -1)
                 {
                     throw new ArgumentOutOfRangeException(nameof(treeSpecies));

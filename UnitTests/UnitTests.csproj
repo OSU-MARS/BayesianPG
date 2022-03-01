@@ -40,7 +40,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="r3PG.xlsx">
+    <None Update="r3PG validation stands.xlsx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

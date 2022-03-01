@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BayesianPG.Extensions;
+using System;
 using System.Collections.Generic;
 
 namespace BayesianPG.ThreePG
@@ -6,12 +7,23 @@ namespace BayesianPG.ThreePG
     public class TreeSpeciesArray
     {
         public int n_sp { get; private set; }
-        public string[] Name { get; private set; }
+        public string[] Species { get; private set; }
 
         public TreeSpeciesArray()
         {
             this.n_sp = 0;
-            this.Name = Array.Empty<string>();
+            this.Species = Array.Empty<string>();
+        }
+
+        public virtual void AllocateSpecies(int additionalSpecies)
+        {
+            if (additionalSpecies < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(additionalSpecies));
+            }
+
+            this.Species = this.Species.Resize(this.n_sp + additionalSpecies);
+            this.n_sp += additionalSpecies;
         }
 
         public virtual void AllocateSpecies(string[] names)
@@ -24,18 +36,18 @@ namespace BayesianPG.ThreePG
 
             // verify species names are unique
             HashSet<string> uniqueNames = new(names);
-            for (int index = 0; index < this.Name.Length; ++index)
+            for (int index = 0; index < this.Species.Length; ++index)
             {
-                if (uniqueNames.Add(this.Name[index]) == false)
+                if (uniqueNames.Add(this.Species[index]) == false)
                 {
-                    throw new ArgumentException("Species " + this.Name[index] + " is already present.", nameof(names));
+                    throw new ArgumentException("Species " + this.Species[index] + " is already present.", nameof(names));
                 }
             }
 
             // append names
-            this.Name = this.Name.Resize(this.n_sp + names.Length);
-            Array.Copy(names, 0, this.Name, this.n_sp, names.Length);
-            this.n_sp += names.Length;
+            int existingSpecies = this.n_sp;
+            this.AllocateSpecies(names.Length);
+            Array.Copy(names, 0, this.Species, existingSpecies, names.Length);
         }
 
         public bool SpeciesMatch(TreeSpeciesArray other)
@@ -47,7 +59,7 @@ namespace BayesianPG.ThreePG
 
             for (int index = 0; index < this.n_sp; ++index)
             {
-                if (String.Equals(this.Name[index], other.Name[index], StringComparison.Ordinal) == false)
+                if (String.Equals(this.Species[index], other.Species[index], StringComparison.Ordinal) == false)
                 {
                     return false;
                 }

@@ -3,18 +3,19 @@ using System.Xml;
 
 namespace BayesianPG.Xlsx
 {
-    internal class ThreePGSettingsWorksheetHeader : IXlsxWorksheetHeader
+    internal class ThreePGSettingsHeader : IXlsxWorksheetHeader
     {
-        public int TranspirationModel { get; set; }
-        public int CorrectSizeDistribution { get; set; }
-        public int HeightModel { get; set; }
-        public int CalculateD13C { get; set; }
-        public int LightModel { get; set; }
-        public int Site { get; set; }
-        public int PhysiologicalModel { get; set; }
-        public int Management { get; set; }
+        public int TranspirationModel { get; private set; }
+        public int CorrectSizeDistribution { get; private set; }
+        public int HeightModel { get; private set; }
+        public int CalculateD13C { get; private set; }
+        public int LightModel { get; private set; }
+        public int Site { get; private set; }
+        public int PhysiologicalModel { get; private set; }
+        public int Management { get; private set; }
+        public int TrajectoryColumns { get; private set; }
 
-        public ThreePGSettingsWorksheetHeader()
+        public ThreePGSettingsHeader()
         {
             this.TranspirationModel = -1;
             this.CorrectSizeDistribution = -1;
@@ -24,6 +25,7 @@ namespace BayesianPG.Xlsx
             this.Site = -1;
             this.PhysiologicalModel = -1;
             this.Management = -1;
+            this.TrajectoryColumns = -1;
         }
 
         public void Parse(XlsxRow header)
@@ -56,6 +58,9 @@ namespace BayesianPG.Xlsx
                         break;
                     case "management":
                         this.Management = index;
+                        break;
+                    case "trajectory_columns":
+                        this.TrajectoryColumns = index;
                         break;
                     default:
                         throw new NotSupportedException("Unhandled column name '" + column + "'.");
@@ -93,6 +98,10 @@ namespace BayesianPG.Xlsx
             if (this.Management < 0)
             {
                 throw new XmlException("Management column not found in settings header.");
+            }
+            if (this.TrajectoryColumns < 0)
+            {
+                throw new XmlException("Column indicating stand trajectory column groups not found in settings header.");
             }
         }
     }

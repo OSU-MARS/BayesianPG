@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BayesianPG.Extensions;
+using System;
 
 namespace BayesianPG.ThreePG
 {
@@ -9,62 +10,62 @@ namespace BayesianPG.ThreePG
     public class SiteTreeSpecies : TreeSpeciesArray
     {
         /// <summary>
-        /// year when species was planted (speciesInputs[0])
+        /// year when species was planted (Fortran speciesInputs[0])
         /// </summary>
-        public int[] year_p { get; private set; }
+        public int[] YearPlanted { get; private set; }
 
         /// <summary>
-        /// month when species was planted (speciesInputs[1])
+        /// month when species was planted (Fortran speciesInputs[1])
         /// </summary>
-        public int[] month_p { get; private set; }
+        public int[] MonthPlanted { get; private set; }
+
+        /// <summary>
+        /// initial foliage biomass for a species (Fortran speciesInputs[6])
+        /// </summary>
+        public float[] InitialFoliageBiomass { get; private set; }
+
+        /// <summary>
+        /// initial root biomass for a species (Fortran speciesInputs[5])
+        /// </summary>
+        public float[] InitialRootBiomass { get; private set; }
+
+        /// <summary>
+        /// initial stem biomass for a species (Fortran speciesInputs[4])
+        /// </summary>
+        public float[] InitialStemBiomass { get; private set; }
+
+        /// <summary>
+        /// initial stand stocking for a species (Fortran speciesInputs[3])
+        /// </summary>
+        public float[] InitialStemsPerHectare { get; private set; }
 
         /// <summary>
         /// initial soil fertility rating for species (from 0 to 1, speciesInputs[2])
         /// </summary>
-        public float[] fertility { get; private set; }
-
-        /// <summary>
-        /// initial stand stocking for a species (speciesInputs[3])
-        /// </summary>
-        public float[] stems_n_i { get; private set; }
-
-        /// <summary>
-        /// initial stem biomass for a species (speciesInputs[4])
-        /// </summary>
-        public float[] biom_stem_i { get; private set; }
-
-        /// <summary>
-        /// initial root biomass for a species (speciesInputs[5])
-        /// </summary>
-        public float[] biom_root_i { get; private set; }
-
-        /// <summary>
-        /// initial foliage biomass for a species (speciesInputs[6])
-        /// </summary>
-        public float[] biom_foliage_i { get; private set; }
+        public float[] SoilFertility { get; private set; }
 
         public SiteTreeSpecies()
         {
-            this.biom_foliage_i = Array.Empty<float>();
-            this.biom_root_i = Array.Empty<float>();
-            this.biom_stem_i = Array.Empty<float>();
-            this.fertility = Array.Empty<float>();
-            this.month_p = Array.Empty<int>();
-            this.stems_n_i = Array.Empty<float>();
-            this.year_p = Array.Empty<int>();
+            this.InitialFoliageBiomass = Array.Empty<float>();
+            this.InitialRootBiomass = Array.Empty<float>();
+            this.InitialStemBiomass = Array.Empty<float>();
+            this.InitialStemsPerHectare = Array.Empty<float>();
+            this.MonthPlanted = Array.Empty<int>();
+            this.SoilFertility = Array.Empty<float>();
+            this.YearPlanted = Array.Empty<int>();
         }
 
         public override void AllocateSpecies(string[] names)
         {
             base.AllocateSpecies(names);
 
-            this.biom_foliage_i = this.biom_foliage_i.Resize(this.n_sp);
-            this.biom_root_i = this.biom_root_i.Resize(this.n_sp);
-            this.biom_stem_i = this.biom_stem_i.Resize(this.n_sp);
-            this.fertility = this.fertility.Resize(this.n_sp);
-            this.month_p = this.month_p.Resize(this.n_sp);
-            this.stems_n_i = this.stems_n_i.Resize(this.n_sp);
-            this.year_p = this.year_p.Resize(this.n_sp);
+            this.InitialFoliageBiomass = this.InitialFoliageBiomass.Resize(this.n_sp);
+            this.InitialRootBiomass = this.InitialRootBiomass.Resize(this.n_sp);
+            this.InitialStemBiomass = this.InitialStemBiomass.Resize(this.n_sp);
+            this.InitialStemsPerHectare = this.InitialStemsPerHectare.Resize(this.n_sp);
+            this.MonthPlanted = this.MonthPlanted.Resize(this.n_sp);
+            this.SoilFertility = this.SoilFertility.Resize(this.n_sp);
+            this.YearPlanted = this.YearPlanted.Resize(this.n_sp);
         }
     }
 }

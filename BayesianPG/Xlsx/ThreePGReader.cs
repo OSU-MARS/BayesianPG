@@ -10,7 +10,7 @@ namespace BayesianPG.Xlsx
         {
         }
 
-        public SortedList<string, ThreePGpjsMix> ReadSites()
+        public SortedList<string, ThreePGScalar> ReadSites()
         {
             SiteWorksheet sites = this.ReadWorksheet<SiteWorksheet>("site");
             SiteClimateWorksheet climates = this.ReadWorksheet<SiteClimateWorksheet>("climate");
@@ -20,7 +20,7 @@ namespace BayesianPG.Xlsx
             SiteManagementWorksheet siteManagement = this.ReadWorksheet<SiteManagementWorksheet>("thinning");
             ThreePGSettingsWorksheet threePGsettings = this.ReadWorksheet<ThreePGSettingsWorksheet>("settings");
 
-            SortedList<string, ThreePGpjsMix> threePGbySiteName = new(sites.Sites.Count);
+            SortedList<string, ThreePGScalar> threePGbySiteName = new(sites.Sites.Count);
             for (int index = 0; index < sites.Sites.Count; ++index)
             {
                 string siteName = sites.Sites.Keys[index];
@@ -36,7 +36,7 @@ namespace BayesianPG.Xlsx
                     management = siteManagement.Management[siteName];
                 }
 
-                ThreePGpjsMix threePG = new(site, climate, trees, treeParametersForSite, management, settings)
+                ThreePGScalar threePG = new(site, climate, trees, treeParametersForSite, management, settings)
                 {
                     Bias = treeSizesOnSite
                 };

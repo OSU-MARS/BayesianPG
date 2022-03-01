@@ -1,4 +1,5 @@
-﻿using BayesianPG.ThreePG;
+﻿using BayesianPG.Extensions;
+using BayesianPG.ThreePG;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -25,43 +26,42 @@ namespace BayesianPG.Xlsx
 
             Site site = new()
             {
-                altitude = Single.Parse(row.Row[this.Header.Altitude]),
-                aSW = Single.Parse(row.Row[this.Header.AvailableSoilWaterInitial]),
-                asw_max = Single.Parse(row.Row[this.Header.AvailableSoilWaterMaximum]),
-                asw_min = Single.Parse(row.Row[this.Header.AvailableSoilWaterMinimum]),
+                Altitude = Single.Parse(row.Row[this.Header.Altitude], CultureInfo.InvariantCulture),
+                AvailableSoilWaterInitial = Single.Parse(row.Row[this.Header.AvailableSoilWaterInitial], CultureInfo.InvariantCulture),
+                AvailableSoilWaterMax = Single.Parse(row.Row[this.Header.AvailableSoilWaterMaximum], CultureInfo.InvariantCulture),
+                AvailableSoilWaterMin = Single.Parse(row.Row[this.Header.AvailableSoilWaterMinimum], CultureInfo.InvariantCulture),
                 Climate = row.Row[this.Header.Climate],
-                Lat = Single.Parse(row.Row[this.Header.Latitude]),
-                From = DateTime.ParseExact(row.Row[this.Header.From], "yyyy-MM", CultureInfo.InvariantCulture),
-                soil_class = Int32.Parse(row.Row[this.Header.SoilClass]),
-                To = DateTime.ParseExact(row.Row[this.Header.To], "yyyy-MM", CultureInfo.InvariantCulture)
+                Latitude = Single.Parse(row.Row[this.Header.Latitude], CultureInfo.InvariantCulture),
+                From = DateTimeExtensions.FromExcel(Int32.Parse(row.Row[this.Header.From], CultureInfo.InvariantCulture)),
+                SoilClass = Single.Parse(row.Row[this.Header.SoilClass], CultureInfo.InvariantCulture),
+                To = DateTimeExtensions.FromExcel(Int32.Parse(row.Row[this.Header.To], CultureInfo.InvariantCulture))
             };
-            // TODO: DateTime to = DateTime.ParseExact(row.Row[this.Header.Latitude], "yyyy-MM", CultureInfo.InvariantCulture);
 
-            if ((site.Lat < -90.0F) || (site.Lat > 90.0F))
+            if ((site.Altitude < -431.0F) || (site.Altitude > 8848.0F))
             {
-                throw new XmlException(nameof(site.Lat), null, row.Number, this.Header.Latitude);
+                throw new XmlException(nameof(site.Altitude), null, row.Number, this.Header.Altitude);
             }
-            if ((site.altitude < -431.0F) || (site.altitude > 8848.0F))
+            if ((site.AvailableSoilWaterInitial < site.AvailableSoilWaterMin) || (site.AvailableSoilWaterInitial > site.AvailableSoilWaterMax))
             {
-                throw new XmlException(nameof(site.altitude), null, row.Number, this.Header.Altitude);
+                throw new XmlException(nameof(site.AvailableSoilWaterInitial), null, row.Number, this.Header.AvailableSoilWaterInitial);
             }
-            if ((site.soil_class < -1) || (site.soil_class > 4))
+            if ((site.AvailableSoilWaterMin < 0.0F) || (site.AvailableSoilWaterMin > site.AvailableSoilWaterMax))
             {
-                throw new XmlException(nameof(site.soil_class), null, row.Number, this.Header.SoilClass);
+                throw new XmlException(nameof(site.AvailableSoilWaterMin), null, row.Number, this.Header.AvailableSoilWaterMinimum);
             }
-            if ((site.aSW < site.asw_min) || (site.aSW > site.asw_max))
+            if ((site.AvailableSoilWaterMax < site.AvailableSoilWaterMin) || (site.AvailableSoilWaterMax > 5000.0F))
             {
-                throw new XmlException(nameof(site.aSW), null, row.Number, this.Header.AvailableSoilWaterInitial);
+                throw new XmlException(nameof(site.AvailableSoilWaterMax), null, row.Number, this.Header.AvailableSoilWaterMaximum);
             }
-            if ((site.asw_min < 0.0F) || (site.asw_min > site.asw_max))
+            // site.From is checked by DateTime
+            if ((site.Latitude < -90.0F) || (site.Latitude > 90.0F))
             {
-                throw new XmlException(nameof(site.asw_min), null, row.Number, this.Header.AvailableSoilWaterMinimum);
+                throw new XmlException(nameof(site.Latitude), null, row.Number, this.Header.Latitude);
             }
-            if ((site.asw_max < site.asw_min) || (site.asw_max > 5000.0F))
+            if ((site.SoilClass < -1.0F) || (site.SoilClass > 5.0F))
             {
-                throw new XmlException(nameof(site.asw_max), null, row.Number, this.Header.AvailableSoilWaterMaximum);
+                throw new XmlException(nameof(site.SoilClass), null, row.Number, this.Header.SoilClass);
             }
-            // year_i and month_i are checked by DateTime.ParseExact()
 
             this.Sites.Add(siteName, site);
         }
