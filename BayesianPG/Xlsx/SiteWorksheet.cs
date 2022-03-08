@@ -33,6 +33,7 @@ namespace BayesianPG.Xlsx
                 Climate = row.Row[this.Header.Climate],
                 Latitude = Single.Parse(row.Row[this.Header.Latitude], CultureInfo.InvariantCulture),
                 From = DateTimeExtensions.FromExcel(Int32.Parse(row.Row[this.Header.From], CultureInfo.InvariantCulture)),
+                Name = siteName,
                 SoilClass = Single.Parse(row.Row[this.Header.SoilClass], CultureInfo.InvariantCulture),
                 To = DateTimeExtensions.FromExcel(Int32.Parse(row.Row[this.Header.To], CultureInfo.InvariantCulture))
             };

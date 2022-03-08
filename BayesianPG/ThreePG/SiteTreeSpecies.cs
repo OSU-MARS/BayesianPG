@@ -10,37 +10,37 @@ namespace BayesianPG.ThreePG
     public class SiteTreeSpecies : TreeSpeciesArray
     {
         /// <summary>
-        /// year when species was planted (Fortran speciesInputs[0])
+        /// Year when a tree species was planted (year, Fortran speciesInputs[0])
         /// </summary>
         public int[] YearPlanted { get; private set; }
 
         /// <summary>
-        /// month when species was planted (Fortran speciesInputs[1])
+        /// Month when a tree species was planted (month 1..12, Fortran speciesInputs[1])
         /// </summary>
         public int[] MonthPlanted { get; private set; }
 
         /// <summary>
-        /// initial foliage biomass for a species (Fortran speciesInputs[6])
+        /// Initial foliage biomass for a tree species (dry Mg/ha, Fortran speciesInputs[6])
         /// </summary>
         public float[] InitialFoliageBiomass { get; private set; }
 
         /// <summary>
-        /// initial root biomass for a species (Fortran speciesInputs[5])
+        /// Initial total root biomass (structural-coarse and fine) for a tree species (dry Mg/ha, Fortran speciesInputs[5])
         /// </summary>
         public float[] InitialRootBiomass { get; private set; }
 
         /// <summary>
-        /// initial stem biomass for a species (Fortran speciesInputs[4])
+        /// Initial stem biomass for a tree species (dry Mg/ha, Fortran speciesInputs[4])
         /// </summary>
         public float[] InitialStemBiomass { get; private set; }
 
         /// <summary>
-        /// initial stand stocking for a species (Fortran speciesInputs[3])
+        /// Initial stand stocking for a tree species (trees per hectare, Fortran speciesInputs[3])
         /// </summary>
         public float[] InitialStemsPerHectare { get; private set; }
 
         /// <summary>
-        /// initial soil fertility rating for species (from 0 to 1, speciesInputs[2])
+        /// Initial soil fertility rating for a tree species (0..1, 0 assigns all fertility control to the species' m0, speciesInputs[2])
         /// </summary>
         public float[] SoilFertility { get; private set; }
 

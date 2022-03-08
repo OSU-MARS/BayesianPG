@@ -4,7 +4,7 @@ namespace BayesianPG.Test
 {
     internal static class TestConstant
     {
-        public static TreeSpeciesParameters TreeParameters { get; private set; }
+        public static TreeSpeciesParameters<float> TreeParameters { get; private set; }
         public static TreeSpeciesSizeDistribution TreeSizeDistributions { get; private set; }
 
         static TestConstant()
@@ -69,8 +69,8 @@ namespace BayesianPG.Test
             TestConstant.TreeParameters.fracBB0[0] = 0.75F;
             TestConstant.TreeParameters.fracBB1[0] = 0.15F;
             TestConstant.TreeParameters.tBB[0] = 2.0F;
-            TestConstant.TreeParameters.rhoMin[0] = 0.567F;
-            TestConstant.TreeParameters.rhoMax[0] = 0.567F;
+            TestConstant.TreeParameters.rho0[0] = 0.567F;
+            TestConstant.TreeParameters.rho1[0] = 0.567F;
             TestConstant.TreeParameters.tRho[0] = 1.0F;
             TestConstant.TreeParameters.CrownShape[0] = TreeCrownShape.HalfEllipsoid;
             TestConstant.TreeParameters.aH[0] = 1.007926944F;

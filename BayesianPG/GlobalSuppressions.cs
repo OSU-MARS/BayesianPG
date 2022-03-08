@@ -11,7 +11,7 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "readability of 3-PG nomenclature", Scope = "type", Target = "~T:BayesianPG.ThreePG.ThreePGStandTrajectory`2")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "readability of 3-PG nomenclature", Scope = "type", Target = "~T:BayesianPG.ThreePG.TreeSpeciesArray")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "readability of 3-PG nomenclature", Scope = "type", Target = "~T:BayesianPG.ThreePG.TreeSpeciesManagement")]
-[assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "readability of 3-PG nomenclature", Scope = "type", Target = "~T:BayesianPG.ThreePG.TreeSpeciesParameters")]
+[assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "readability of 3-PG nomenclature", Scope = "type", Target = "~T:BayesianPG.ThreePG.TreeSpeciesParameters`1")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "readability of 3-PG nomenclature", Scope = "type", Target = "~T:BayesianPG.ThreePG.TreeSpeciesSizeDistribution")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "readability of 3-PG nomenclature", Scope = "type", Target = "~T:BayesianPG.ThreePG.TreeSpeciesTrajectory`2")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "readability of 3-PG nomenclature", Scope = "type", Target = "~T:BayesianPG.Xlsx.TreeSpeciesParameteHeader")]

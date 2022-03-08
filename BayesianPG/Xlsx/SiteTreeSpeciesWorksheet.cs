@@ -41,15 +41,15 @@ namespace BayesianPG.Xlsx
             DateTime planted = DateTime.ParseExact(row.Row[this.Header.Planted], "yyyy-MM", CultureInfo.InvariantCulture);
             float stems_n = Single.Parse(row.Row[this.Header.Stems_n], CultureInfo.InvariantCulture);
 
-            if (initialFoliageBiomass < 0.0F)
+            if ((initialFoliageBiomass < 0.0F) || (initialFoliageBiomass > 100.0F)) // dry Mg/ha
             {
                 throw new XmlException("biom_foliage", null, row.Number, this.Header.Biom_foliage);
             }
-            if (initialRootBiomass < 0.0F)
+            if ((initialRootBiomass < 0.0F) || (initialRootBiomass > 500.0F)) // dry Mg/ha
             {
                 throw new XmlException("biom_root", null, row.Number, this.Header.Biom_foliage);
             }
-            if (initialStemBiomass < 0.0F)
+            if ((initialStemBiomass < 0.0F) || (initialStemBiomass > 2000.0F)) // dry Mg/ha
             {
                 throw new XmlException("biom_stem", null, row.Number, this.Header.Biom_foliage);
             }
@@ -58,7 +58,7 @@ namespace BayesianPG.Xlsx
                 throw new XmlException("fertility", null, row.Number, this.Header.Fertility);
             }
             // planted is checked by DateTime.ParseExact()
-            if (stems_n < 0.0F)
+            if ((stems_n < 0.0F) || (stems_n > 250000.0F))
             {
                 throw new XmlException("stems_n", null, row.Number, this.Header.Biom_foliage);
             }

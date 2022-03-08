@@ -27,7 +27,7 @@ namespace BayesianPG.Xlsx
                 Site site = sites.Sites.Values[index];
                 SiteClimate climate = climates.Sites[site.Climate];
                 SiteTreeSpecies trees = treeSpecies.SpeciesBySite[siteName];
-                TreeSpeciesParameters treeParametersForSite = treeSpeciesParameters.Parameters.Filter(trees);
+                TreeSpeciesParameters<float> treeParametersForSite = treeSpeciesParameters.Parameters.Filter(trees);
                 TreeSpeciesSizeDistribution treeSizesOnSite = treeSizes.Sizes.Filter(trees);
                 ThreePGSettings settings = threePGsettings.Settings[siteName];
                 TreeSpeciesManagement management = TreeSpeciesManagement.None;

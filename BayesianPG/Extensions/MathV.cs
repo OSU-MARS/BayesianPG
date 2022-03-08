@@ -59,6 +59,23 @@ namespace BayesianPG.Extensions
             return exponent;
         }
 
+        // reduced computation with fused multiply power
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector128<float> Fmpow(Vector128<float> x1, Vector128<float> y1, Vector128<float> x2, Vector128<float> y2)
+        {
+            // x1^y1 * x2^y2 = exp2(log2(x1) * y1) * exp2(log2(x2) * y2)
+            //               = exp2(log2(x1) * y1 + log2(x2) * y2)
+            // Saves one exponentiation. Additional savings for * x3^y3, * x4^y4, and so on
+            // This and other overloads can likely be tuned for order of operations.
+            return MathV.Exp2(Avx.Add(Avx.Multiply(MathV.Log2(x1), y1), Avx.Multiply(MathV.Log2(x2), y2)));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector128<float> Fmpow(Vector128<float> x1, Vector128<float> y1, Vector128<float> x2, Vector128<float> y2, Vector128<float> x3, Vector128<float> y3, Vector128<float> x4, Vector128<float> y4)
+        {
+            return MathV.Exp2(Avx.Add(Avx.Multiply(MathV.Log2(x1), y1), Avx.Add(Avx.Multiply(MathV.Log2(x2), y2), Avx.Add(Avx.Multiply(MathV.Log2(x3), y3), Avx.Multiply(MathV.Log2(x4), y4)))));
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe static Vector128<float> Ln(Vector128<float> value)
         {

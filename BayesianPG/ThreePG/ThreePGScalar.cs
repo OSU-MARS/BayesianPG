@@ -7,7 +7,7 @@ namespace BayesianPG.ThreePG
 {
     public class ThreePGScalar : ThreePGpjsMix<float, int>
     {
-        public ThreePGScalar(Site site, SiteClimate climate, SiteTreeSpecies species, TreeSpeciesParameters parameters, TreeSpeciesManagement management, ThreePGSettings settings)
+        public ThreePGScalar(Site site, SiteClimate climate, SiteTreeSpecies species, TreeSpeciesParameters<float> parameters, TreeSpeciesManagement management, ThreePGSettings settings)
             : base(site, climate, species, parameters, management, settings)
         {
         }
@@ -45,12 +45,14 @@ namespace BayesianPG.ThreePG
                     }
                     else
                     {
-                        f_tmp = (tmp_ave - Tmin) / (Topt - Tmin) * MathF.Pow((Tmax - tmp_ave) / (Tmax - Topt),
-                            (Tmax - Topt) / (Topt - Tmin));
+                        f_tmp = (tmp_ave - Tmin) / (Topt - Tmin) * MathF.Pow((Tmax - tmp_ave) / (Tmax - Topt), (Tmax - Topt) / (Topt - Tmin));
                     }
                     this.Trajectory.Species.f_tmp[timestepIndex, speciesIndex] = f_tmp;
 
-                    // calculate temperature response function to apply to gc (uses mean of Tx and Tav instead of Tav, Feikema et al 2010)
+                    // calculate temperature response function to apply to gc
+                    // Uses mean of Tx and Tav instead of Tav.
+                    //   Feikema PM, et al. 2010. Validation of plantation transpiration in south-eastern Australia estimated using
+                    //   the 3PG+ forest growth model. Forest Ecology And Management 260:663-678. https://doi.org/10.1016/j.foreco.2010.05.022
                     float tmp_max = this.Climate.MeanDailyTempMax[timestepIndex];
                     float f_tmp_gc;
                     if (((tmp_ave + tmp_max) / 2 <= Tmin) || ((tmp_ave + tmp_max) / 2 >= Tmax))
@@ -59,8 +61,7 @@ namespace BayesianPG.ThreePG
                     }
                     else
                     {
-                        f_tmp_gc = ((tmp_ave + tmp_max) / 2 - Tmin) / (Topt - Tmin) * MathF.Pow((Tmax - (tmp_ave + tmp_max) / 2) / (Tmax - Topt),
-                            (Tmax - Topt) / (Topt - Tmin));
+                        f_tmp_gc = ((tmp_ave + tmp_max) / 2 - Tmin) / (Topt - Tmin) * MathF.Pow((Tmax - (tmp_ave + tmp_max) / 2) / (Tmax - Topt), (Tmax - Topt) / (Topt - Tmin));
                     }
                     this.Trajectory.Species.f_tmp_gc[timestepIndex, speciesIndex] = f_tmp_gc;
 
@@ -69,13 +70,14 @@ namespace BayesianPG.ThreePG
                     float frost_days = this.Climate.FrostDays[timestepIndex];
                     float daysInMonth = timestepEndDate.DaysInMonth();
                     // float f_frost = 1.0F - kF * (frost_days / 30.0F); // https://github.com/trotsiuk/r3PG/issues/68
-                    float f_frost = 1.0F - kF * (frost_days / daysInMonth);
+                    float f_frost = MathF.Max(0.0F, MathF.Min(1.0F - kF * (frost_days / daysInMonth), 1.0F));
                     this.Trajectory.Species.f_frost[timestepIndex, speciesIndex] = f_frost;
 
                     // CO₂ modifiers
-                    float fCalpha = fCalphax[speciesIndex] * this.Climate.AtmosphericCO2[timestepIndex] / (350.0F * (fCalphax[speciesIndex] - 1.0F) + this.Climate.AtmosphericCO2[timestepIndex]);
+                    float atmosphericCO2 = this.Climate.AtmosphericCO2[timestepIndex];
+                    float fCalpha = fCalphax[speciesIndex] * atmosphericCO2 / (350.0F * (fCalphax[speciesIndex] - 1.0F) + atmosphericCO2);
                     this.Trajectory.Species.f_calpha[timestepIndex, speciesIndex] = fCalpha;
-                    float fCg = fCg0[speciesIndex] / (1.0F + (fCg0[speciesIndex] - 1.0F) * this.Climate.AtmosphericCO2[timestepIndex] / 350.0F);
+                    float fCg = fCg0[speciesIndex] / (1.0F + (fCg0[speciesIndex] - 1.0F) * atmosphericCO2 / 350.0F);
                     this.Trajectory.Species.f_cg[timestepIndex, speciesIndex] = fCg;
 
                     Debug.Assert((f_tmp >= 0.0F) && (f_tmp <= 1.0F) &&
@@ -129,7 +131,7 @@ namespace BayesianPG.ThreePG
                 // Partitioning  --------
                 float pFS20 = this.Parameters.pFS20[speciesIndex];
                 float pFS2 = this.Parameters.pFS2[speciesIndex];
-                float pfsPower = MathF.Log(pFS20 / pFS2) / MathF.Log(20.0F / 2.0F);
+                float pfsPower = 0.434294481903252F * MathF.Log(pFS20 / pFS2); // 1 / MathF.Log(20.0F / 2.0F) = 0.434294481903252;
                 this.State.pfsPower[speciesIndex] = pfsPower;
 
                 this.State.pfsConst[speciesIndex] = pFS2 / MathF.Pow(2.0F, pfsPower);
@@ -165,10 +167,10 @@ namespace BayesianPG.ThreePG
                 float tBB = this.Parameters.tBB[speciesIndex];
                 this.Trajectory.Species.fracBB[speciesIndex] = ThreePGScalar.GetAgeDependentParameter(age_m, fracBB0, fracBB1, tBB, 1.0F);
 
-                float rhoMin = this.Parameters.rhoMin[speciesIndex];
-                float rhoMax = this.Parameters.rhoMax[speciesIndex];
+                float rho0 = this.Parameters.rho0[speciesIndex];
+                float rho1 = this.Parameters.rho1[speciesIndex];
                 float tRho = this.Parameters.tRho[speciesIndex];
-                this.Trajectory.Species.wood_density[speciesIndex] = ThreePGScalar.GetAgeDependentParameter(age_m, rhoMin, rhoMax, tRho, 1.0F);
+                this.Trajectory.Species.wood_density[speciesIndex] = ThreePGScalar.GetAgeDependentParameter(age_m, rho0, rho1, tRho, 1.0F);
 
                 float gammaN0 = this.Parameters.gammaN0[speciesIndex];
                 float gammaN1 = this.Parameters.gammaN1[speciesIndex];
@@ -221,6 +223,11 @@ namespace BayesianPG.ThreePG
                 }
             }
 
+            // reset any applied treatments
+            // This is redundant the first time a stand is simulated as t_n defaults to zero but is necessary on
+            // subsequent calls.
+            Array.Clear(this.State.t_n);
+
             // check if this is the dormant period or previous/following period is dormant
             // to allocate foliage if needed, etc.
             float competition_total = 0.0F;
@@ -271,7 +278,8 @@ namespace BayesianPG.ThreePG
                 float dbh = this.State.dbh[speciesIndex];
                 float height = this.Settings.height_model switch
                 {
-                    ThreePGHeightModel.Power => aH * MathF.Pow(dbh, nHB) * MathF.Pow(competition_total, nHC),
+                    // ThreePGHeightModel.Power => aH * MathF.Pow(dbh, nHB) * MathF.Pow(competition_total, nHC),
+                    ThreePGHeightModel.Power => aH * MathF.Exp(MathF.Log(dbh) * nHB + MathF.Log(competition_total) * nHC),
                     ThreePGHeightModel.Exponent => 1.3F + aH * MathF.Exp(-nHB / dbh) + nHC * competition_total * dbh,
                     _ => throw new NotSupportedException("Unhandled height model " + this.Settings.height_model + ".")
                 };
@@ -281,16 +289,17 @@ namespace BayesianPG.ThreePG
             // correct the bias
             this.CorrectSizeDistribution(timestep: 0);
 
-            float height_max = Single.MinValue;
-            for (int speciesIndex = 0; speciesIndex < this.Species.n_sp; ++speciesIndex)
-            {
-                float lai = this.State.lai[speciesIndex];
-                float height = this.State.height[speciesIndex];
-                if ((lai > 0.0F) && (height > height_max))
-                {
-                    height_max = height;
-                }
-            }
+            // present in fortran but has no effect since height_max is not used
+            // float height_max = Single.MinValue;
+            // for (int speciesIndex = 0; speciesIndex < this.Species.n_sp; ++speciesIndex)
+            // {
+            //     float lai = this.State.lai[speciesIndex];
+            //     float height = this.State.height[speciesIndex];
+            //     if ((lai > 0.0F) && (height > height_max))
+            //     {
+            //         height_max = height;
+            //     }
+            // }
 
             // volume and volume increment
             // Call main function to get volume and then fix up cumulative volume and MAI.
@@ -390,7 +399,7 @@ namespace BayesianPG.ThreePG
                 }
                 else if (this.Settings.light_model == ThreePGModel.Mix)
                 {
-                    // Calculate the absorbed PAR.If this is first month, then it will be only potential
+                    // calculate the absorbed PAR
                     this.Light3PGmix(timestep, timestepEndDate);
                     for (int speciesIndex = 0; speciesIndex < this.Species.n_sp; ++speciesIndex)
                     {
@@ -422,22 +431,21 @@ namespace BayesianPG.ThreePG
 
                 for (int speciesIndex = 0; speciesIndex < this.Species.n_sp; ++speciesIndex)
                 {
-                    float blCondReciprocal = 1.0F / this.Parameters.BLcond[speciesIndex];
-                    float height = this.State.height[speciesIndex];
-                    float aero_resist = blCondReciprocal; // if this is the (currently) tallest species
-                    if (height < height_max)
+                    float aero_resist = 0.0F;
+                    float lai = this.State.lai[speciesIndex];
+                    if (lai > 0.0F) // check for leaf off
                     {
-                        float twiceRelativeHeight = height / (height_max / 2.0F);
-                        aero_resist += (5.0F * lai_total - blCondReciprocal) *
-                            MathF.Exp(-Constant.Ln2 * twiceRelativeHeight * twiceRelativeHeight);
+                        float blCondReciprocal = 1.0F / this.Parameters.BLcond[speciesIndex];
+                        float height = this.State.height[speciesIndex];
+                        aero_resist = blCondReciprocal; // if this is the (currently) tallest species
+                        if (height < height_max)
+                        {
+                            float twiceRelativeHeight = height / (height_max / 2.0F);
+                            aero_resist += (5.0F * lai_total - blCondReciprocal) *
+                                MathF.Exp(-Constant.Ln2 * twiceRelativeHeight * twiceRelativeHeight);
+                        }
                     }
                     this.State.aero_resist[speciesIndex] = aero_resist;
-
-                    // check for dormancy
-                    if (this.State.lai[speciesIndex] == 0.0F)
-                    {
-                        this.State.aero_resist[speciesIndex] = 0.0F;
-                    }
 
                     float coeffCond = this.Parameters.CoeffCond[speciesIndex];
                     float VPD_sp = this.State.VPD_sp[speciesIndex];
@@ -534,7 +542,8 @@ namespace BayesianPG.ThreePG
                     //float f_phys = this.state.f_phys[speciesIndex];
                     float f_tmp_gc = this.Trajectory.Species.f_tmp_gc[timestep, speciesIndex];
                     float f_cg = this.Trajectory.Species.f_cg[timestep, speciesIndex];
-                    this.State.conduct_canopy[speciesIndex] = gC * lai_per * f_phys * f_tmp_gc * f_cg;
+                    float conduct_canopy = gC * lai_per * f_phys * f_tmp_gc * f_cg;
+                    this.State.conduct_canopy[speciesIndex] = conduct_canopy;
                 }
                 float conduct_soil = Constant.MaxSoilCond * this.State.aSW / this.Site.AvailableSoilWaterMax;
                 this.Trajectory.conduct_soil[timestep] = conduct_soil;
@@ -1051,8 +1060,6 @@ namespace BayesianPG.ThreePG
 
         private void CorrectSizeDistribution(int timestep)
         {
-            Debug.Assert(this.Bias != null);
-
             // Diameter distributions are used to correct for bias when calculating pFS from mean dbh, and ws distributions are
             // used to correct for bias when calculating mean dbh from mean ws.This bias is caused by Jensen's inequality and is
             // corrected using the approach described by Duursma and Robinson(2003) FEM 186, 373 - 380, which uses the CV of the
@@ -1085,6 +1092,11 @@ namespace BayesianPG.ThreePG
 
                 if (this.Settings.CorrectSizeDistribution)
                 {
+                    if (this.Bias == null)
+                    {
+                        throw new InvalidOperationException("Size distribution corrections are enabled in settings but size distributions are not specified.");
+                    }
+
                     // Calculate the DW scale -------------------
                     float lnCompetitionTotal = MathF.Log(this.State.competition_total);
                     for (int speciesIndex = 0; speciesIndex < n_sp; ++speciesIndex)
@@ -1224,7 +1236,7 @@ namespace BayesianPG.ThreePG
                         float CVwsDistribution = MathF.Sqrt(Varx) / Ex;
                         this.State.CVwsDistribution[speciesIndex] = CVwsDistribution;
 
-                        // DF the nWS is replaced with 1 / nWs because the equation is inverted to predict dbh from ws, instead of ws from dbh
+                        // DF the nWS is replaced with 1 / nWs because the equation is inverted to predict DBH from ws, instead of ws from DBH
                         float nWs = this.Parameters.nWS[speciesIndex];
                         float wsrelBias = 0.5F * (1.0F / nWs * (1.0F / nWs - 1.0F)) * CVwsDistribution * CVwsDistribution;
                         wsrelBias = ThreePGScalar.Limit(wsrelBias, -0.5F, 0.5F);
@@ -1264,11 +1276,11 @@ namespace BayesianPG.ThreePG
                     }
 
                     // Correct for bias------------------
-                    float aWs = this.Parameters.aWS[speciesIndex];
+                    float aWS = this.Parameters.aWS[speciesIndex];
                     float biom_tree = this.State.biom_tree[speciesIndex];
                     float nWs = this.Parameters.nWS[speciesIndex];
                     float wsrelBias = this.State.wsrelBias[speciesIndex];
-                    float dbh = MathF.Pow(biom_tree / aWs, 1.0F / nWs) * (1.0F + wsrelBias);
+                    float dbh = MathF.Pow(biom_tree / aWS, 1.0F / nWs) * (1.0F + wsrelBias);
                     this.State.dbh[speciesIndex] = dbh;
 
                     float DrelBiasBasArea = this.State.DrelBiasBasArea[speciesIndex];
@@ -1289,11 +1301,12 @@ namespace BayesianPG.ThreePG
                         case ThreePGHeightModel.Power:
                             float DrelBiasheight = this.State.DrelBiasheight[speciesIndex];
                             float DrelBiasLCL = this.State.DrelBiasLCL[speciesIndex];
-                            height = aH * MathF.Pow(dbh, nHB) * MathF.Pow(competition_total, nHC) * (1.0F + DrelBiasheight);
+                            // height = aH * MathF.Pow(dbh, nHB) * MathF.Pow(competition_total, nHC) * (1.0F + DrelBiasheight);
+                            height = aH * MathF.Exp(MathF.Log(dbh) * nHB + MathF.Log(competition_total) * nHC) * (1.0F + DrelBiasheight);
                             float nHLL = this.Parameters.nHLL[speciesIndex];
                             float nHLrh = this.Parameters.nHLrh[speciesIndex];
-                            crown_length = aHL * MathF.Pow(dbh, nHLB) * MathF.Pow(lai_total, nHLL) * MathF.Pow(competition_total, nHLC) *
-                                           MathF.Pow(height_rel, nHLrh) * (1.0F + DrelBiasLCL);
+                            // crown_length = aHL * MathF.Pow(dbh, nHLB) * MathF.Pow(lai_total, nHLL) * MathF.Pow(competition_total, nHLC) * MathF.Pow(height_rel, nHLrh) * (1.0F + DrelBiasLCL);
+                            crown_length = aHL * MathF.Exp(MathF.Log(dbh) * nHLB + MathF.Log(lai_total) * nHLL + MathF.Log(competition_total) * nHLC + MathF.Log(height_rel) * nHLrh) * (1.0F + DrelBiasLCL);
                             break;
                         case ThreePGHeightModel.Exponent:
                             height = 1.3F + aH * MathF.Exp(-nHB / dbh) + nHC * competition_total * dbh;
@@ -1321,8 +1334,8 @@ namespace BayesianPG.ThreePG
                         float nKC = this.Parameters.nKC[speciesIndex];
                         float nKrh = this.Parameters.nKrh[speciesIndex];
                         float DrelBiasCrowndiameter = this.State.DrelBiasCrowndiameter[speciesIndex];
-                        crown_width = aK * MathF.Pow(dbh, nKB) * MathF.Pow(height, nKH) * MathF.Pow(competition_total, nKC) *
-                                        MathF.Pow(height_rel, nKrh) * (1.0F + DrelBiasCrowndiameter);
+                        // crown_width = aK * MathF.Pow(dbh, nKB) * MathF.Pow(height, nKH) * MathF.Pow(competition_total, nKC) * MathF.Pow(height_rel, nKrh) * (1.0F + DrelBiasCrowndiameter);
+                        crown_width = aK * MathF.Exp(MathF.Log(dbh) * nKB + MathF.Log(height) * nKH + MathF.Log(competition_total) * nKC + MathF.Log(height_rel) * nKrh) * (1.0F + DrelBiasCrowndiameter);
                     }
                     this.State.crown_width[speciesIndex] = crown_width;
 
@@ -1338,7 +1351,7 @@ namespace BayesianPG.ThreePG
                 float updated_competition_total = 0.0F;
                 for (int speciesIndex = 0; speciesIndex < this.Species.n_sp; ++speciesIndex)
                 {
-                    float wood_density = this.Trajectory.Species.wood_density[speciesIndex][0];
+                    float wood_density = this.Trajectory.Species.wood_density[speciesIndex][timestep];
                     updated_competition_total += wood_density * this.State.basal_area[speciesIndex];
                 }
                 this.State.competition_total = updated_competition_total;
@@ -1372,6 +1385,7 @@ namespace BayesianPG.ThreePG
                     {
                         power = MathF.Pow(power, ng);
                     }
+                    // exp(-log(2) * power) = exp(-log(2))^power = 0.5^power = (2^-1)^power = 2^(-power)
                     parameter += (g0 - gx) * MathF.Exp(-Constant.Ln2 * power);
                 }
 
@@ -1598,7 +1612,8 @@ namespace BayesianPG.ThreePG
                     float dbh = this.State.dbh[speciesIndex];
                     float height = this.State.height[speciesIndex];
                     float stems_n = this.State.stems_n[speciesIndex];
-                    volume = aV * MathF.Pow(dbh, nVB) * MathF.Pow(height, nVH) * MathF.Pow(dbh * dbh * height, nVBH) * stems_n;
+                    // volume = aV * MathF.Pow(dbh, nVB) * MathF.Pow(height, nVH) * MathF.Pow(dbh * dbh * height, nVBH) * stems_n;
+                    volume = aV * MathF.Exp(MathF.Log(dbh) * nVB + MathF.Log(height) * nVH + MathF.Log(dbh * dbh * height) * nVBH) * stems_n;
                 }
                 else
                 {
@@ -1889,13 +1904,13 @@ namespace BayesianPG.ThreePG
                 }
                 this.State.lambda_h[speciesIndex] = speciesLambdaH;
 
-                Debug.Assert((speciesLambdaH >= 0.0F) && (speciesLambdaH <= 1.25F));
+                Debug.Assert((speciesLambdaH >= 0.0F) && (speciesLambdaH <= 1.250F));
             }
 
             float days_in_month = timestepEndDate.DaysInMonth();
             float solar_rad = this.Climate.MeanDailySolarRadiation[timestep];
             float RADt = solar_rad * days_in_month; // total available radiation, MJ m⁻² month⁻¹
-            Span<float> aparl = stackalloc float[n_sp]; // The absorbed apar for the given  layer
+            Span<float> aparl = stackalloc float[n_sp]; // the absorbed apar for the given layer
             for (int layerIndex = 0; layerIndex < nLayers; ++layerIndex)
             {
                 float maxAParL = 0.0F;
@@ -1924,7 +1939,7 @@ namespace BayesianPG.ThreePG
                 float speciesAparFraction = aparOfSpecies / (solar_rad * days_in_month);
                 this.State.fi[speciesIndex] = speciesAparFraction;
 
-                Debug.Assert((aparOfSpecies >= 0.0F) && (speciesAparFraction >= 0.0F) && (speciesAparFraction <= 1.08F));
+                Debug.Assert((aparOfSpecies >= 0.0F) && (speciesAparFraction >= 0.0F) && (speciesAparFraction <= 1.0F));
             }
 
             // calculate the LAI above the given species for within canopy VPD calculations
@@ -2019,7 +2034,7 @@ namespace BayesianPG.ThreePG
                 float transp_veg = 0.0F;
                 if (this.State.lai[speciesIndex] > 0.0F)
                 {
-                    // SolarRad in MJ / m2 / day---> * 10 ^ 6 J / m2 / day---> / day_length converts to only daytime period--->W / m2
+                    // SolarRad in MJ / m² / day---> * 10⁶ J / m² / day---> / day_length converts to only daytime period--->W / m2
                     float Qa = this.Parameters.Qa[speciesIndex];
                     float Qb = this.Parameters.Qb[speciesIndex];
                     float netRad = (Qa + Qb * (solar_rad * 1000.0F * 1000.0F / day_length)) * this.State.fi[speciesIndex];

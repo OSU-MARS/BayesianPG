@@ -18,6 +18,7 @@ namespace BayesianPG.ThreePG
         public int[] t_n { get; private init; }
 
         // modifiers
+        public TFloat[] alpha_c { get; private init; }
         public TFloat[] f_vpd { get; private init; }
         public TFloat[] f_sw { get; private init; }
         public TFloat[] f_nutr { get; private init; }
@@ -32,12 +33,11 @@ namespace BayesianPG.ThreePG
         public TFloat[] aero_resist { get; private init; }
         public float airPressure { get; set; }
         public TFloat[] apar { get; private init; }
-        public TFloat[] alpha_c { get; private init; }
-        public TFloat[] biom_incr_foliage { get; private init; }
-        public TFloat[] biom_incr_root { get; private init; }
-        public TFloat[] biom_incr_stem { get; private init; }
-        public TFloat[] biom_loss_foliage { get; private init; }
-        public TFloat[] biom_loss_root { get; private init; }
+        public TFloat[] biom_incr_foliage { get; private init; } // dry Mg/ha
+        public TFloat[] biom_incr_root { get; private init; } // dry Mg/ha
+        public TFloat[] biom_incr_stem { get; private init; } // dry Mg/ha
+        public TFloat[] biom_loss_foliage { get; private init; } // dry Mg/ha
+        public TFloat[] biom_loss_root { get; private init; } // dry Mg/ha
         public TFloat[] conduct_canopy { get; private init; }
         public TFloat[] epsilon { get; private init; }
         public TFloat[] epsilon_gpp { get; private init; }
@@ -57,10 +57,10 @@ namespace BayesianPG.ThreePG
         public TFloat[] basal_area { get; private init; }
         public TFloat[] basal_area_prop { get; private init; }
 
-        public TFloat[] biom_foliage { get; private init; }
-        public TFloat[] biom_foliage_debt { get; private init; }
-        public TFloat[] biom_root { get; private init; }
-        public TFloat[] biom_stem { get; private init; }
+        public TFloat[] biom_foliage { get; private init; } // dry Mg/ha
+        public TFloat[] biom_foliage_debt { get; private init; }  // dry Mg/ha
+        public TFloat[] biom_root { get; private init; } // dry Mg/ha
+        public TFloat[] biom_stem { get; private init; } // dry Mg/ha including branches and bark
         public TFloat[] biom_tree { get; private init; } // mean stem mass, kg
         public TFloat[] biom_tree_max { get; private init; }
 
@@ -138,6 +138,7 @@ namespace BayesianPG.ThreePG
             this.t_n = new int[n_sp];
 
             // modifiers
+            this.alpha_c = new TFloat[n_sp];
             this.f_vpd = new TFloat[n_sp];
             this.f_sw = new TFloat[n_sp];
             this.f_nutr = new TFloat[n_sp];
@@ -152,7 +153,6 @@ namespace BayesianPG.ThreePG
             this.aero_resist = new TFloat[n_sp];
             this.airPressure = Single.NaN;
             this.apar = new TFloat[n_sp];
-            this.alpha_c = new TFloat[n_sp];
             this.biom_incr_foliage = new TFloat[n_sp];
             this.biom_incr_root = new TFloat[n_sp];
             this.biom_incr_stem = new TFloat[n_sp];

@@ -10,13 +10,13 @@ namespace BayesianPG.Xlsx
     {
         private WideformParameterPresence? wideformPresence;
 
-        public TreeSpeciesParameters Parameters { get; private init; }
+        public TreeSpeciesParameters<float> Parameters { get; private init; }
 
         public TreeSpeciesParameterWorksheet()
         {
             this.wideformPresence = null;
 
-            this.Parameters = new TreeSpeciesParameters();
+            this.Parameters = new();
         }
 
         public override void OnEndParsing()
@@ -99,30 +99,30 @@ namespace BayesianPG.Xlsx
             }
 
             this.Parameters.Species[speciesIndex] = species;
-            this.Parameters.pFS2[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.pFS2), row, this.Header.pFS2, 0.0F, 5.0F);
-            this.Parameters.pFS20[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.pFS20), row, this.Header.pFS20, 0.0F, 5.0F);
+            this.Parameters.pFS2[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.pFS2), row, this.Header.pFS2, 0.0F, 4.0F);
+            this.Parameters.pFS20[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.pFS20), row, this.Header.pFS20, 0.0F, 2.0F);
             this.Parameters.aWS[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.aWS), row, this.Header.aWS, 0.0F, 5.0F);
             this.Parameters.nWS[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.nWS), row, this.Header.nWS, 0.0F, 5.0F);
-            this.Parameters.pRx[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.pRx), row, this.Header.pRx, 0.0F, 5.0F);
-            this.Parameters.pRn[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.pRn), row, this.Header.pRn, 0.0F, 5.0F);
-            this.Parameters.gammaF1[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.gammaF1), row, this.Header.gammaF1, 0.0F, 5.0F);
-            this.Parameters.gammaF0[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.gammaF0), row, this.Header.gammaF0, 0.0F, 5.0F);
+            this.Parameters.pRx[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.pRx), row, this.Header.pRx, 0.0F, 1.0F);
+            this.Parameters.pRn[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.pRn), row, this.Header.pRn, 0.0F, 1.0F);
+            this.Parameters.gammaF1[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.gammaF1), row, this.Header.gammaF1, 0.0F, 1.0F);
+            this.Parameters.gammaF0[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.gammaF0), row, this.Header.gammaF0, 0.0F, 1.0F);
             this.Parameters.tgammaF[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.tgammaF), row, this.Header.tgammaF, 0.0F, 100.0F);
-            this.Parameters.gammaR[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.gammaR), row, this.Header.gammaR, 0.0F, 5.0F);
+            this.Parameters.gammaR[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.gammaR), row, this.Header.gammaR, 0.0F, 1.0F);
             this.Parameters.leafgrow[speciesIndex] = TreeSpeciesParameterWorksheet.Parse(nameof(this.Parameters.leafgrow), row, this.Header.leafgrow, 0, 12); // 0 indicates evergreen
             this.Parameters.leaffall[speciesIndex] = TreeSpeciesParameterWorksheet.Parse(nameof(this.Parameters.leaffall), row, this.Header.leaffall, 0, 12); // 0 indicates evergreen
             this.Parameters.Tmin[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.Tmin), row, this.Header.Tmin, -10.0F, 20.0F);
             this.Parameters.Topt[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.Topt), row, this.Header.Topt, 0.0F, 40.0F);
             this.Parameters.Tmax[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.Tmax), row, this.Header.Tmax, 10.0F, 50.0F);
-            this.Parameters.kF[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.kF), row, this.Header.kF, 0.0F, 5.0F);
+            this.Parameters.kF[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.kF), row, this.Header.kF, -1.0F, 3.0F);
             this.Parameters.SWconst0[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.SWconst0), row, this.Header.SWconst, 0.0F, 5.0F);
             this.Parameters.SWpower0[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.SWpower0), row, this.Header.SWpower, 0.0F, 20.0F);
-            this.Parameters.fCalpha700[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.fCalpha700), row, this.Header.fCalpha700, 0.0F, 5.0F);
+            this.Parameters.fCalpha700[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.fCalpha700), row, this.Header.fCalpha700, 0.0F, 2.0F);
             this.Parameters.fCg700[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.fCg700), row, this.Header.fCg700, 0.0F, 5.0F);
             this.Parameters.m0[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.m0), row, this.Header.m0, 0.0F, 5.0F);
             this.Parameters.fN0[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.fN0), row, this.Header.fN0, 0.0F, 5.0F);
             this.Parameters.fNn[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.fNn), row, this.Header.fNn, 0.0F, 5.0F);
-            this.Parameters.MaxAge[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.MaxAge), row, this.Header.MaxAge, 10.0F, 2500.0F);
+            this.Parameters.MaxAge[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.MaxAge), row, this.Header.MaxAge, 0.0F, 2500.0F);
             this.Parameters.nAge[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.nAge), row, this.Header.nAge, 0.0F, 5.0F);
             this.Parameters.rAge[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.rAge), row, this.Header.rAge, 0.0F, 5.0F);
             this.Parameters.gammaN1[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.gammaN1), row, this.Header.gammaN1, 0.0F, 5.0F);
@@ -131,9 +131,9 @@ namespace BayesianPG.Xlsx
             this.Parameters.ngammaN[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.ngammaN), row, this.Header.ngammaN, 0.0F, 5.0F);
             this.Parameters.wSx1000[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.wSx1000), row, this.Header.wSx1000, 100.0F, 1000.0F);
             this.Parameters.thinPower[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.thinPower), row, this.Header.thinPower, 0.0F, 5.0F);
-            this.Parameters.mF[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.mF), row, this.Header.mF, 0.0F, 5.0F);
-            this.Parameters.mR[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.mR), row, this.Header.mR, 0.0F, 5.0F);
-            this.Parameters.mS[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.mS), row, this.Header.mS, 0.0F, 5.0F);
+            this.Parameters.mF[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.mF), row, this.Header.mF, 0.0F, 2.0F);
+            this.Parameters.mR[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.mR), row, this.Header.mR, 0.0F, 2.0F);
+            this.Parameters.mS[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.mS), row, this.Header.mS, 0.0F, 2.0F);
             this.Parameters.SLA0[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.SLA0), row, this.Header.SLA0, 0.0F, 50.0F);
             this.Parameters.SLA1[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.SLA1), row, this.Header.SLA1, 0.0F, 50.0F);
             this.Parameters.tSLA[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.tSLA), row, this.Header.tSLA, 0.0F, 50.0F);
@@ -143,7 +143,7 @@ namespace BayesianPG.Xlsx
             this.Parameters.LAImaxIntcptn[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.LAImaxIntcptn), row, this.Header.LAImaxIntcptn, 0.0F, 15.0F);
             this.Parameters.cVPD[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.cVPD), row, this.Header.cVPD, 0.0F, 15.0F);
             this.Parameters.alphaCx[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.alphaCx), row, this.Header.alphaCx, 0.0F, 5.0F);
-            this.Parameters.Y[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.Y), row, this.Header.Y, 0.0F, 5.0F);
+            this.Parameters.Y[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.Y), row, this.Header.Y, 0.0F, 1.0F);
             this.Parameters.MinCond[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.MinCond), row, this.Header.MinCond, 0.0F, 5.0F);
             this.Parameters.MaxCond[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.MaxCond), row, this.Header.MaxCond, 0.0F, 5.0F);
             this.Parameters.LAIgcx[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.LAIgcx), row, this.Header.LAIgcx, 0.0F, 15.0F);
@@ -156,8 +156,8 @@ namespace BayesianPG.Xlsx
             this.Parameters.fracBB0[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.fracBB0), row, this.Header.fracBB0, 0.0F, 1.0F);
             this.Parameters.fracBB1[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.fracBB1), row, this.Header.fracBB1, 0.0F, 1.0F);
             this.Parameters.tBB[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.tBB), row, this.Header.tBB, 0.0F, 50.0F);
-            this.Parameters.rhoMin[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.rhoMin), row, this.Header.rhoMin, 0.0F, 2.0F);
-            this.Parameters.rhoMax[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.rhoMax), row, this.Header.rhoMax, 0.0F, 2.0F);
+            this.Parameters.rho0[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.rho0), row, this.Header.rhoMin, 0.0F, 2.0F);
+            this.Parameters.rho1[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.rho1), row, this.Header.rhoMax, 0.0F, 2.0F);
             this.Parameters.tRho[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.tRho), row, this.Header.tRho, 0.0F, 50.0F);
             this.Parameters.CrownShape[speciesIndex] = Enum.Parse<TreeCrownShape>(row.Row[this.Header.crownshape]);
             this.Parameters.aH[speciesIndex] = TreeSpeciesWorksheet.Parse(nameof(this.Parameters.aH), row, this.Header.aH, 0.0F, 5.0F);
@@ -197,10 +197,10 @@ namespace BayesianPG.Xlsx
             switch (parameter)
             {
                 case "pFS2":
-                    this.wideformPresence.pFS2 = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.pFS2, this.wideformPresence.pFS2, 0.0F, 5.0F);
+                    this.wideformPresence.pFS2 = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.pFS2, this.wideformPresence.pFS2, 0.0F, 4.0F);
                     break;
                 case "pFS20":
-                    this.wideformPresence.pFS20 = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.pFS20, this.wideformPresence.pFS20, 0.0F, 5.0F);
+                    this.wideformPresence.pFS20 = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.pFS20, this.wideformPresence.pFS20, 0.0F, 2.0F);
                     break;
                 case "aWS":
                     this.wideformPresence.aWS = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.aWS, this.wideformPresence.aWS, 0.0F, 5.0F);
@@ -242,7 +242,7 @@ namespace BayesianPG.Xlsx
                     this.wideformPresence.Tmax = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.Tmax, this.wideformPresence.Tmax, 10.0F, 50.0F);
                     break;
                 case "kF":
-                    this.wideformPresence.kF = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.kF, this.wideformPresence.kF, 0.0F, 5.0F);
+                    this.wideformPresence.kF = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.kF, this.wideformPresence.kF, -1.0F, 3.0F);
                     break;
                 case "SWconst":
                     this.wideformPresence.SWconst0 = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.SWconst0, this.wideformPresence.SWconst0, 0.0F, 5.0F);
@@ -251,7 +251,7 @@ namespace BayesianPG.Xlsx
                     this.wideformPresence.SWpower0 = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.SWpower0, this.wideformPresence.SWpower0, 0.0F, 20.0F);
                     break;
                 case "fCalpha700":
-                    this.wideformPresence.fCalpha700 = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.fCalpha700, this.wideformPresence.fCalpha700, 0.0F, 5.0F);
+                    this.wideformPresence.fCalpha700 = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.fCalpha700, this.wideformPresence.fCalpha700, 0.0F, 2.0F);
                     break;
                 case "fCg700":
                     this.wideformPresence.fCg700 = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.fCg700, this.wideformPresence.fCg700, 0.0F, 5.0F);
@@ -293,13 +293,13 @@ namespace BayesianPG.Xlsx
                     this.wideformPresence.thinPower = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.thinPower, this.wideformPresence.thinPower, 0.0F, 5.0F);
                     break;
                 case "mF":
-                    this.wideformPresence.mF = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.mF, this.wideformPresence.mF, 0.0F, 5.0F);
+                    this.wideformPresence.mF = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.mF, this.wideformPresence.mF, 0.0F, 2.0F);
                     break;
                 case "mR":
-                    this.wideformPresence.mR = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.mR, this.wideformPresence.mR, 0.0F, 5.0F);
+                    this.wideformPresence.mR = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.mR, this.wideformPresence.mR, 0.0F, 2.0F);
                     break;
                 case "mS":
-                    this.wideformPresence.mS = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.mS, this.wideformPresence.mS, 0.0F, 5.0F);
+                    this.wideformPresence.mS = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.mS, this.wideformPresence.mS, 0.0F, 2.0F);
                     break;
                 case "SLA0":
                     this.wideformPresence.SLA0 = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.SLA0, this.wideformPresence.SLA0, 0.0F, 50.0F);
@@ -329,7 +329,7 @@ namespace BayesianPG.Xlsx
                     this.wideformPresence.alphaCx = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.alphaCx, this.wideformPresence.alphaCx, 0.0F, 5.0F);
                     break;
                 case "Y":
-                    this.wideformPresence.y = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.Y, this.wideformPresence.y, 0.0F, 5.0F);
+                    this.wideformPresence.y = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.Y, this.wideformPresence.y, 0.0F, 1.0F);
                     break;
                 case "MinCond":
                     this.wideformPresence.MinCond = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.MinCond, this.wideformPresence.MinCond, 0.0F, 5.0F);
@@ -367,11 +367,13 @@ namespace BayesianPG.Xlsx
                 case "tBB":
                     this.wideformPresence.tBB = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.tBB, this.wideformPresence.tBB, 0.0F, 50.0F);
                     break;
-                case "rhoMin":
-                    this.wideformPresence.rhoMin = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.rhoMin, this.wideformPresence.rhoMin, 0.0F, 2.0F);
+                case "rho0":
+                case "rhoMin": // called rhoMin in 3-PGpjs 2.7 and r3PG 0.1.3, https://github.com/trotsiuk/r3PG/issues/69
+                    this.wideformPresence.rho0 = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.rho0, this.wideformPresence.rho0, 0.0F, 2.0F);
                     break;
-                case "rhoMax":
-                    this.wideformPresence.rhoMax = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.rhoMax, this.wideformPresence.rhoMax, 0.0F, 2.0F);
+                case "rho1":
+                case "rhoMax": // called rhoMax in 3-PGpjs 2.7 and r3PG 0.1.3
+                    this.wideformPresence.rho1 = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.rho1, this.wideformPresence.rho1, 0.0F, 2.0F);
                     break;
                 case "tRho":
                     this.wideformPresence.tRho = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.tRho, this.wideformPresence.tRho, 0.0F, 50.0F);
@@ -555,8 +557,8 @@ namespace BayesianPG.Xlsx
             public bool fracBB0 { get; set; }
             public bool fracBB1 { get; set; }
             public bool tBB { get; set; }
-            public bool rhoMin { get; set; }
-            public bool rhoMax { get; set; }
+            public bool rho0 { get; set; }
+            public bool rho1 { get; set; }
             public bool tRho { get; set; }
             public bool CrownShape { get; set; }
 
@@ -652,8 +654,8 @@ namespace BayesianPG.Xlsx
                 this.fracBB0 = false;
                 this.fracBB1 = false;
                 this.tBB = false;
-                this.rhoMin = false;
-                this.rhoMax = false;
+                this.rho0 = false;
+                this.rho1 = false;
                 this.tRho = false;
                 this.CrownShape = false;
 
@@ -921,13 +923,13 @@ namespace BayesianPG.Xlsx
                 {
                     throw new XmlException("Row for " + nameof(this.tBB) + " is missing.", null);
                 }
-                if (this.rhoMin == false)
+                if (this.rho0 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.rhoMin) + " is missing.", null);
+                    throw new XmlException("Row for " + nameof(this.rho0) + " is missing.", null);
                 }
-                if (this.rhoMax == false)
+                if (this.rho1 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.rhoMax) + " is missing.", null);
+                    throw new XmlException("Row for " + nameof(this.rho1) + " is missing.", null);
                 }
                 if (this.tRho == false)
                 {

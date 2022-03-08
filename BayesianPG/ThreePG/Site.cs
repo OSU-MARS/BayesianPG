@@ -42,6 +42,8 @@ namespace BayesianPG.ThreePG
         /// </summary>
         public float Latitude { get; init; }
 
+        public string Name { get; init; }
+
         /// <summary>
         /// Soil class according to Table 2 of 3PGpjs user manual. 
         /// -1 - use SWconst0 and SWpower0
@@ -69,6 +71,7 @@ namespace BayesianPG.ThreePG
             this.AvailableSoilWaterMin = Single.MinValue;
             this.AvailableSoilWaterMax = Single.MinValue;
             this.From = DateTime.MinValue;
+            this.Name = String.Empty;
             this.To = DateTime.MinValue;
         }
 

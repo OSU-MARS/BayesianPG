@@ -8,20 +8,15 @@ namespace BayesianPG.ThreePG
         public TreeSpeciesSizeDistribution? Bias { get; init; }
         public SiteClimate Climate { get; private init; }
         public TreeSpeciesManagement Management { get; private init; }
-        public TreeSpeciesParameters Parameters { get; private init; }
         public ThreePGSettings Settings { get; private init; }
         public Site Site { get; private init; }
         public SiteTreeSpecies Species { get; private init; }
 
-        protected ThreePGpjsMix(Site site, SiteClimate climate, SiteTreeSpecies species, TreeSpeciesParameters parameters, TreeSpeciesManagement management, ThreePGSettings settings)
+        protected ThreePGpjsMix(Site site, SiteClimate climate, SiteTreeSpecies species, TreeSpeciesManagement management, ThreePGSettings settings)
         {
             if ((climate.From.Year != site.From.Year) || (climate.From.Month != site.From.Month))
             {
                 throw new ArgumentException("Climate start month " + climate.From.ToString("yyyy-MM") + " does not match site start month " + site.From.ToString("yyyy-MM"));
-            }
-            if (species.SpeciesMatch(parameters) == false)
-            {
-                throw new ArgumentException("Tree species count or ordering is inconsistent between species and parameters.");
             }
             if (settings.management)
             {
@@ -30,6 +25,11 @@ namespace BayesianPG.ThreePG
                     throw new ArgumentException("Tree species count or ordering is inconsistent between species and management.");
                 }
             }
+            // settings.phys_model can be freely chosen
+            if ((settings.transp_model == ThreePGModel.Mix) && (settings.light_model == ThreePGModel.Pjs27))
+            {
+                throw new ArgumentException("Use of the 3-PGmix transpiration model requires the 3-PGmix light model also be used.");
+            }
             if (site.AvailableSoilWaterMin > site.AvailableSoilWaterMax)
             {
                 throw new ArgumentOutOfRangeException(nameof(site));
@@ -37,10 +37,47 @@ namespace BayesianPG.ThreePG
             
             this.Climate = climate;
             this.Management = management;
-            this.Parameters = parameters;
             this.Settings = settings;
             this.Site = site;
             this.Species = species;
+        }
+
+        public abstract void PredictStandTrajectory();
+    }
+
+    public abstract class ThreePGpjsMix<TFloat, TInteger> : ThreePGpjsMix 
+        where TFloat : struct
+        where TInteger : struct
+    {
+        public TreeSpeciesParameters<TFloat> Parameters { get; private init; }
+        protected ThreePGState<TFloat, TInteger> State { get; private init; }
+
+        public ThreePGStandTrajectory<TFloat, TInteger> Trajectory { get; private init; }
+
+        public ThreePGpjsMix(Site site, SiteClimate climate, SiteTreeSpecies species, TreeSpeciesParameters<TFloat> parameters, TreeSpeciesManagement management, ThreePGSettings settings)
+            : base(site, climate, species, management, settings)
+        {
+            if (settings.ColumnGroups.HasFlag(ThreePGStandTrajectoryColumnGroups.BiasCorrection) && ((settings.BiasCorrectionIterations <= 0) || (settings.CorrectSizeDistribution == false)))
+            {
+                throw new ArgumentException("Bias correction is included in stand trajectory but its calculation is disabled.");
+            }
+            if (settings.ColumnGroups.HasFlag(ThreePGStandTrajectoryColumnGroups.D13C) && (settings.CalculateD13C == false))
+            {
+                throw new ArgumentException("Bias correction is included in stand trajectory but its calculation is disabled.");
+            }
+            if (species.SpeciesMatch(parameters) == false)
+            {
+                throw new ArgumentException("Tree species count or ordering is inconsistent between species and parameters.");
+            }
+
+            this.Parameters = parameters;
+            this.State = new(species.n_sp, site);
+            this.Trajectory = new(species.Species, site.From, site.To, settings.ColumnGroups);
+
+            if (climate.MonthCount < this.Trajectory.Capacity)
+            {
+                throw new ArgumentOutOfRangeException(nameof(site), "End month specified in site is beyond the end of the provided climate record.");
+            }
         }
 
         protected bool IsDormant(int monthIndex, int speciesIndex)
@@ -70,39 +107,6 @@ namespace BayesianPG.ThreePG
 
             // evergreen species: leafgrow = leaffall = 0
             return false;
-        }
-
-        public abstract void PredictStandTrajectory();
-    }
-
-    public abstract class ThreePGpjsMix<TFloat, TInteger> : ThreePGpjsMix 
-        where TFloat : struct
-        where TInteger : struct
-    {
-        protected ThreePGState<TFloat, TInteger> State { get; private init; }
-
-        public ThreePGStandTrajectory<TFloat, TInteger> Trajectory { get; private init; }
-
-        public ThreePGpjsMix(Site site, SiteClimate climate, SiteTreeSpecies species, TreeSpeciesParameters parameters, TreeSpeciesManagement management, ThreePGSettings settings)
-            : base(site, climate, species, parameters, management, settings)
-        {
-            if (settings.ColumnGroups.HasFlag(ThreePGStandTrajectoryColumnGroups.BiasCorrection) && ((settings.BiasCorrectionIterations <= 0) || (settings.CorrectSizeDistribution == false)))
-            {
-                throw new ArgumentException("Bias correction is included in stand trajectory but its calculation is disabled.");
-            }
-            if (settings.ColumnGroups.HasFlag(ThreePGStandTrajectoryColumnGroups.D13C) && (settings.CalculateD13C == false))
-            {
-                throw new ArgumentException("Bias correction is included in stand trajectory but its calculation is disabled.");
-            }
-
-            this.State = new(species.n_sp, site);
-
-            this.Trajectory = new(species.Species, site.From, site.To, settings.ColumnGroups);
-
-            if (climate.MonthCount < this.Trajectory.Capacity)
-            {
-                throw new ArgumentOutOfRangeException(nameof(site), "End month specified in site is beyond the end of the provided climate record.");
-            }
         }
     }
 }

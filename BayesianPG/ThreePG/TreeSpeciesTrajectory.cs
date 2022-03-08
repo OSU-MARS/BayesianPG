@@ -9,64 +9,64 @@ namespace BayesianPG.ThreePG
     {
         // [n_sp][n_m]
         // age of species, months since planting (https://github.com/trotsiuk/r3PG/issues/53)
-        public float[][] age { get; private set; }
+        public float[][] age { get; private set; } // years
         // age for calculation of modifiers, one month less than age
-        public float[][] age_m { get; private set; }
-        public TFloat[][] fracBB { get; private set; }
-        public TFloat[][] gammaF { get; private set; }
-        public TFloat[][] gammaN { get; private set; }
-        public TFloat[][] SLA { get; private set; }
-        public TFloat[][] wood_density { get; private set; }
+        public float[][] age_m { get; private set; } // displaced years
+        public TFloat[][] fracBB { get; private set; } // branch and bark fraction
+        public TFloat[][] gammaF { get; private set; } // monthly litterfall rate, fraction
+        public TFloat[][] gammaN { get; private set; } // monthly density independent mortality rate, fraction
+        public TFloat[][] SLA { get; private set; } // specific leaf area, m²/kg
+        public TFloat[][] wood_density { get; private set; } // specific gravity = tons/m³
 
         // [n_m, n_sp]
         // modifiers
-        public TFloat[,] f_age { get; private set; }
-        public TFloat[,] f_tmp { get; private set; }
-        public TFloat[,] f_tmp_gc { get; private set; }
-        public TFloat[,] f_frost { get; private set; }
-        public TFloat[,] f_calpha { get; private set; }
-        public TFloat[,] f_cg { get; private set; }
-        public TFloat[,] f_vpd { get; private set; }
-        public TFloat[,] f_sw { get; private set; }
-        public TFloat[,] f_nutr { get; private set; }
-        public TFloat[,] f_phys { get; private set; }
+        public TFloat[,] f_age { get; private set; } // age modifier, 3-PGmix Equation A10
+        public TFloat[,] f_tmp { get; private set; } // temperature modifier, 3-PGmix Equation A5
+        public TFloat[,] f_frost { get; private set; } // frost days modifier, 3-PGmix Equation A6
+        public TFloat[,] f_calpha { get; private set; } // CO₂ modifier for PG (assimilation enhancement), 3-PGmix Equation A11
+        public TFloat[,] f_cg { get; private set; } // CO₂ modifier for canopy conductance, 3-PGmix Equation A12
+        public TFloat[,] f_vpd { get; private set; } // vapor pressure deficit modifier, 3-PGmix Equation A8
+        public TFloat[,] f_sw { get; private set; } // available soil water modifier, 3-PGmix Equation A9
+        public TFloat[,] f_nutr { get; private set; } // nutrition (fertility) modifier, 3-PGmix Equation A7
+        public TFloat[,] f_phys { get; private set; } // physiological modifier φ, 3-PGmix Equation A3
 
         // growth
         public TFloat[,] aero_resist { get; private set; }
-        public TFloat[,] alpha_c { get; private set; }
-        public TFloat[,] biom_foliage_debt { get; private set; }
-        public TFloat[,] conduct_canopy { get; private set; }
-        public TFloat[,] crown_length { get; private set; }
-        public TFloat[,] crown_width{ get; private set; }
-        public TFloat[,] epsilon_biom_stem { get; private set; }
-        public TFloat[,] epsilon_gpp { get; private set; }
-        public TFloat[,] epsilon_npp { get; private set; }
-        public TFloat[,] gC { get; private set; }
-        public TFloat[,] GPP { get; private set; }
-        public TFloat[,] NPP_f { get; private set; }
-        public TFloat[,] npp_fract_foliage { get; private set; }
-        public TFloat[,] npp_fract_root { get; private set; }
-        public TFloat[,] npp_fract_stem { get; private set; }
+        public TFloat[,] alpha_c { get; private set; } // canopy quantumn efficiency after modifiers, mol/mol, 3-PGmix Equation A2
+        public TFloat[,] biom_foliage_debt { get; private set; } // dry tons/ha, deciduous species
+        public TFloat[,] conduct_canopy { get; private set; } // species canopy conductance after modifiers, gC * lai_per * f_phys * f_tmp_gc * f_cg, m/s
+        public TFloat[,] crown_length { get; private set; } // mean crown length, m
+        public TFloat[,] crown_width { get; private set; } // mean crown diameter, m
+        public TFloat[,] epsilon_biom_stem { get; private set; } // light utilization efficiency in growth of stem biomass, dry g/MJ
+        public TFloat[,] epsilon_gpp { get; private set; } // light utilization efficiency, dry g/MJ
+        public TFloat[,] epsilon_npp { get; private set; } // light utilization efficiency, dry g/MJ
+        public TFloat[,] f_tmp_gc { get; private set; } // temperature response multiplier for canopy conductance
+        public TFloat[,] gC { get; private set; } // canopy conductance, m/s
+        public TFloat[,] GPP { get; private set; } // gross primary production Pg, dry tons/ha
+        public TFloat[,] NPP_f { get; private set; } // net primary production Pn, dry tons/ha
+        public TFloat[,] npp_fract_foliage { get; private set; } // fraction of NPP allocated to foliage
+        public TFloat[,] npp_fract_root { get; private set; } // fraction of NPP allocated to coarse and fine roots
+        public TFloat[,] npp_fract_stem { get; private set; } // fraction of NPP allocated to stem, branches, and bark
         public TFloat[,] VPD_sp { get; private set; }
 
         // mortality
-        public TFloat[,] mort_stress { get; private set; }
-        public TFloat[,] mort_thinn { get; private set; }
+        public TFloat[,] mort_stress { get; private set; } // density independent mortality from gammaN
+        public TFloat[,] mort_thinn { get; private set; } // density dependent mortality (self thinning)
 
         // stand
-        public TFloat[,] basal_area { get; private set; }
-        public TFloat[,] basal_area_prop { get; private set; }
-        public TFloat[,] biom_foliage { get; private set; }
-        public TFloat[,] biom_root { get; private set; }
-        public TFloat[,] biom_stem { get; private set; }
-        public TFloat[,] biom_tree { get; private set; }
+        public TFloat[,] basal_area { get; private set; } // m²/ha
+        public TFloat[,] basal_area_prop { get; private set; } // species fraction of total basal area
+        public TFloat[,] biom_foliage { get; private set; } // dry tons/ha
+        public TFloat[,] biom_root { get; private set; } // dry tons/ha
+        public TFloat[,] biom_stem { get; private set; } // dry tons/ha
+        public TFloat[,] biom_tree { get; private set; } // mean stem biomass, dry tons/tree
         public TFloat[,] biom_tree_max { get; private set; }
-        public TFloat[,] dbh { get; private set; }
-        public TFloat[,] height { get; private set; }
-        public TFloat[,] lai { get; private set; }
-        public TFloat[,] stems_n { get; private set; }
-        public TFloat[,] stems_n_ha { get; private set; }
-        public TFloat[,] volume { get; private set; } // standing
+        public TFloat[,] dbh { get; private set; } // [quadratic] mean DBH, cm
+        public TFloat[,] height { get; private set; } // top height, m
+        public TFloat[,] lai { get; private set; } // m²/m²
+        public TFloat[,] stems_n { get; private set; } // actual trees per hectare
+        public TFloat[,] stems_n_ha { get; private set; } // maximum trees per hectare at biomass limit
+        public TFloat[,] volume { get; private set; } // standing volume, merchantable m³/ha
 
         // water
         public TFloat[,] prcp_interc { get; private set; }
@@ -143,7 +143,6 @@ namespace BayesianPG.ThreePG
             // modifiers
             this.f_age = new TFloat[monthCount, this.n_sp];
             this.f_tmp = new TFloat[monthCount, this.n_sp];
-            this.f_tmp_gc = new TFloat[monthCount, this.n_sp];
             this.f_frost = new TFloat[monthCount, this.n_sp];
             this.f_calpha = new TFloat[monthCount, this.n_sp];
             this.f_cg = new TFloat[monthCount, this.n_sp];
@@ -153,8 +152,8 @@ namespace BayesianPG.ThreePG
             this.f_phys = new TFloat[monthCount, this.n_sp];
 
             // growth
-            this.aero_resist = new TFloat[monthCount, this.n_sp];
             this.alpha_c = new TFloat[monthCount, this.n_sp];
+            this.aero_resist = new TFloat[monthCount, this.n_sp];
             this.biom_foliage_debt = new TFloat[monthCount, this.n_sp];
             this.conduct_canopy = new TFloat[monthCount, this.n_sp];
             this.crown_length = new TFloat[monthCount, this.n_sp];
@@ -162,6 +161,7 @@ namespace BayesianPG.ThreePG
             this.epsilon_biom_stem = new TFloat[monthCount, this.n_sp];
             this.epsilon_gpp = new TFloat[monthCount, this.n_sp];
             this.epsilon_npp = new TFloat[monthCount, this.n_sp];
+            this.f_tmp_gc = new TFloat[monthCount, this.n_sp];
             this.gC = new TFloat[monthCount, this.n_sp];
             this.GPP = new TFloat[monthCount, this.n_sp];
             this.NPP_f = new TFloat[monthCount, this.n_sp];
@@ -309,7 +309,6 @@ namespace BayesianPG.ThreePG
             this.f_phys = this.f_phys.Resize(capacity, this.n_sp);
             this.f_sw = this.f_sw.Resize(capacity, this.n_sp);
             this.f_tmp = this.f_tmp.Resize(capacity, this.n_sp);
-            this.f_tmp_gc = this.f_tmp_gc.Resize(capacity, this.n_sp);
             this.f_vpd = this.f_vpd.Resize(capacity, this.n_sp);
 
             // growth
@@ -322,6 +321,7 @@ namespace BayesianPG.ThreePG
             this.epsilon_biom_stem = this.epsilon_biom_stem.Resize(capacity, this.n_sp);
             this.epsilon_gpp = this.epsilon_gpp.Resize(capacity, this.n_sp);
             this.epsilon_npp = this.epsilon_npp.Resize(capacity, this.n_sp);
+            this.f_tmp_gc = this.f_tmp_gc.Resize(capacity, this.n_sp);
             this.gC = this.gC.Resize(capacity, this.n_sp);
             this.GPP = this.GPP.Resize(capacity, this.n_sp);
             this.NPP_f = this.NPP_f.Resize(capacity, this.n_sp);
@@ -444,7 +444,6 @@ namespace BayesianPG.ThreePG
             this.f_phys = this.f_phys.Resize(this.n_sp);
             this.f_sw = this.f_sw.Resize(this.n_sp);
             this.f_tmp = this.f_tmp.Resize(this.n_sp);
-            this.f_tmp_gc = this.f_tmp_gc.Resize(this.n_sp);
             this.f_vpd = this.f_vpd.Resize(this.n_sp);
 
             // growth
@@ -457,6 +456,7 @@ namespace BayesianPG.ThreePG
             this.epsilon_biom_stem = this.epsilon_biom_stem.Resize(this.n_sp);
             this.epsilon_gpp = this.epsilon_gpp.Resize(this.n_sp);
             this.epsilon_npp = this.epsilon_npp.Resize(this.n_sp);
+            this.f_tmp_gc = this.f_tmp_gc.Resize(this.n_sp);
             this.GPP = this.GPP.Resize(this.n_sp);
             this.NPP_f = this.NPP_f.Resize(this.n_sp);
             this.npp_fract_foliage = this.npp_fract_foliage.Resize(this.n_sp);
@@ -544,7 +544,7 @@ namespace BayesianPG.ThreePG
         {
             for (int speciesIndex = 0; speciesIndex < this.n_sp; ++speciesIndex)
             {
-                // modifiers
+                // modifiers not already set from within timestep
                 this.f_vpd[timestepIndex, speciesIndex] = state.f_vpd[speciesIndex];
                 this.f_sw[timestepIndex, speciesIndex] = state.f_sw[speciesIndex];
                 this.f_nutr[timestepIndex, speciesIndex] = state.f_nutr[speciesIndex];

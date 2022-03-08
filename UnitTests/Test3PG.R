@@ -1,31 +1,31 @@
 broadleafMixActual = read_actual("broadleaf_mix.csv")
 broadleafMixExpected = read_expected("broadleaf_mix")
-broadleafMixRatios = get_column_ratios(broadleafMixActual, broadleafMixExpected)
+broadleafMixRatios = get_column_ratios(broadleafMixActual %>% filter(trajectory == 0), broadleafMixExpected)
 broadleafMixSummary = summarize_ratios(broadleafMixRatios)
 
 broadleafPjsActual = read_actual("broadleaf_pjs.csv")
 broadleafPjsExpected = read_expected("broadleaf_pjs")
-broadleafPjsRatios = get_column_ratios(broadleafPjsActual, broadleafPjsExpected)
+broadleafPjsRatios = get_column_ratios(broadleafPjsActual %>% filter(trajectory == 0), broadleafPjsExpected)
 broadleafPjsSummary = summarize_ratios(broadleafPjsRatios)
 
 evergreenMixActual = read_actual("evergreen_mix.csv")
 evergreenMixExpected = read_expected("evergreen_mix")
-evergreenMixRatios = get_column_ratios(evergreenMixActual, evergreenMixExpected)
+evergreenMixRatios = get_column_ratios(evergreenMixActual %>% filter(trajectory == 0), evergreenMixExpected)
 evergreenMixSummary = summarize_ratios(evergreenMixRatios)
 
 evergreenPjsActual = read_actual("evergreen_pjs.csv")
 evergreenPjsExpected = read_expected("evergreen_pjs")
-evergreenPjsRatios = get_column_ratios(evergreenPjsActual, evergreenPjsExpected)
+evergreenPjsRatios = get_column_ratios(evergreenPjsActual %>% filter(trajectory == 0), evergreenPjsExpected)
 evergreenPjsSummary = summarize_ratios(evergreenPjsRatios)
 
 mixturesEuropeActual = read_actual("mixtures_eu.csv")
 mixturesEuropeExpected = read_expected("mixtures_eu")
-mixturesEuropeRatios = get_column_ratios(mixturesEuropeActual, mixturesEuropeExpected)
+mixturesEuropeRatios = get_column_ratios(mixturesEuropeActual %>% filter(trajectory == 0) %>% arrange(species, date), mixturesEuropeExpected)
 mixturesEuropeSummary = summarize_ratios(mixturesEuropeRatios)
 
 mixturesOtherActual = read_actual("mixtures_other.csv")
 mixturesOtherExpected = read_expected("mixtures_other")
-mixturesOtherRatios = get_column_ratios(mixturesOtherActual, mixturesOtherExpected)
+mixturesOtherRatios = get_column_ratios(mixturesOtherActual %>% filter(trajectory == 0) %>% arrange(species, date), mixturesOtherExpected)
 mixturesOtherSummary = summarize_ratios(mixturesOtherRatios)
 
 plot_departures(broadleafMixRatios, title = "(a) broadleaf_mix", xLabel = FALSE) +
