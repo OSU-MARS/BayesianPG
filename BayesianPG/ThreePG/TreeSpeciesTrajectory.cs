@@ -3,6 +3,20 @@ using System;
 
 namespace BayesianPG.ThreePG
 {
+    /// <remarks>
+    /// 86 output variables per species (403 kB in memory per species-century if all are enabled).
+    /// - 7 age dependent terms
+    /// - 9 modifiers
+    /// - 17 growth
+    /// - 2 mortality
+    /// - 13 stand
+    /// - 4 water
+    /// - 7 3-PGmix
+    /// - 1 3-PGpjs
+    /// - 5 δ¹³C
+    /// - 15 bias correction
+    /// - 6 extended
+    /// </remarks>
     public class TreeSpeciesTrajectory<TFloat, TInteger> : TreeSpeciesArray 
         where TFloat : struct
         where TInteger : struct

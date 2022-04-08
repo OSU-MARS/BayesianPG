@@ -9,7 +9,9 @@ library(writexl)
 #   crownshape: not amenable to Sobol' indexing as a factorial variable (also 3-PGmix specific)
 #   leafgrow, leaffall: leaf on and off not applicable to evergreen species
 #   aV, nVB, nVH, nVBH: not meaningful for sensitivity analysis if merchantable m³ weren't measured
+#   fulCanAge: not used by 3-PGmix
 #   fracBB0, fracBB1, tBB: not used for calculating merchantable m³ when aV ≠ 0
+#   nHLL and nHLC: not used for crown length with exponent height models
 #   RGcGw, D13CTissueDif, aFracDiffu, bFracRubi: δ13C parameters have no effect when δ13C is disabled
 parameterPriors = read_xlsx("UnitTests/sensitivity analysis.xlsx", sheet = "parameter priors")
 

@@ -115,9 +115,20 @@ namespace BayesianPG.ThreePG
     }
 
     /// <summary>
-    /// tree species parameters: d_parameters in R, pars_i in Fortran
-    /// Vectors of length n_sp.
+    /// Tree species parameters: d_parameters in R, pars_i in Fortran, vectors of length n_sp.
     /// </summary>
+    /// <remarks>
+    /// 74 required + 9 optional parameters per species:
+    /// - 12 biomass partitioning and turnover
+    /// - 14 NPP and conductance modifiers
+    /// - 9 mortality and self thinning
+    /// - 15 canopy structure and processes
+    /// - [4 δ¹³C]
+    /// - 8 wood and stand properties
+    /// - 12 requried + 5 optional height and volume
+    /// - 4 radiation
+    /// Maximum Markov chain size is 3.1 GB per species for 10 million iterations.
+    /// </remarks>
     public class TreeSpeciesParameters<TFloat> : TreeSpeciesArray
         where TFloat: struct
     {
@@ -171,7 +182,7 @@ namespace BayesianPG.ThreePG
         /// </summary>
         public int[] leaffall { get; private set; }
 
-        // NPP & conductance modifiers
+        // NPP and conductance modifiers
         /// <summary>
         /// Minimum temperature for growth (°C, Fortran pars_i[12])
         /// </summary>
@@ -230,7 +241,7 @@ namespace BayesianPG.ThreePG
         /// </summary>
         public TFloat[] rAge { get; private set; }
 
-        // Stem mortality & self-thinning
+        // stem mortality and self-thinning
         /// <summary>
         /// Density independent mortality rate for ages well above tgammaN (%/year, Fortran pars_i[26])
         /// </summary>
@@ -286,7 +297,7 @@ namespace BayesianPG.ThreePG
         /// </summary>
         public TFloat[] k { get; private set; }
         /// <summary>
-        /// Age at canopy closure (Fortran pars_i[39])
+        /// Age at canopy closure (years, 3-PGpjs only, Fortran pars_i[39])
         /// </summary>
         public TFloat[] fullCanAge { get; private set; }
         /// <summary>
@@ -329,20 +340,22 @@ namespace BayesianPG.ThreePG
         /// Canopy boundary layer conductance (m/s, Fortran pars_i[49])
         /// </summary>
         public TFloat[] BLcond { get; private set; }
+
+        // δ¹³C
         /// <summary>
-        /// The ratio of diffusivities of CO2 and water vapour in air (Fortran pars_i[50])
+        /// The ratio of diffusivities of CO₂ and water vapour in air (ratio, Fortran pars_i[50])
         /// </summary>
         public TFloat[] RGcGw { get; private set; }
         /// <summary>
-        /// δ¹³C difference of modelled tissue and new photosynthate (Fortran pars_i[51])
+        /// δ¹³C difference of modelled tissue and new photosynthate (per mil, Fortran pars_i[51])
         /// </summary>
         public TFloat[] D13CTissueDif { get; private set; }
         /// <summary>
-        /// Fractionation against ¹³C in diffusion (Fortran pars_i[52])
+        /// Fractionation against ¹³C in diffusion (per mil, Fortran pars_i[52])
         /// </summary>
         public TFloat[] aFracDiffu { get; private set; }
         /// <summary>
-        /// Enzymatic fractionation by Rubisco (Fortran pars_i[53])
+        /// Enzymatic fractionation by rubisco (per mil, Fortran pars_i[53])
         /// </summary>
         public TFloat[] bFracRubi { get; private set; }
 
@@ -434,7 +447,7 @@ namespace BayesianPG.ThreePG
         /// </summary>
         public TFloat[] nHLB { get; private set; }
         /// <summary>
-        /// Crown length regression: LAI power, <see cref="ThreePGHeightModel.Exponent"> only (bias correction, Fortran pars_i[75])
+        /// Crown length regression: LAI power, <see cref="ThreePGHeightModel.Power"> only (bias correction, Fortran pars_i[75])
         /// </summary>
         public TFloat[] nHLL { get; private set; }
         /// <summary>
@@ -442,11 +455,11 @@ namespace BayesianPG.ThreePG
         /// </summary>
         public TFloat[] nHLC { get; private set; }
         /// <summary>
-        /// Crown length regression: relative height power, <see cref="ThreePGHeightModel.Exponent"> only (bias correction, Fortran pars_i[77])
+        /// Crown length regression: relative height power, <see cref="ThreePGHeightModel.Power"> only (bias correction, Fortran pars_i[77])
         /// </summary>
         public TFloat[] nHLrh { get; private set; }
 
-        // δ¹³C
+        // radiation
         /// <summary>
         ///  (Fortran pars_i[78])
         /// </summary>
