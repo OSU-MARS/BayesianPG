@@ -647,7 +647,7 @@ namespace BayesianPG.ThreePG
                     this.wsrelBias[timestepIndex, speciesIndex] = state.wsrelBias[speciesIndex];
                 }
 
-                // extended coluns
+                // extended columns
                 if (this.biom_incr_foliage.Length > 0)
                 {
                     this.biom_incr_foliage[timestepIndex, speciesIndex] = state.biom_incr_foliage[speciesIndex];
