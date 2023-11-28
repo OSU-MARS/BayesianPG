@@ -12,15 +12,12 @@ namespace BayesianPG.ThreePG
         public TreeSpeciesArray()
         {
             this.n_sp = 0;
-            this.Species = Array.Empty<string>();
+            this.Species = [];
         }
 
         public virtual void AllocateSpecies(int additionalSpecies)
         {
-            if (additionalSpecies < 1)
-            {
-                throw new ArgumentOutOfRangeException(nameof(additionalSpecies));
-            }
+            ArgumentOutOfRangeException.ThrowIfLessThan(additionalSpecies, 1);
 
             this.Species = this.Species.Resize(this.n_sp + additionalSpecies);
             this.n_sp += additionalSpecies;

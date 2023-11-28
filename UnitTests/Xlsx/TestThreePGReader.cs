@@ -4,13 +4,8 @@ using System.Collections.Generic;
 
 namespace BayesianPG.Test.Xlsx
 {
-    internal class TestThreePGReader : ThreePGReader
+    internal class TestThreePGReader(string xlsxFilePath) : ThreePGReader(xlsxFilePath)
     {
-        public TestThreePGReader(string xlsxFilePath) :
-            base(xlsxFilePath)
-        {
-        }
-
         public SortedList<string, ThreePGStandTrajectory<float, int>> ReadR3PGValidationOutput()
         {
             StandTrajectoryWorksheet broadleafPjs = this.ReadWorksheet<StandTrajectoryWorksheet>("broadleaf_pjs"); // _r3PG

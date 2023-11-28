@@ -45,13 +45,13 @@ namespace BayesianPG.ThreePG
 
         public TreeSpeciesManagement()
         {
-            this.n_man = Array.Empty<int>();
+            this.n_man = [];
 
-            this.age = Array.Empty<float[]>();
-            this.stems_n = Array.Empty<float[]>();
-            this.stem = Array.Empty<float[]>();
-            this.root = Array.Empty<float[]>();
-            this.foliage = Array.Empty<float[]>();
+            this.age = [];
+            this.stems_n = [];
+            this.stem = [];
+            this.root = [];
+            this.foliage = [];
         }
 
         public int AllocateManagement(int speciesIndex)

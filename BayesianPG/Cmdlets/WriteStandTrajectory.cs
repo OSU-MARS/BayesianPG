@@ -1,4 +1,5 @@
-﻿using BayesianPG.ThreePG;
+﻿using BayesianPG.Extensions;
+using BayesianPG.ThreePG;
 using System;
 using System.Diagnostics;
 using System.Globalization;
@@ -245,27 +246,27 @@ namespace BayesianPG.Cmdlets
                                       element.ToString(CultureInfo.InvariantCulture) + "," +
                                       // core stand trajectory and produtivity variables
                                       trajectory.Species.age[speciesIndex][timestepIndex].ToString(this.precision3, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.stems_n[timestepIndex, speciesIndex], element).ToString(this.precision1, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.mort_stress[timestepIndex, speciesIndex], element).ToString(this.precision2, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.mort_thinn[timestepIndex, speciesIndex], element).ToString(this.precision2, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.basal_area[timestepIndex, speciesIndex], element).ToString(this.precision2, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.dbh[timestepIndex, speciesIndex], element).ToString(this.precision2, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.height[timestepIndex, speciesIndex], element).ToString(this.precision2, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.volume[timestepIndex, speciesIndex], element).ToString(this.precision1, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.GPP[timestepIndex, speciesIndex], element).ToString(this.precision3, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.NPP_f[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," + // net of biomass foliage debt paid
-                                      Avx.Extract(trajectory.Species.biom_foliage_debt[timestepIndex, speciesIndex], element).ToString(this.precision3, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.lai[timestepIndex, speciesIndex], element).ToString(this.precision3, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.biom_foliage[timestepIndex, speciesIndex], element).ToString(this.precision3, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.SLA[speciesIndex][timestepIndex], element).ToString(this.precision3, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.biom_root[timestepIndex, speciesIndex], element).ToString(this.precision2, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.biom_stem[timestepIndex, speciesIndex], element).ToString(this.precision2, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.biom_tree[timestepIndex, speciesIndex], element).ToString(this.precision2, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.biom_tree_max[timestepIndex, speciesIndex], element).ToString(this.precision2, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.basal_area_prop[timestepIndex, speciesIndex], element).ToString(this.precision3, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.npp_fract_foliage[timestepIndex, speciesIndex], element).ToString(this.precision5, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.npp_fract_root[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.npp_fract_stem[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
+                                      trajectory.Species.stems_n[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision1) + "," +
+                                      trajectory.Species.mort_stress[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision2) + "," +
+                                      trajectory.Species.mort_thinn[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision2) + "," +
+                                      trajectory.Species.basal_area[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision2) + "," +
+                                      trajectory.Species.dbh[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision2) + "," +
+                                      trajectory.Species.height[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision2) + "," +
+                                      trajectory.Species.volume[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision1) + "," +
+                                      trajectory.Species.GPP[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision3) + "," +
+                                      trajectory.Species.NPP_f[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," + // net of biomass foliage debt paid
+                                      trajectory.Species.biom_foliage_debt[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision3) + "," +
+                                      trajectory.Species.lai[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision3) + "," +
+                                      trajectory.Species.biom_foliage[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision3) + "," +
+                                      trajectory.Species.SLA[speciesIndex][timestepIndex].ExtractToStringInvariant(element, this.precision3) + "," +
+                                      trajectory.Species.biom_root[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision2) + "," +
+                                      trajectory.Species.biom_stem[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision2) + "," +
+                                      trajectory.Species.biom_tree[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision2) + "," +
+                                      trajectory.Species.biom_tree_max[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision2) + "," +
+                                      trajectory.Species.basal_area_prop[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision3) + "," +
+                                      trajectory.Species.npp_fract_foliage[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision5) + "," +
+                                      trajectory.Species.npp_fract_root[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.npp_fract_stem[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
                                       // top level calculation chain for output intercomparison:
                                       //   (3-PGmix: lai -> lai_above -> vpd_sp -> f_vpd)
                                       //   f_phys = f_vpd * f_sw * f_age
@@ -273,91 +274,91 @@ namespace BayesianPG.Cmdlets
                                       //   epsilon = gDM_mol * molPAR_MJ * alphaC - later overwritten in state, though
                                       //   gpp = epsilon * apar / 100
                                       //   npp = Y * gpp - biom_foliage_debt
-                                      Avx.Extract(trajectory.Species.alpha_c[timestepIndex, speciesIndex], element).ToString(this.precision5, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.f_age[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.f_calpha[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.f_cg[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.f_frost[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.f_nutr[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.f_phys[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.f_sw[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.f_tmp[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.f_tmp_gc[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.f_vpd[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.VPD_sp[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.epsilon_biom_stem[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.epsilon_gpp[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.epsilon_npp[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.aero_resist[timestepIndex, speciesIndex], element).ToString(this.precision5, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.canopy_cover[timestepIndex, speciesIndex], element).ToString(this.precision5, CultureInfo.InvariantCulture) + "," +
+                                      trajectory.Species.alpha_c[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision5) + "," +
+                                      trajectory.Species.f_age[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.f_calpha[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.f_cg[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.f_frost[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.f_nutr[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.f_phys[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.f_sw[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.f_tmp[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.f_tmp_gc[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.f_vpd[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.VPD_sp[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.epsilon_biom_stem[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.epsilon_gpp[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.epsilon_npp[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.aero_resist[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision5) + "," +
+                                      trajectory.Species.canopy_cover[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision5) + "," +
                                       // conduct_canopy = gC * lai_per * f_phys * f_tmp_gc * f_cg
-                                      Avx.Extract(trajectory.Species.conduct_canopy[timestepIndex, speciesIndex], element).ToString(this.precision5, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.crown_length[timestepIndex, speciesIndex], element).ToString(this.precision5, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.crown_width[timestepIndex, speciesIndex], element).ToString(this.precision5, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.fracBB[speciesIndex][timestepIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.gammaF[speciesIndex][timestepIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.gammaN[speciesIndex][timestepIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      // Avx.Extract(trajectory.Species.pFS[speciesIndex][timestepIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.prcp_interc[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.transp_veg[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.wood_density[speciesIndex][timestepIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.WUE[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.WUEtransp[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.canopy_vol_frac[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.fi[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.lai_above[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.lai_sa_ratio[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.lambda_h[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.lambda_v[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.Species.layer_id[timestepIndex, speciesIndex], element).ToString(CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.AvailableSoilWater[timestepIndex], element).ToString(this.precision2, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.conduct_soil[timestepIndex], element).ToString(this.precision6, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.evapotra_soil[timestepIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.evapo_transp[timestepIndex], element).ToString(this.precision2, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.f_transp_scale[timestepIndex], element).ToString(this.precision2, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.prcp_runoff[timestepIndex], element).ToString(this.precision2, CultureInfo.InvariantCulture) + "," +
-                                      Avx.Extract(trajectory.irrig_supl[timestepIndex], element).ToString(this.precision1, CultureInfo.InvariantCulture);
+                                      trajectory.Species.conduct_canopy[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision5) + "," +
+                                      trajectory.Species.crown_length[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision5) + "," +
+                                      trajectory.Species.crown_width[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision5) + "," +
+                                      trajectory.Species.fracBB[speciesIndex][timestepIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.gammaF[speciesIndex][timestepIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.gammaN[speciesIndex][timestepIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      // trajectory.Species.pFS[speciesIndex][timestepIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.prcp_interc[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.transp_veg[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.wood_density[speciesIndex][timestepIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.WUE[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.WUEtransp[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.canopy_vol_frac[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.fi[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.lai_above[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.lai_sa_ratio[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.lambda_h[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.lambda_v[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.Species.layer_id[timestepIndex, speciesIndex].ExtractToStringInvariant(element) + "," +
+                                      trajectory.AvailableSoilWater[timestepIndex].ExtractToStringInvariant(element, this.precision2) + "," +
+                                      trajectory.conduct_soil[timestepIndex].ExtractToStringInvariant(element, this.precision6) + "," +
+                                      trajectory.evapotra_soil[timestepIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                      trajectory.evapo_transp[timestepIndex].ExtractToStringInvariant(element, this.precision2) + "," +
+                                      trajectory.f_transp_scale[timestepIndex].ExtractToStringInvariant(element, this.precision2) + "," +
+                                      trajectory.prcp_runoff[timestepIndex].ExtractToStringInvariant(element, this.precision2) + "," +
+                                      trajectory.irrig_supl[timestepIndex].ExtractToStringInvariant(element, this.precision1);
                         writer.Write(line);
 
                         if (trajectory.ColumnGroups.HasFlag(ThreePGStandTrajectoryColumnGroups.BiasCorrection))
                         {
                             string bias = "," +
-                                Avx.Extract(trajectory.Species.CVdbhDistribution[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                Avx.Extract(trajectory.Species.CVwsDistribution[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                Avx.Extract(trajectory.Species.height_rel[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                Avx.Extract(trajectory.Species.DWeibullScale[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                Avx.Extract(trajectory.Species.DWeibullShape[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                Avx.Extract(trajectory.Species.DWeibullLocation[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                Avx.Extract(trajectory.Species.wsWeibullScale[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                Avx.Extract(trajectory.Species.wsWeibullShape[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                Avx.Extract(trajectory.Species.wsWeibullLocation[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                Avx.Extract(trajectory.Species.DrelBiaspFS[timestepIndex, speciesIndex], element).ToString(this.precision5, CultureInfo.InvariantCulture) + "," +
-                                Avx.Extract(trajectory.Species.DrelBiasheight[timestepIndex, speciesIndex], element).ToString(this.precision5, CultureInfo.InvariantCulture) + "," +
-                                Avx.Extract(trajectory.Species.DrelBiasBasArea[timestepIndex, speciesIndex], element).ToString(this.precision5, CultureInfo.InvariantCulture) + "," +
-                                Avx.Extract(trajectory.Species.DrelBiasLCL[timestepIndex, speciesIndex], element).ToString(this.precision6, CultureInfo.InvariantCulture) + "," +
-                                Avx.Extract(trajectory.Species.DrelBiasCrowndiameter[timestepIndex, speciesIndex], element).ToString(this.precision6, CultureInfo.InvariantCulture) + "," +
-                                Avx.Extract(trajectory.Species.wsrelBias[timestepIndex, speciesIndex], element).ToString(this.precision6, CultureInfo.InvariantCulture);
+                                trajectory.Species.CVdbhDistribution[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                trajectory.Species.CVwsDistribution[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                trajectory.Species.height_rel[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                trajectory.Species.DWeibullScale[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                trajectory.Species.DWeibullShape[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                trajectory.Species.DWeibullLocation[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                trajectory.Species.wsWeibullScale[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                trajectory.Species.wsWeibullShape[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                trajectory.Species.wsWeibullLocation[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                trajectory.Species.DrelBiaspFS[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision5) + "," +
+                                trajectory.Species.DrelBiasheight[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision5) + "," +
+                                trajectory.Species.DrelBiasBasArea[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision5) + "," +
+                                trajectory.Species.DrelBiasLCL[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision6) + "," +
+                                trajectory.Species.DrelBiasCrowndiameter[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision6) + "," +
+                                trajectory.Species.wsrelBias[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision6);
                             writer.Write(bias);
                         }
 
                         if (trajectory.ColumnGroups.HasFlag(ThreePGStandTrajectoryColumnGroups.D13C))
                         {
                             string d13c = "," +
-                                Avx.Extract(trajectory.Species.D13CNewPS[timestepIndex, speciesIndex], element).ToString(this.precision3, CultureInfo.InvariantCulture) + "," +
-                                Avx.Extract(trajectory.Species.D13CTissue[timestepIndex, speciesIndex], element).ToString(this.precision3, CultureInfo.InvariantCulture) + "," +
-                                Avx.Extract(trajectory.Species.InterCi[timestepIndex, speciesIndex], element).ToString(this.precision5, CultureInfo.InvariantCulture);
+                                trajectory.Species.D13CNewPS[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision3) + "," +
+                                trajectory.Species.D13CTissue[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision3) + "," +
+                                trajectory.Species.InterCi[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision5);
                             writer.Write(d13c);
                         }
 
                         if (trajectory.ColumnGroups.HasFlag(ThreePGStandTrajectoryColumnGroups.Extended))
                         {
                             string extended = "," +
-                                Avx.Extract(trajectory.Species.biom_incr_foliage[timestepIndex, speciesIndex], element).ToString(this.precision5, CultureInfo.InvariantCulture) + "," +
-                                Avx.Extract(trajectory.Species.biom_incr_root[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                Avx.Extract(trajectory.Species.biom_incr_stem[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                Avx.Extract(trajectory.Species.biom_loss_foliage[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                Avx.Extract(trajectory.Species.biom_loss_root[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture) + "," +
-                                Avx.Extract(trajectory.Species.volume_cum[timestepIndex, speciesIndex], element).ToString(this.precision4, CultureInfo.InvariantCulture);
+                                trajectory.Species.biom_incr_foliage[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision5) + "," +
+                                trajectory.Species.biom_incr_root[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                trajectory.Species.biom_incr_stem[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                trajectory.Species.biom_loss_foliage[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                trajectory.Species.biom_loss_root[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4) + "," +
+                                trajectory.Species.volume_cum[timestepIndex, speciesIndex].ExtractToStringInvariant(element, this.precision4);
                             writer.Write(extended);
                         }
 

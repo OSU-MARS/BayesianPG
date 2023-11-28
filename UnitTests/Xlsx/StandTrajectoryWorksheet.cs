@@ -59,7 +59,7 @@ namespace BayesianPG.Test.Xlsx
             {
                 // reshape trajectory to multiple species
                 // For now it's assumed all species have a row for each timestep.
-                this.Trajectory.Species.AllocateSpecies(new string[] { species });
+                this.Trajectory.Species.AllocateSpecies([ species ]);
                 speciesIndex = this.Trajectory.Species.n_sp - 1;
             }
 

@@ -35,7 +35,7 @@ namespace BayesianPG.ThreePG
         public TreeSpeciesTrajectory<TFloat, TInteger> Species { get; private set; }
 
         public ThreePGStandTrajectory(string speciesName, DateTime from, ThreePGStandTrajectoryColumnGroups columns)
-            : this(new string[] { speciesName }, from, Constant.DefaultTimestepCapacity, columns)
+            : this([ speciesName ], from, Constant.DefaultTimestepCapacity, columns)
         {
         }
 

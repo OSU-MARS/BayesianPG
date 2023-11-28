@@ -4,7 +4,7 @@ namespace BayesianPG.Extensions
 {
     public static class DateTimeExtensions
     {
-        private static readonly int[] DaysInNonLeapYearMonth = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+        private static readonly int[] DaysInNonLeapYearMonth = [ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ];
 
         public static int DaysInMonth(this DateTime date)
         {

@@ -480,100 +480,100 @@ namespace BayesianPG.ThreePG
         public TreeSpeciesParameters()
         {
             // biomass partitioning and turnover
-            this.pFS2 = Array.Empty<TFloat>();
-            this.pFS20 = Array.Empty<TFloat>(); // pars_i[1]
-            this.aWS = Array.Empty<TFloat>();
-            this.nWS = Array.Empty<TFloat>();
-            this.pRx = Array.Empty<TFloat>();
-            this.pRn = Array.Empty<TFloat>();
-            this.gammaF1 = Array.Empty<TFloat>();
-            this.gammaF0 = Array.Empty<TFloat>();
-            this.tgammaF = Array.Empty<TFloat>();
-            this.gammaR = Array.Empty<TFloat>();
-            this.leafgrow = Array.Empty<int>();
-            this.leaffall = Array.Empty<int>();
+            this.pFS2 = [];
+            this.pFS20 = []; // pars_i[1]
+            this.aWS = [];
+            this.nWS = [];
+            this.pRx = [];
+            this.pRn = [];
+            this.gammaF1 = [];
+            this.gammaF0 = [];
+            this.tgammaF = [];
+            this.gammaR = [];
+            this.leafgrow = [];
+            this.leaffall = [];
 
             // NPP & conductance modifiers
-            this.Tmin = Array.Empty<TFloat>();
-            this.Topt = Array.Empty<TFloat>();
-            this.Tmax = Array.Empty<TFloat>();
-            this.kF = Array.Empty<TFloat>();
-            this.SWconst0 = Array.Empty<TFloat>();
-            this.SWpower0 = Array.Empty<TFloat>();
-            this.fCalpha700 = Array.Empty<TFloat>();
-            this.fCg700 = Array.Empty<TFloat>();
-            this.m0 = Array.Empty<TFloat>();
-            this.fN0 = Array.Empty<TFloat>();
-            this.fNn = Array.Empty<TFloat>();
-            this.MaxAge = Array.Empty<TFloat>();
-            this.nAge = Array.Empty<TFloat>();
-            this.rAge = Array.Empty<TFloat>();
+            this.Tmin = [];
+            this.Topt = [];
+            this.Tmax = [];
+            this.kF = [];
+            this.SWconst0 = [];
+            this.SWpower0 = [];
+            this.fCalpha700 = [];
+            this.fCg700 = [];
+            this.m0 = [];
+            this.fN0 = [];
+            this.fNn = [];
+            this.MaxAge = [];
+            this.nAge = [];
+            this.rAge = [];
 
             // stem mortality & self-thinning
-            this.gammaN1 = Array.Empty<TFloat>();
-            this.gammaN0 = Array.Empty<TFloat>();
-            this.tgammaN = Array.Empty<TFloat>();
-            this.ngammaN = Array.Empty<TFloat>();
-            this.wSx1000 = Array.Empty<TFloat>();
-            this.thinPower = Array.Empty<TFloat>();
-            this.mF = Array.Empty<TFloat>();
-            this.mR = Array.Empty<TFloat>();
-            this.mS = Array.Empty<TFloat>();
+            this.gammaN1 = [];
+            this.gammaN0 = [];
+            this.tgammaN = [];
+            this.ngammaN = [];
+            this.wSx1000 = [];
+            this.thinPower = [];
+            this.mF = [];
+            this.mR = [];
+            this.mS = [];
 
             // canopy structure and processes
-            this.SLA0 = Array.Empty<TFloat>();
-            this.SLA1 = Array.Empty<TFloat>();
-            this.tSLA = Array.Empty<TFloat>();
-            this.k = Array.Empty<TFloat>();
-            this.fullCanAge = Array.Empty<TFloat>();
-            this.MaxIntcptn = Array.Empty<TFloat>();
-            this.LAImaxIntcptn = Array.Empty<TFloat>();
-            this.cVPD = Array.Empty<TFloat>();
-            this.alphaCx = Array.Empty<TFloat>();
-            this.Y = Array.Empty<TFloat>();
-            this.MinCond = Array.Empty<TFloat>();
-            this.MaxCond = Array.Empty<TFloat>();
-            this.LAIgcx = Array.Empty<TFloat>();
-            this.CoeffCond = Array.Empty<TFloat>();
-            this.BLcond = Array.Empty<TFloat>();
-            this.RGcGw = Array.Empty<TFloat>();
-            this.D13CTissueDif = Array.Empty<TFloat>();
-            this.aFracDiffu = Array.Empty<TFloat>();
-            this.bFracRubi = Array.Empty<TFloat>();
+            this.SLA0 = [];
+            this.SLA1 = [];
+            this.tSLA = [];
+            this.k = [];
+            this.fullCanAge = [];
+            this.MaxIntcptn = [];
+            this.LAImaxIntcptn = [];
+            this.cVPD = [];
+            this.alphaCx = [];
+            this.Y = [];
+            this.MinCond = [];
+            this.MaxCond = [];
+            this.LAIgcx = [];
+            this.CoeffCond = [];
+            this.BLcond = [];
+            this.RGcGw = [];
+            this.D13CTissueDif = [];
+            this.aFracDiffu = [];
+            this.bFracRubi = [];
 
             // wood and stand properties
-            this.fracBB0 = Array.Empty<TFloat>();
-            this.fracBB1 = Array.Empty<TFloat>();
-            this.tBB = Array.Empty<TFloat>();
-            this.rho0 = Array.Empty<TFloat>();
-            this.rho1 = Array.Empty<TFloat>();
-            this.tRho = Array.Empty<TFloat>();
+            this.fracBB0 = [];
+            this.fracBB1 = [];
+            this.tBB = [];
+            this.rho0 = [];
+            this.rho1 = [];
+            this.tRho = [];
             this.CrownShape = new TreeCrownShape[n_sp];
 
             // height and volume
-            this.aH = Array.Empty<TFloat>();
-            this.nHB = Array.Empty<TFloat>();
-            this.nHC = Array.Empty<TFloat>();
-            this.aV = Array.Empty<TFloat>();
-            this.nVB = Array.Empty<TFloat>();
-            this.nVH = Array.Empty<TFloat>();
-            this.nVBH = Array.Empty<TFloat>();
-            this.aK = Array.Empty<TFloat>();
-            this.nKB = Array.Empty<TFloat>();
-            this.nKH = Array.Empty<TFloat>();
-            this.nKC = Array.Empty<TFloat>();
-            this.nKrh = Array.Empty<TFloat>();
-            this.aHL = Array.Empty<TFloat>();
-            this.nHLB = Array.Empty<TFloat>();
-            this.nHLL = Array.Empty<TFloat>();
-            this.nHLC = Array.Empty<TFloat>();
-            this.nHLrh = Array.Empty<TFloat>();
+            this.aH = [];
+            this.nHB = [];
+            this.nHC = [];
+            this.aV = [];
+            this.nVB = [];
+            this.nVH = [];
+            this.nVBH = [];
+            this.aK = [];
+            this.nKB = [];
+            this.nKH = [];
+            this.nKC = [];
+            this.nKrh = [];
+            this.aHL = [];
+            this.nHLB = [];
+            this.nHLL = [];
+            this.nHLC = [];
+            this.nHLrh = [];
 
             // δ¹³C
-            this.Qa = Array.Empty<TFloat>();
-            this.Qb = Array.Empty<TFloat>();
-            this.gDM_mol = Array.Empty<TFloat>();
-            this.molPAR_MJ = Array.Empty<TFloat>();
+            this.Qa = [];
+            this.Qb = [];
+            this.gDM_mol = [];
+            this.molPAR_MJ = [];
         }
 
         public override void AllocateSpecies(int additionalSpecies)

@@ -38,7 +38,7 @@ namespace BayesianPG.Test
         [TestMethod]
         public void Avx2Functions()
         {
-            Vector128<int> values = Avx2Extensions.Set128(0, 1, 2, 3);
+            Vector128<int> values = AvxExtensions.Set128(0, 1, 2, 3);
             int value0 = Avx.Extract(values, Constant.Simd128x4.Extract0);
             int value1 = Avx.Extract(values, Constant.Simd128x4.Extract1);
             int value2 = Avx.Extract(values, Constant.Simd128x4.Extract2);

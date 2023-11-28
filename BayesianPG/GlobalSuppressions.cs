@@ -5,6 +5,10 @@
 
 using System.Diagnostics.CodeAnalysis;
 
+[assembly: SuppressMessage("Style", "IDE0031:Use null propagation", Justification = "readability", Scope = "type", Target = "~T:BayesianPG.Xlsx.TreeSpeciesParameterWorksheet")]
+[assembly: SuppressMessage("Style", "IDE0031:Use null propagation", Justification = "readability", Scope = "type", Target = "~T:BayesianPG.Xlsx.TreeSpeciesSizeWorksheet")]
+[assembly: SuppressMessage("Style", "IDE0270:Use coalesce expression", Justification = "readability", Scope = "type", Target = "~T:BayesianPG.Xlsx.XlsxReader")]
+[assembly: SuppressMessage("Style", "IDE0290:Use primary constructor", Justification = "readability, debuggability", Scope = "member", Target = "~M:BayesianPG.ThreePG.ThreePGState`2.#ctor(System.Int32,BayesianPG.ThreePG.Site)")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "readability of 3-PG nomenclature", Scope = "type", Target = "~T:BayesianPG.ThreePG.ThreePGpjsMix")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "readability of 3-PG nomenclature", Scope = "type", Target = "~T:BayesianPG.ThreePG.ThreePGSettings")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "readability of 3-PG nomenclature", Scope = "type", Target = "~T:BayesianPG.ThreePG.ThreePGState`2")]
@@ -18,6 +22,3 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "readability of 3-PG nomenclature", Scope = "type", Target = "~T:BayesianPG.Xlsx.TreeSpeciesParameterWorksheet.WideformParameterPresence")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "readability of 3-PG nomenclature", Scope = "type", Target = "~T:BayesianPG.Xlsx.TreeSpeciesSizeHeader")]
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "readability of 3-PG nomenclature", Scope = "type", Target = "~T:BayesianPG.Xlsx.TreeSpeciesSizeWorksheet.WideformParameterPresence")]
-[assembly: SuppressMessage("Style", "IDE0031:Use null propagation", Justification = "readability", Scope = "type", Target = "~T:BayesianPG.Xlsx.TreeSpeciesParameterWorksheet")]
-[assembly: SuppressMessage("Style", "IDE0031:Use null propagation", Justification = "readability", Scope = "type", Target = "~T:BayesianPG.Xlsx.TreeSpeciesSizeWorksheet")]
-[assembly: SuppressMessage("Style", "IDE0270:Use coalesce expression", Justification = "readability", Scope = "type", Target = "~T:BayesianPG.Xlsx.XlsxReader")]

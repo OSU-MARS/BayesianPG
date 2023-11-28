@@ -12,7 +12,7 @@ namespace BayesianPG.Xlsx
 
         public SiteTreeSpeciesWorksheet()
         {
-            this.SpeciesBySite = new();
+            this.SpeciesBySite = [];
         }
 
         public override void ParseRow(XlsxRow row)
@@ -64,7 +64,7 @@ namespace BayesianPG.Xlsx
             }
 
             int newSpeciesIndex = treeSpecies.n_sp;
-            treeSpecies.AllocateSpecies(new string[] { speciesName });
+            treeSpecies.AllocateSpecies([ speciesName ]);
 
             treeSpecies.InitialFoliageBiomass[newSpeciesIndex] = initialFoliageBiomass;
             treeSpecies.InitialRootBiomass[newSpeciesIndex] = initialRootBiomass;

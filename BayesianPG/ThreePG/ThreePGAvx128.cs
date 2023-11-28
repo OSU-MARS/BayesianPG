@@ -7,15 +7,12 @@ using System.Runtime.Intrinsics.X86;
 
 namespace BayesianPG.ThreePG
 {
-    public class ThreePGSimd128 : ThreePGpjsMix<Vector128<float>, Vector128<int>>
+    public class ThreePGAvx128(Site site, SiteClimate climate, SiteTreeSpecies species, TreeSpeciesParameters<Vector128<float>> parameters, TreeSpeciesManagement management, ThreePGSettings settings)
+        : ThreePGpjsMix<Vector128<float>, Vector128<int>>(site, climate, species, parameters, management, settings)
     {
-        public ThreePGSimd128(Site site, SiteClimate climate, SiteTreeSpecies species, TreeSpeciesParameters<Vector128<float>> parameters, TreeSpeciesManagement management, ThreePGSettings settings)
-            : base(site, climate, species, parameters, management, settings)
-        {
-        }
 
         // shallow copies are acceptable as all inputs are held immutable
-        public ThreePGSimd128(ThreePGScalar threePGscalar)
+        public ThreePGAvx128(ThreePGScalar threePGscalar)
             : this(threePGscalar.Site, threePGscalar.Climate, threePGscalar.Species, TreeSpeciesParameters.BroadcastScalarToVector128(threePGscalar.Parameters), threePGscalar.Management, threePGscalar.Settings)
         {
         }
@@ -51,28 +48,28 @@ namespace BayesianPG.ThreePG
                     Vector128<float> Topt = this.Parameters.Topt[speciesIndex];
                     Vector128<float> Tmax = this.Parameters.Tmax[speciesIndex];
                     Vector128<float> f_tmp;
-                    byte noGrowthMask = (byte)Avx.MoveMask(Avx.Or(Avx.CompareLessThanOrEqual(tmp_ave, Tmin), Avx.CompareGreaterThanOrEqual(tmp_ave, Tmax)));
-                    if (noGrowthMask == Constant.Simd128x4.MaskAllTrue)
+                    Vector128<float> noGrowthMask = Avx.Or(Avx.CompareLessThanOrEqual(tmp_ave, Tmin), Avx.CompareGreaterThanOrEqual(tmp_ave, Tmax));
+                    if (Avx.MoveMask(noGrowthMask) == Constant.Simd128x4.MaskAllTrue)
                     {
                         f_tmp = zero;
                     }
                     else
                     {
-                        f_tmp = Avx.Blend(Avx.Multiply(Avx.Divide(Avx.Subtract(tmp_ave, Tmin), Avx.Subtract(Topt, Tmin)), MathV.Pow(Avx.Divide(Avx.Subtract(Tmax, tmp_ave), Avx.Subtract(Tmax, Topt)), Avx.Divide(Avx.Subtract(Tmax, Topt), Avx.Subtract(Topt, Tmin)))), zero, noGrowthMask);
+                        f_tmp = Avx.BlendVariable(Avx.Multiply(Avx.Divide(Avx.Subtract(tmp_ave, Tmin), Avx.Subtract(Topt, Tmin)), MathV.Pow(Avx.Divide(Avx.Subtract(Tmax, tmp_ave), Avx.Subtract(Tmax, Topt)), Avx.Divide(Avx.Subtract(Tmax, Topt), Avx.Subtract(Topt, Tmin)))), zero, noGrowthMask);
                     }
                     this.Trajectory.Species.f_tmp[timestepIndex, speciesIndex] = f_tmp;
 
                     // calculate temperature response function to apply to gc (uses mean of Tx and Tav instead of Tav, Feikema et al 2010)
                     Vector128<float> tmp_max = AvxExtensions.BroadcastScalarToVector128(this.Climate.MeanDailyTempMax[timestepIndex]);
                     Vector128<float> f_tmp_gc;
-                    byte noGcMask = (byte)Avx.MoveMask(Avx.Or(Avx.CompareLessThanOrEqual(Avx.Multiply(half, Avx.Add(tmp_ave, tmp_max)), Tmin), Avx.CompareGreaterThanOrEqual(Avx.Multiply(half, Avx.Add(tmp_ave, tmp_max)), Tmax)));
-                    if (noGcMask == Constant.Simd128x4.MaskAllTrue)
+                    Vector128<float> noGcMask = Avx.Or(Avx.CompareLessThanOrEqual(Avx.Multiply(half, Avx.Add(tmp_ave, tmp_max)), Tmin), Avx.CompareGreaterThanOrEqual(Avx.Multiply(half, Avx.Add(tmp_ave, tmp_max)), Tmax));
+                    if (Avx.MoveMask(noGcMask) == Constant.Simd128x4.MaskAllTrue)
                     {
                         f_tmp_gc = zero;
                     }
                     else
                     {
-                        f_tmp_gc = Avx.Blend(Avx.Multiply(Avx.Divide(Avx.Subtract(Avx.Multiply(half, Avx.Add(tmp_ave, tmp_max)), Tmin), Avx.Subtract(Topt, Tmin)), MathV.Pow(Avx.Divide(Avx.Subtract(Tmax, Avx.Multiply(half, Avx.Add(tmp_ave, tmp_max))), Avx.Subtract(Tmax, Topt)), Avx.Divide(Avx.Subtract(Tmax, Topt), Avx.Subtract(Topt, Tmin)))), zero, noGcMask);
+                        f_tmp_gc = Avx.BlendVariable(Avx.Multiply(Avx.Divide(Avx.Subtract(Avx.Multiply(half, Avx.Add(tmp_ave, tmp_max)), Tmin), Avx.Subtract(Topt, Tmin)), MathV.Pow(Avx.Divide(Avx.Subtract(Tmax, Avx.Multiply(half, Avx.Add(tmp_ave, tmp_max))), Avx.Subtract(Tmax, Topt)), Avx.Divide(Avx.Subtract(Tmax, Topt), Avx.Subtract(Topt, Tmin)))), zero, noGcMask);
                     }
                     this.Trajectory.Species.f_tmp_gc[timestepIndex, speciesIndex] = f_tmp_gc;
 
@@ -135,11 +132,11 @@ namespace BayesianPG.ThreePG
             // Check fN(FR) for no effect: fNn = 0 ==> fN(FR) = 1 for all FR.
             for (int speciesIndex = 0; speciesIndex < this.Species.n_sp; ++speciesIndex)
             {
-                byte fNnZeroMask = (byte)Avx.MoveMask(Avx.CompareEqual(this.Parameters.fNn[speciesIndex], zero));
-                if (fNnZeroMask != Constant.Simd128x4.MaskAllFalse)
+                Vector128<float> fNnZeroMask = Avx.CompareEqual(this.Parameters.fNn[speciesIndex], zero);
+                if (Avx.MoveMask(fNnZeroMask) != Constant.Simd128x4.MaskAllFalse)
                 {
                     Vector128<float> fNn = this.Parameters.fN0[speciesIndex];
-                    this.Parameters.fN0[speciesIndex] = Avx.Blend(fNn, one, fNnZeroMask); // TODO: move to input validation
+                    this.Parameters.fN0[speciesIndex] = Avx.BlendVariable(fNn, one, fNnZeroMask); // TODO: move to input validation
                 }
 
                 // Partitioning  --------
@@ -171,32 +168,32 @@ namespace BayesianPG.ThreePG
                 Vector128<float> sla0 = this.Parameters.SLA0[speciesIndex];
                 Vector128<float> sla1 = this.Parameters.SLA1[speciesIndex];
                 Vector128<float> tsla = this.Parameters.tSLA[speciesIndex];
-                this.Trajectory.Species.SLA[speciesIndex] = ThreePGSimd128.GetAgeDependentParameter(age_m, sla0, sla1, tsla, AvxExtensions.BroadcastScalarToVector128(2.0F));
+                this.Trajectory.Species.SLA[speciesIndex] = ThreePGAvx128.GetAgeDependentParameter(age_m, sla0, sla1, tsla, AvxExtensions.BroadcastScalarToVector128(2.0F));
 
                 Vector128<float> fracBB0 = this.Parameters.fracBB0[speciesIndex];
                 Vector128<float> fracBB1 = this.Parameters.fracBB1[speciesIndex];
                 Vector128<float> tBB = this.Parameters.tBB[speciesIndex];
-                this.Trajectory.Species.fracBB[speciesIndex] = ThreePGSimd128.GetAgeDependentParameter(age_m, fracBB0, fracBB1, tBB, one);
+                this.Trajectory.Species.fracBB[speciesIndex] = ThreePGAvx128.GetAgeDependentParameter(age_m, fracBB0, fracBB1, tBB, one);
 
                 Vector128<float> rhoMin = this.Parameters.rho0[speciesIndex];
                 Vector128<float> rhoMax = this.Parameters.rho1[speciesIndex];
                 Vector128<float> tRho = this.Parameters.tRho[speciesIndex];
-                this.Trajectory.Species.wood_density[speciesIndex] = ThreePGSimd128.GetAgeDependentParameter(age_m, rhoMin, rhoMax, tRho, one);
+                this.Trajectory.Species.wood_density[speciesIndex] = ThreePGAvx128.GetAgeDependentParameter(age_m, rhoMin, rhoMax, tRho, one);
 
                 Vector128<float> gammaN0 = this.Parameters.gammaN0[speciesIndex];
                 Vector128<float> gammaN1 = this.Parameters.gammaN1[speciesIndex];
                 Vector128<float> tgammaN = this.Parameters.tgammaN[speciesIndex];
                 Vector128<float> ngammaN = this.Parameters.ngammaN[speciesIndex];
-                this.Trajectory.Species.gammaN[speciesIndex] = ThreePGSimd128.GetAgeDependentParameter(age, gammaN0, gammaN1, tgammaN, ngammaN); // age instead of age_m (per Fortran)
+                this.Trajectory.Species.gammaN[speciesIndex] = ThreePGAvx128.GetAgeDependentParameter(age, gammaN0, gammaN1, tgammaN, ngammaN); // age instead of age_m (per Fortran)
 
                 Vector128<float> gammaF1 = this.Parameters.gammaF1[speciesIndex];
                 Vector128<float> gammaF0 = this.Parameters.gammaF0[speciesIndex];
                 Vector128<float> tgammaF = this.Parameters.tgammaF[speciesIndex];
-                this.Trajectory.Species.gammaF[speciesIndex] = ThreePGSimd128.GetLitterfallRate(age_m, gammaF1, gammaF0, tgammaF);
+                this.Trajectory.Species.gammaF[speciesIndex] = ThreePGAvx128.GetLitterfallRate(age_m, gammaF1, gammaF0, tgammaF);
 
                 // age modifier
-                byte nAgeZeroMask = (byte)Avx.MoveMask(Avx.CompareEqual(this.Parameters.nAge[speciesIndex], zero));
-                if (nAgeZeroMask == Constant.Simd128x4.MaskAllTrue)
+                Vector128<float> nAgeZeroMask = Avx.CompareEqual(this.Parameters.nAge[speciesIndex], zero);
+                if (Avx.MoveMask(nAgeZeroMask) == Constant.Simd128x4.MaskAllTrue)
                 {
                     for (int timestepIndex = 0; timestepIndex < this.Trajectory.MonthCount; ++timestepIndex)
                     {
@@ -212,7 +209,7 @@ namespace BayesianPG.ThreePG
                     for (int timestepIndex = 0; timestepIndex < this.Trajectory.MonthCount; ++timestepIndex)
                     {
                         Vector128<float> f_age = Avx.Divide(one, Avx.Add(one, MathV.Pow(Avx.Divide(AvxExtensions.BroadcastScalarToVector128(age_m[timestepIndex]), rAgeMaxAge), nAge)));
-                        this.Trajectory.Species.f_age[timestepIndex, speciesIndex] = Avx.Blend(f_age, one, nAgeZeroMask);
+                        this.Trajectory.Species.f_age[timestepIndex, speciesIndex] = Avx.BlendVariable(f_age, one, nAgeZeroMask);
                     }
                 }
             }
@@ -326,7 +323,7 @@ namespace BayesianPG.ThreePG
             }
 
             // correct the bias
-            this.CorrectSizeDistribution(timestep: 0, Constant.Simd128x4.MaskAllTrue);
+            this.CorrectSizeDistribution(timestep: 0, Vector128<float>.AllBitsSet); // all true
 
             // volume and volume increment
             // Call main function to get volume and then fix up cumulative volume and MAI.
@@ -368,7 +365,7 @@ namespace BayesianPG.ThreePG
                 timestepEndDate = timestepEndDate.AddMonths(1);
 
                 // add any new cohorts ----------------------------------------------------------------------
-                byte correctSizeDistributionMask = Constant.Simd128x4.MaskAllFalse;
+                Vector128<float> correctSizeDistributionMask = Vector128<float>.Zero; // all false
                 for (int speciesIndex = 0; speciesIndex < this.Species.n_sp; ++speciesIndex)
                 {
                     float age = this.Trajectory.Species.age[speciesIndex][timestep];
@@ -378,7 +375,7 @@ namespace BayesianPG.ThreePG
                         this.State.biom_stem[speciesIndex] = AvxExtensions.BroadcastScalarToVector128(this.Species.InitialStemBiomass[speciesIndex]);
                         this.State.biom_foliage[speciesIndex] = AvxExtensions.BroadcastScalarToVector128(this.Species.InitialFoliageBiomass[speciesIndex]);
                         this.State.biom_root[speciesIndex] = AvxExtensions.BroadcastScalarToVector128(this.Species.InitialRootBiomass[speciesIndex]);
-                        correctSizeDistributionMask = Constant.Simd128x4.MaskAllTrue;
+                        correctSizeDistributionMask = Vector128<float>.AllBitsSet; // all true
                     }
                 }
 
@@ -397,7 +394,7 @@ namespace BayesianPG.ThreePG
                             Vector128<float> sla = this.Trajectory.Species.SLA[speciesIndex][timestep];
                             Vector128<float> biom_foliage_debt = this.State.biom_foliage_debt[speciesIndex];
                             this.State.lai[speciesIndex] = Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(0.1F), Avx.Multiply(biom_foliage_debt, sla));
-                            correctSizeDistributionMask = Constant.Simd128x4.MaskAllTrue;
+                            correctSizeDistributionMask = Vector128<float>.AllBitsSet;
                         }
                     }
 
@@ -409,15 +406,15 @@ namespace BayesianPG.ThreePG
                             this.State.biom_foliage_debt[speciesIndex] = this.State.biom_foliage[speciesIndex];
                             this.State.biom_foliage[speciesIndex] = zero;
                             this.State.lai[speciesIndex] = zero;
-                            correctSizeDistributionMask = Constant.Simd128x4.MaskAllTrue;
+                            correctSizeDistributionMask = Vector128<float>.AllBitsSet; // all true
                         }
                     }
                 }
 
-                if (correctSizeDistributionMask != Constant.Simd128x4.MaskAllFalse)
+                if (Avx.MoveMask(correctSizeDistributionMask) != Constant.Simd128x4.MaskAllFalse)
                 {
                     this.CorrectSizeDistribution(timestep, correctSizeDistributionMask);
-                    correctSizeDistributionMask = Constant.Simd128x4.MaskAllFalse;
+                    correctSizeDistributionMask = Vector128<float>.Zero; // all false
                 }
 
                 // Radiation and assimilation ----------------------------------------------------------------------
@@ -454,11 +451,11 @@ namespace BayesianPG.ThreePG
                 for (int speciesIndex = 0; speciesIndex < this.Species.n_sp; ++speciesIndex)
                 {
                     Vector128<float> lai = this.State.lai[speciesIndex];
-                    byte laiNonzeroMask = (byte)Avx.MoveMask(Avx.CompareGreaterThan(lai, zero));
-                    if (laiNonzeroMask != Constant.Simd128x4.MaskAllFalse)
+                    Vector128<float> laiNonzeroMask = Avx.CompareGreaterThan(lai, zero);
+                    if (Avx.MoveMask(laiNonzeroMask) != Constant.Simd128x4.MaskAllFalse)
                     {
                         Vector128<float> height = this.State.height[speciesIndex];
-                        height_max = Avx.Blend(height_max, Avx.Max(height_max, height), laiNonzeroMask);
+                        height_max = Avx.BlendVariable(height_max, Avx.Max(height_max, height), laiNonzeroMask);
                         lai_total = Avx.Add(lai_total, lai);
 
                         DebugV.Assert(Avx.CompareGreaterThanOrEqual(lai, zero)); // a negative LAI would reduce lai_total
@@ -472,23 +469,23 @@ namespace BayesianPG.ThreePG
                     Vector128<float> aero_resist = zero;
 
                     Vector128<float> lai = this.State.lai[speciesIndex];
-                    byte laiNonzeroMask = (byte)Avx.MoveMask(Avx.CompareGreaterThan(lai, zero));
-                    if (laiNonzeroMask != Constant.Simd128x4.MaskAllFalse) // check for dormancy
+                    Vector128<float> laiNonzeroMask = Avx.CompareGreaterThan(lai, zero);
+                    if (Avx.MoveMask(laiNonzeroMask) != Constant.Simd128x4.MaskAllFalse) // check for dormancy
                     {
                         Vector128<float> blCondReciprocal = Avx.Divide(one, this.Parameters.BLcond[speciesIndex]);
                         Vector128<float> leafOnAeroResist = blCondReciprocal; // if this is the (currently) tallest species
 
                         Vector128<float> height = this.State.height[speciesIndex];
-                        byte maxHeightMask = (byte)Avx.MoveMask(Avx.CompareEqual(height, height_max));
-                        if (maxHeightMask != Constant.Simd128x4.MaskAllTrue)
+                        Vector128<float> maxHeightMask = Avx.CompareEqual(height, height_max);
+                        if (Avx.MoveMask(maxHeightMask) != Constant.Simd128x4.MaskAllTrue)
                         {
                             Vector128<float> twiceRelativeHeight = Avx.Divide(height, Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(0.5F), height_max));
                             Vector128<float> exponent = Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(-Constant.Ln2), Avx.Multiply(twiceRelativeHeight, twiceRelativeHeight));
                             Vector128<float> leafOnAeroResistBelowMaxHeight = Avx.Add(leafOnAeroResist, Avx.Multiply(Avx.Subtract(Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(5.0F), lai_total), blCondReciprocal), MathV.Exp(exponent)));
-                            leafOnAeroResist = Avx.Blend(leafOnAeroResistBelowMaxHeight, leafOnAeroResist, maxHeightMask);
+                            leafOnAeroResist = Avx.BlendVariable(leafOnAeroResistBelowMaxHeight, leafOnAeroResist, maxHeightMask);
                         }
 
-                        aero_resist = Avx.Blend(aero_resist, leafOnAeroResist, laiNonzeroMask);
+                        aero_resist = Avx.BlendVariable(aero_resist, leafOnAeroResist, laiNonzeroMask);
                     }
                     this.State.aero_resist[speciesIndex] = aero_resist;
 
@@ -505,8 +502,8 @@ namespace BayesianPG.ThreePG
 
                     // soil nutrition modifier
                     Vector128<float> f_nutr;
-                    byte fNnZeroMask = (byte)Avx.MoveMask(Avx.CompareEqual(this.Parameters.fNn[speciesIndex], zero));
-                    if (fNnZeroMask == Constant.Simd128x4.MaskAllTrue)
+                    Vector128<float> fNnZeroMask = Avx.CompareEqual(this.Parameters.fNn[speciesIndex], zero);
+                    if (Avx.MoveMask(fNnZeroMask) == Constant.Simd128x4.MaskAllTrue)
                     {
                         f_nutr = one;
                     }
@@ -516,7 +513,7 @@ namespace BayesianPG.ThreePG
                         Vector128<float> fNn = this.Parameters.fNn[speciesIndex];
                         Vector128<float> fertility = AvxExtensions.BroadcastScalarToVector128(this.Species.SoilFertility[speciesIndex]);
                         f_nutr = Avx.Subtract(one, Avx.Multiply(Avx.Subtract(one, fN0), MathV.Pow(Avx.Subtract(one, fertility), fNn)));
-                        f_nutr = Avx.Blend(f_nutr, one, fNnZeroMask);
+                        f_nutr = Avx.BlendVariable(f_nutr, one, fNnZeroMask);
                     }
                     this.State.f_nutr[speciesIndex] = f_nutr;
 
@@ -546,14 +543,14 @@ namespace BayesianPG.ThreePG
                     // calculate assimilation before the water balance is done
                     Vector128<float> alphaC = zero;
                     lai = this.State.lai[speciesIndex];
-                    laiNonzeroMask = (byte)Avx.MoveMask(Avx.CompareGreaterThan(lai, zero));
-                    if (laiNonzeroMask != Constant.Simd128x4.MaskAllFalse)
+                    laiNonzeroMask = Avx.CompareGreaterThan(lai, zero);
+                    if (Avx.MoveMask(laiNonzeroMask) != Constant.Simd128x4.MaskAllFalse)
                     {
                         Vector128<float> alphaCx = this.Parameters.alphaCx[speciesIndex];
                         Vector128<float> f_tmp = this.Trajectory.Species.f_tmp[timestep, speciesIndex];
                         Vector128<float> f_frost = this.Trajectory.Species.f_frost[timestep, speciesIndex];
                         Vector128<float> f_calpha = this.Trajectory.Species.f_calpha[timestep, speciesIndex];
-                        alphaC = Avx.Blend(alphaC, Avx.Multiply(alphaCx, Avx.Multiply(f_nutr, Avx.Multiply(f_tmp, Avx.Multiply(f_frost, Avx.Multiply(f_calpha, f_phys))))), laiNonzeroMask);
+                        alphaC = Avx.BlendVariable(alphaC, Avx.Multiply(alphaCx, Avx.Multiply(f_nutr, Avx.Multiply(f_tmp, Avx.Multiply(f_frost, Avx.Multiply(f_calpha, f_phys))))), laiNonzeroMask);
                     }
                     this.State.alpha_c[speciesIndex] = alphaC;
 
@@ -571,23 +568,23 @@ namespace BayesianPG.ThreePG
                     // Water Balance ----------------------------------------------------------------------
                     // Calculate each species' proportion.
                     Vector128<float> lai_per = zero;
-                    byte laiTotalMask = (byte)Avx.MoveMask(Avx.CompareGreaterThan(lai_total, zero));
-                    if (laiTotalMask != Constant.Simd128x4.MaskAllFalse)
+                    Vector128<float> laiTotalMask = Avx.CompareGreaterThan(lai_total, zero);
+                    if (Avx.MoveMask(laiTotalMask) != Constant.Simd128x4.MaskAllFalse)
                     {
                         lai = this.State.lai[speciesIndex];
-                        lai_per = Avx.Blend(lai_per, Avx.Divide(lai, lai_total), laiTotalMask);
+                        lai_per = Avx.BlendVariable(lai_per, Avx.Divide(lai, lai_total), laiTotalMask);
                     }
                     this.State.lai_per[speciesIndex] = lai_per;
 
                     // calculate conductance
                     Vector128<float> gC = this.Parameters.MaxCond[speciesIndex];
                     Vector128<float> laiGcx = this.Parameters.LAIgcx[speciesIndex];
-                    byte laiGcxMask = (byte)Avx.MoveMask(Avx.CompareLessThanOrEqual(lai_total, laiGcx));
-                    if (laiGcxMask != Constant.Simd128x4.MaskAllFalse) // TODO: single species case?
+                    Vector128<float> laiGcxMask = Avx.CompareLessThanOrEqual(lai_total, laiGcx);
+                    if (Avx.MoveMask(laiGcxMask) != Constant.Simd128x4.MaskAllFalse) // TODO: single species case?
                     {
                         Vector128<float> MinCond = this.Parameters.MinCond[speciesIndex];
                         Vector128<float> MaxCond = this.Parameters.MaxCond[speciesIndex];
-                        gC = Avx.Blend(gC, Avx.Add(MinCond, Avx.Multiply(Avx.Subtract(MaxCond, MinCond), Avx.Divide(lai_total, laiGcx))), laiGcxMask);
+                        gC = Avx.BlendVariable(gC, Avx.Add(MinCond, Avx.Multiply(Avx.Subtract(MaxCond, MinCond), Avx.Divide(lai_total, laiGcx))), laiGcxMask);
                     }
                     this.State.gC[speciesIndex] = gC;
 
@@ -626,11 +623,11 @@ namespace BayesianPG.ThreePG
                     Vector128<float> maxIntcptn = this.Parameters.MaxIntcptn[speciesIndex];
                     Vector128<float> prcp_interc_fract = maxIntcptn;
                     Vector128<float> laiMaxIntcptn = this.Parameters.LAImaxIntcptn[speciesIndex];
-                    byte laiMaxIntcptnNonzeroMask = (byte)Avx.MoveMask(Avx.CompareGreaterThan(laiMaxIntcptn, zero));
-                    if (laiMaxIntcptnNonzeroMask != Constant.Simd128x4.MaskAllFalse)
+                    Vector128<float> laiMaxIntcptnNonzeroMask = Avx.CompareGreaterThan(laiMaxIntcptn, zero);
+                    if (Avx.MoveMask(laiMaxIntcptnNonzeroMask) != Constant.Simd128x4.MaskAllFalse)
                     {
                         Vector128<float> lai_per = this.State.lai_per[speciesIndex];
-                        prcp_interc_fract = Avx.Blend(prcp_interc_fract, Avx.Multiply(maxIntcptn, Avx.Multiply(Avx.Min(one, Avx.Divide(lai_total, laiMaxIntcptn)), lai_per)), laiMaxIntcptnNonzeroMask);
+                        prcp_interc_fract = Avx.BlendVariable(prcp_interc_fract, Avx.Multiply(maxIntcptn, Avx.Multiply(Avx.Min(one, Avx.Divide(lai_total, laiMaxIntcptn)), lai_per)), laiMaxIntcptnNonzeroMask);
                     }
 
                     Vector128<float> totalPrecipitation = AvxExtensions.BroadcastScalarToVector128(this.Climate.TotalPrecipitation[timestep]);
@@ -670,11 +667,11 @@ namespace BayesianPG.ThreePG
                 this.Trajectory.evapo_transp[timestep] = evapo_transp;
 
                 Vector128<float> transpirationScaleDenominator = Avx.Add(transp_total, prcp_interc_total);
-                byte nonzeroWaterDemandMask = (byte)Avx.MoveMask(Avx.CompareGreaterThan(transpirationScaleDenominator, zero));
+                Vector128<float> nonzeroWaterDemandMask = Avx.CompareGreaterThan(transpirationScaleDenominator, zero);
                 Vector128<float> f_transp_scale; // scales NPP and GPP
-                if (nonzeroWaterDemandMask != Constant.Simd128x4.MaskAllFalse)
+                if (Avx.MoveMask(nonzeroWaterDemandMask) != Constant.Simd128x4.MaskAllFalse)
                 {
-                    f_transp_scale = Avx.Blend(one, Avx.Divide(evapo_transp, transpirationScaleDenominator), nonzeroWaterDemandMask);
+                    f_transp_scale = Avx.BlendVariable(one, Avx.Divide(evapo_transp, transpirationScaleDenominator), nonzeroWaterDemandMask);
                 }
                 else
                 {
@@ -716,23 +713,23 @@ namespace BayesianPG.ThreePG
                     Vector128<float> wue = zero;
                     if (this.Species.n_sp == 1)
                     {
-                        byte evapotranspirationMask = (byte)Avx.MoveMask(Avx.CompareNotEqual(evapo_transp, zero));
-                        if (evapotranspirationMask != Constant.Simd128x4.MaskAllFalse)
+                        Vector128<float> evapotranspirationMask = Avx.CompareNotEqual(evapo_transp, zero);
+                        if (Avx.MoveMask(evapotranspirationMask) != Constant.Simd128x4.MaskAllFalse)
                         {
                             // in case ET is zero
                             // Also, for mixtures it is not possible to calculate WUE based on ET because the soil
                             // evaporation cannot simply be divided between species.
-                            wue = Avx.Blend(wue, Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(100.0F), Avx.Divide(npp, evapo_transp)), evapotranspirationMask);
+                            wue = Avx.BlendVariable(wue, Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(100.0F), Avx.Divide(npp, evapo_transp)), evapotranspirationMask);
                         }
                     }
                     this.State.WUE[speciesIndex] = wue;
 
                     Vector128<float> transp_veg = this.State.transp_veg[speciesIndex];
                     Vector128<float> wue_transp = zero;
-                    byte transpVegMask = (byte)Avx.MoveMask(Avx.CompareGreaterThan(transp_veg, zero));
-                    if (transpVegMask != Constant.Simd128x4.MaskAllFalse)
+                    Vector128<float> transpVegMask = Avx.CompareGreaterThan(transp_veg, zero);
+                    if (Avx.MoveMask(transpVegMask) != Constant.Simd128x4.MaskAllFalse)
                     {
-                        wue_transp = Avx.Blend(wue_transp, Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(100.0F), Avx.Divide(npp, transp_veg)), transpVegMask);
+                        wue_transp = Avx.BlendVariable(wue_transp, Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(100.0F), Avx.Divide(npp, transp_veg)), transpVegMask);
                     }
                     this.State.WUE_transp[speciesIndex] = wue_transp;
                 }
@@ -786,21 +783,21 @@ namespace BayesianPG.ThreePG
                         Vector128<float> interCi = zero;
                         Vector128<float> d13CNewPS = zero;
                         Vector128<float> d13CTissue = zero;
-                        byte gcMolMask = (byte)Avx.MoveMask(Avx.CompareNotEqual(Gc_mol, zero));
-                        if (gcMolMask != Constant.Simd128x4.MaskAllFalse)
+                        Vector128<float> gcMolMask = Avx.CompareNotEqual(Gc_mol, zero);
+                        if (Avx.MoveMask(gcMolMask) != Constant.Simd128x4.MaskAllFalse)
                         {
                             Vector128<float> co2 = AvxExtensions.BroadcastScalarToVector128(0.000001F * this.Climate.AtmosphericCO2[timestep]);
                             // calculating monthly average intercellular CO₂ concentration.Ci = Ca - A / g
-                            interCi = Avx.Blend(interCi, Avx.Subtract(co2, Avx.Divide(GPP_molsec, Gc_mol)), gcMolMask);
+                            interCi = Avx.BlendVariable(interCi, Avx.Subtract(co2, Avx.Divide(GPP_molsec, Gc_mol)), gcMolMask);
 
                             // calculating monthly d13C of new photosynthate, = d13Catm - a - (b - a)(ci / ca)
                             Vector128<float> d13Catm = AvxExtensions.BroadcastScalarToVector128(this.Climate.D13Catm[timestep]);
                             Vector128<float> aFracDiffu = this.Parameters.aFracDiffu[speciesIndex];
                             Vector128<float> bFracRubi = this.Parameters.bFracRubi[speciesIndex];
-                            d13CNewPS = Avx.Blend(d13CNewPS, Avx.Subtract(d13Catm, Avx.Add(aFracDiffu, Avx.Multiply(Avx.Subtract(bFracRubi, aFracDiffu), Avx.Divide(interCi, co2)))), gcMolMask);
+                            d13CNewPS = Avx.BlendVariable(d13CNewPS, Avx.Subtract(d13Catm, Avx.Add(aFracDiffu, Avx.Multiply(Avx.Subtract(bFracRubi, aFracDiffu), Avx.Divide(interCi, co2)))), gcMolMask);
 
                             Vector128<float> d13CTissueDif = this.Parameters.D13CTissueDif[speciesIndex];
-                            d13CTissue = Avx.Blend(d13CTissue, Avx.Add(d13CNewPS, d13CTissueDif), gcMolMask);
+                            d13CTissue = Avx.BlendVariable(d13CTissue, Avx.Add(d13CNewPS, d13CTissueDif), gcMolMask);
 
                             Debug.Assert(AvxExtensions.IsNaN(interCi) == Constant.Simd128x4.MaskAllFalse);
                         }
@@ -854,10 +851,10 @@ namespace BayesianPG.ThreePG
                     {
                         // if there are some leaves to be grown put NPP first to the leaf growth
                         Vector128<float> biom_foliage = this.State.biom_foliage[speciesIndex];
-                        byte leafOutMask = (byte)Avx.MoveMask(Avx.CompareEqual(biom_foliage, zero));
-                        if (leafOutMask != Constant.Simd128x4.MaskAllFalse)
+                        Vector128<float> leafOutMask = Avx.CompareEqual(biom_foliage, zero);
+                        if (Avx.MoveMask(leafOutMask) != Constant.Simd128x4.MaskAllFalse)
                         {
-                            biom_foliage = Avx.Blend(biom_foliage, this.State.biom_foliage_debt[speciesIndex], leafOutMask);
+                            biom_foliage = Avx.BlendVariable(biom_foliage, this.State.biom_foliage_debt[speciesIndex], leafOutMask);
                             this.State.biom_foliage[speciesIndex] = biom_foliage;
                         }
 
@@ -900,7 +897,7 @@ namespace BayesianPG.ThreePG
 
                 // correct the bias
                 this.GetMeanStemMassAndUpdateLai(timestep);
-                this.CorrectSizeDistribution(timestep, Constant.Simd128x4.MaskAllTrue);
+                this.CorrectSizeDistribution(timestep, Vector128<float>.AllBitsSet); // all true
 
                 // volume and volume increment
                 // This is done before thinning and mortality part.
@@ -924,10 +921,10 @@ namespace BayesianPG.ThreePG
                             Vector128<float> stems_n = this.State.stems_n[speciesIndex];
                             Vector128<float> target_stems_n = AvxExtensions.BroadcastScalarToVector128(this.Management.stems_n[speciesIndex][thinningIndex]);
 
-                            byte managementMask = (byte)Avx.MoveMask(Avx.CompareGreaterThan(stems_n, target_stems_n));
-                            if (managementMask != Constant.Simd128x4.MaskAllFalse)
+                            Vector128<float> managementMask = Avx.CompareGreaterThan(stems_n, target_stems_n);
+                            if (Avx.MoveMask(managementMask) != Constant.Simd128x4.MaskAllFalse)
                             {
-                                Vector128<float> mort_manag = Avx.Blend(zero, Avx.Divide(Avx.Subtract(stems_n, target_stems_n), stems_n), managementMask); // could also use Avx.Max(zero, Avx.Divide(...))
+                                Vector128<float> mort_manag = Avx.BlendVariable(zero, Avx.Divide(Avx.Subtract(stems_n, target_stems_n), stems_n), managementMask); // could also use Avx.Max(zero, Avx.Divide(...))
                                 stems_n = Avx.Multiply(stems_n, Avx.Subtract(one, mort_manag));
                                 this.State.mort_manag[speciesIndex] = mort_manag;
                                 this.State.stems_n[speciesIndex] = stems_n;
@@ -942,30 +939,30 @@ namespace BayesianPG.ThreePG
                                 float maxFraction = MathF.Max(MathF.Max(stemFraction, rootFraction), foliageFraction);
 
                                 Vector128<float> maxMort = Avx.Min(Avx.Multiply(mort_manag, AvxExtensions.BroadcastScalarToVector128(maxFraction)), one);
-                                byte maxMortMask = (byte)Avx.MoveMask(Avx.CompareGreaterThan(maxMort, one));
+                                Vector128<float> maxMortMask = Avx.CompareGreaterThan(maxMort, one);
 
                                 Vector128<float> foliageLoss = Avx.Subtract(one, Avx.Multiply(mort_manag, AvxExtensions.BroadcastScalarToVector128(foliageFraction)));
                                 if (this.IsDormant(monthOfYear, speciesIndex) == true)
                                 {
                                     Vector128<float> biom_foliage_debt = this.State.biom_foliage_debt[speciesIndex];
-                                    biom_foliage_debt = Avx.Blend(Avx.Multiply(biom_foliage_debt, foliageLoss), zero, maxMortMask);
+                                    biom_foliage_debt = Avx.BlendVariable(Avx.Multiply(biom_foliage_debt, foliageLoss), zero, maxMortMask);
                                     this.State.biom_foliage_debt[speciesIndex] = biom_foliage_debt;
                                 }
                                 else
                                 {
                                     Vector128<float> biom_foliage = this.State.biom_foliage[speciesIndex];
-                                    biom_foliage = Avx.Blend(Avx.Multiply(biom_foliage, foliageLoss), zero, maxMortMask);
+                                    biom_foliage = Avx.BlendVariable(Avx.Multiply(biom_foliage, foliageLoss), zero, maxMortMask);
                                     this.State.biom_foliage[speciesIndex] = biom_foliage;
                                 }
 
                                 Vector128<float> rootLoss = Avx.Subtract(one, Avx.Multiply(mort_manag, AvxExtensions.BroadcastScalarToVector128(rootFraction)));
                                 Vector128<float> biom_root = this.State.biom_root[speciesIndex];
-                                biom_root = Avx.Blend(Avx.Multiply(biom_root, rootLoss), zero, maxMortMask);
+                                biom_root = Avx.BlendVariable(Avx.Multiply(biom_root, rootLoss), zero, maxMortMask);
                                 this.State.biom_root[speciesIndex] = biom_root;
 
                                 Vector128<float> stemLoss = Avx.Subtract(one, Avx.Multiply(mort_manag, AvxExtensions.BroadcastScalarToVector128(stemFraction)));
                                 Vector128<float> biom_stem = this.State.biom_stem[speciesIndex];
-                                biom_stem = Avx.Blend(Avx.Multiply(biom_stem, stemLoss), zero, maxMortMask);
+                                biom_stem = Avx.BlendVariable(Avx.Multiply(biom_stem, stemLoss), zero, maxMortMask);
                                 this.State.biom_stem[speciesIndex] = biom_stem;
 
                                 correctSizeDistributionMask = managementMask;
@@ -977,14 +974,14 @@ namespace BayesianPG.ThreePG
                 }
 
                 // correct the bias
-                if (correctSizeDistributionMask != Constant.Simd128x4.MaskAllFalse)
+                if (Avx.MoveMask(correctSizeDistributionMask) != Constant.Simd128x4.MaskAllFalse)
                 {
                     this.GetMeanStemMassAndUpdateLai(timestep);
                     this.CorrectSizeDistribution(timestep, correctSizeDistributionMask);
 
                     // update volume for thinning
                     this.GetVolumeAndIncrement(timestep);
-                    correctSizeDistributionMask = Constant.Simd128x4.MaskAllFalse;
+                    correctSizeDistributionMask = Vector128<float>.Zero; // all false
                 }
 
                 // Mortality--------------------------------------------------------------------------
@@ -994,12 +991,12 @@ namespace BayesianPG.ThreePG
                     if (this.IsDormant(monthOfYear, speciesIndex) == false)
                     {
                         Vector128<float> gammaN = this.Trajectory.Species.gammaN[speciesIndex][timestep];
-                        byte stressMortMask = (byte)Avx.MoveMask(Avx.CompareGreaterThan(gammaN, zero));
-                        if (stressMortMask != Constant.Simd128x4.MaskAllFalse)
+                        Vector128<float> stressMortMask = Avx.CompareGreaterThan(gammaN, zero);
+                        if (Avx.MoveMask(stressMortMask) != Constant.Simd128x4.MaskAllFalse)
                         {
                             Vector128<float> stems_n = this.State.stems_n[speciesIndex];
                             Vector128<float> mort_stress = Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(1.0F / (12.0F * 100.0F)), Avx.Multiply(gammaN, stems_n));
-                            mort_stress = Avx.Blend(Avx.Min(mort_stress, stems_n), zero, stressMortMask); // mortality can't be more than available
+                            mort_stress = Avx.BlendVariable(Avx.Min(mort_stress, stems_n), zero, stressMortMask); // mortality can't be more than available
                             this.State.mort_stress[speciesIndex] = mort_stress;
 
                             // following loss calculations do not require masking as multiplication by zero stress mortality results in zero mortality
@@ -1030,11 +1027,11 @@ namespace BayesianPG.ThreePG
                 }
 
                 // correct the bias
-                if (correctSizeDistributionMask != Constant.Simd128x4.MaskAllFalse)
+                if (Avx.MoveMask(correctSizeDistributionMask) != Constant.Simd128x4.MaskAllFalse)
                 {
                     this.GetMeanStemMassAndUpdateLai(timestep);
                     this.CorrectSizeDistribution(timestep, correctSizeDistributionMask);
-                    correctSizeDistributionMask = Constant.Simd128x4.MaskAllFalse;
+                    correctSizeDistributionMask = Vector128<float>.Zero; // all false
                 }
 
                 // self-thinning ------------------
@@ -1058,8 +1055,8 @@ namespace BayesianPG.ThreePG
                     {
                         Vector128<float> biom_tree_max = this.State.biom_tree_max[speciesIndex];
                         Vector128<float> biom_tree = this.State.biom_tree[speciesIndex];
-                        byte selfThinningMask = (byte)Avx.MoveMask(Avx.CompareLessThan(biom_tree_max, biom_tree));
-                        if (selfThinningMask != Constant.Simd128x4.MaskAllFalse)
+                        Vector128<float> selfThinningMask = Avx.CompareLessThan(biom_tree_max, biom_tree);
+                        if (Avx.MoveMask(selfThinningMask) != Constant.Simd128x4.MaskAllFalse)
                         {
                             Vector128<float> mort_thinn = Avx.Multiply(this.GetMortality(speciesIndex), basal_area_prop);
                             this.State.mort_thinn[speciesIndex] = mort_thinn;
@@ -1092,7 +1089,7 @@ namespace BayesianPG.ThreePG
                 }
 
                 // correct the bias
-                if (correctSizeDistributionMask != Constant.Simd128x4.MaskAllFalse)
+                if (Avx.MoveMask(correctSizeDistributionMask) != Constant.Simd128x4.MaskAllFalse)
                 {
                     this.GetMeanStemMassAndUpdateLai(timestep);
                     this.CorrectSizeDistribution(timestep, correctSizeDistributionMask);
@@ -1111,13 +1108,13 @@ namespace BayesianPG.ThreePG
                     Vector128<float> epsilon_gpp;
                     Vector128<float> epsilon_npp;
                     Vector128<float> epsilon_biom_stem;
-                    byte aparMask = (byte)Avx.MoveMask(Avx.CompareNotEqual(apar, zero));
-                    if (aparMask != Constant.Simd128x4.MaskAllFalse)
+                    Vector128<float> aparMask = Avx.CompareNotEqual(apar, zero);
+                    if (Avx.MoveMask(aparMask) != Constant.Simd128x4.MaskAllFalse)
                     {
                         Vector128<float> oneHundred = AvxExtensions.BroadcastScalarToVector128(100.0F);
-                        epsilon_gpp = Avx.Blend(zero, Avx.Multiply(oneHundred, Avx.Divide(this.State.GPP[speciesIndex], apar)), aparMask);
-                        epsilon_npp = Avx.Blend(zero, Avx.Multiply(oneHundred, Avx.Divide(this.State.NPP_f[speciesIndex], apar)), aparMask);
-                        epsilon_biom_stem = Avx.Blend(zero, Avx.Multiply(oneHundred, Avx.Divide(this.State.biom_incr_stem[speciesIndex], apar)), aparMask);
+                        epsilon_gpp = Avx.BlendVariable(zero, Avx.Multiply(oneHundred, Avx.Divide(this.State.GPP[speciesIndex], apar)), aparMask);
+                        epsilon_npp = Avx.BlendVariable(zero, Avx.Multiply(oneHundred, Avx.Divide(this.State.NPP_f[speciesIndex], apar)), aparMask);
+                        epsilon_biom_stem = Avx.BlendVariable(zero, Avx.Multiply(oneHundred, Avx.Divide(this.State.biom_incr_stem[speciesIndex], apar)), aparMask);
                     }
                     else
                     {
@@ -1135,9 +1132,9 @@ namespace BayesianPG.ThreePG
             }
         }
 
-        private void CorrectSizeDistribution(int timestep, byte correctionMask)
+        private void CorrectSizeDistribution(int timestep, Vector128<float> correctionMask)
         {
-            Debug.Assert(correctionMask != Constant.Simd128x4.MaskAllFalse);
+            Debug.Assert(Avx.MoveMask(correctionMask) != Constant.Simd128x4.MaskAllFalse);
 
             // Diameter distributions are used to correct for bias when calculating pFS from mean dbh, and ws distributions are
             // used to correct for bias when calculating mean dbh from mean ws.This bias is caused by Jensen's inequality and is
@@ -1170,7 +1167,7 @@ namespace BayesianPG.ThreePG
                     Vector128<float> height_rel = Avx.Divide(height, standHeight);
 
                     Vector128<float> uncorrectedRelativeHeight = this.State.height_rel[speciesIndex];
-                    this.State.height_rel[speciesIndex] = Avx.Blend(uncorrectedRelativeHeight, height_rel, correctionMask);
+                    this.State.height_rel[speciesIndex] = Avx.BlendVariable(uncorrectedRelativeHeight, height_rel, correctionMask);
                 }
 
                 if (this.Settings.CorrectSizeDistribution)
@@ -1204,7 +1201,7 @@ namespace BayesianPG.ThreePG
                         Vector128<float> Dscalet = AvxExtensions.BroadcastScalarToVector128(this.Bias.Dscalet[speciesIndex]);
                         Vector128<float> DscaleC = AvxExtensions.BroadcastScalarToVector128(this.Bias.DscaleC[speciesIndex]);
                         exponent = Avx.Add(Avx.Add(exponent, Avx.Multiply(Dscalet, lnAge)), Avx.Multiply(DscaleC, lnCompetitionTotal));
-                        Vector128<float> DWeibullScale = Avx.Blend(zero, MathV.Exp(exponent), correctionMask);
+                        Vector128<float> DWeibullScale = Avx.BlendVariable(zero, MathV.Exp(exponent), correctionMask);
                         this.State.DWeibullScale[speciesIndex] = DWeibullScale;
 
                         Vector128<float> Dshape0 = AvxExtensions.BroadcastScalarToVector128(this.Bias.Dshape0[speciesIndex]);
@@ -1214,11 +1211,11 @@ namespace BayesianPG.ThreePG
                         Vector128<float> Dshapet = AvxExtensions.BroadcastScalarToVector128(this.Bias.Dshapet[speciesIndex]);
                         Vector128<float> DshapeC = AvxExtensions.BroadcastScalarToVector128(this.Bias.DshapeC[speciesIndex]);
                         exponent = Avx.Add(exponent, Avx.Add(Avx.Multiply(Dshapet, lnAge), Avx.Multiply(DshapeC, lnCompetitionTotal)));
-                        Vector128<float> DWeibullShape = Avx.Blend(zero, MathV.Exp(exponent), correctionMask);
+                        Vector128<float> DWeibullShape = Avx.BlendVariable(zero, MathV.Exp(exponent), correctionMask);
                         this.State.DWeibullShape[speciesIndex] = DWeibullShape;
 
                         Vector128<float> one = AvxExtensions.BroadcastScalarToVector128(1.0F);
-                        Vector128<float> DWeibullShape_gamma = ThreePGSimd128.GammaDistribution(Avx.Add(one, Avx.Divide(one, DWeibullShape)));
+                        Vector128<float> DWeibullShape_gamma = ThreePGAvx128.GammaDistribution(Avx.Add(one, Avx.Divide(one, DWeibullShape)));
 
                         float Dlocation0scalar = this.Bias.Dlocation0[speciesIndex];
                         float DlocationBscalar = this.Bias.DlocationB[speciesIndex];
@@ -1243,16 +1240,16 @@ namespace BayesianPG.ThreePG
                             exponent = Avx.Add(exponent, Avx.Add(Avx.Multiply(Dlocationt, lnAge), Avx.Multiply(DlocationC, lnCompetitionTotal)));
                             DWeibullLocation = MathV.Exp(exponent);
                         }
-                        DWeibullLocation = Avx.Blend(zero, Avx.Max(DWeibullLocation, AvxExtensions.BroadcastScalarToVector128(0.01F)), correctionMask);
+                        DWeibullLocation = Avx.BlendVariable(zero, Avx.Max(DWeibullLocation, AvxExtensions.BroadcastScalarToVector128(0.01F)), correctionMask);
                         this.State.DWeibullLocation[speciesIndex] = DWeibullLocation;
 
                         // Weibull expected value (3-PGmix user manual 11.10 equation A50)
                         Vector128<float> Ex = Avx.Add(DWeibullLocation, Avx.Multiply(DWeibullScale, DWeibullShape_gamma));
                         // now convert the Ex from weibull scale to actual scale of diameter units in cm
                         one = AvxExtensions.BroadcastScalarToVector128(1.0F);
-                        Vector128<float> Varx = Avx.Multiply(Avx.Multiply(DWeibullScale, DWeibullScale), Avx.Subtract(ThreePGSimd128.GammaDistribution(Avx.Add(one, Avx.Divide(AvxExtensions.BroadcastScalarToVector128(2.0F), DWeibullShape))), Avx.Multiply(DWeibullShape_gamma, DWeibullShape_gamma)));
+                        Vector128<float> Varx = Avx.Multiply(Avx.Multiply(DWeibullScale, DWeibullScale), Avx.Subtract(ThreePGAvx128.GammaDistribution(Avx.Add(one, Avx.Divide(AvxExtensions.BroadcastScalarToVector128(2.0F), DWeibullShape))), Avx.Multiply(DWeibullShape_gamma, DWeibullShape_gamma)));
                         // Weibull coefficient of variation
-                        Vector128<float> CVdbhDistribution = Avx.Blend(zero, Avx.Divide(Avx.Sqrt(Varx), Ex), correctionMask);
+                        Vector128<float> CVdbhDistribution = Avx.BlendVariable(zero, Avx.Divide(Avx.Sqrt(Varx), Ex), correctionMask);
                         this.State.CVdbhDistribution[speciesIndex] = CVdbhDistribution;
 
                         // calculate the bias (3-PGmix user manual 11.10 equation A49)
@@ -1263,38 +1260,38 @@ namespace BayesianPG.ThreePG
                         Vector128<float> minusHalf = Avx.Subtract(Vector128<float>.Zero, half);
                         one = AvxExtensions.BroadcastScalarToVector128(1.0F);
                         Vector128<float> pfsPower = this.State.pfsPower[speciesIndex];
-                        Vector128<float> DrelBiaspFS = Avx.Blend(zero, 
-                                                                 Avx.Max(minusHalf, 
-                                                                         Avx.Min(Avx.Multiply(pfsPower, Avx.Multiply(Avx.Subtract(pfsPower, one), halfCVdbhSquared)),
-                                                                                 half)), 
-                                                                 correctionMask);
+                        Vector128<float> DrelBiaspFS = Avx.BlendVariable(zero, 
+                                                                         Avx.Max(minusHalf, 
+                                                                                 Avx.Min(Avx.Multiply(pfsPower, Avx.Multiply(Avx.Subtract(pfsPower, one), halfCVdbhSquared)),
+                                                                                         half)), 
+                                                                         correctionMask);
                         this.State.DrelBiaspFS[speciesIndex] = DrelBiaspFS;
 
                         Vector128<float> nHB = this.Parameters.nHB[speciesIndex];
-                        Vector128<float> DrelBiasheight = Avx.Blend(zero, 
-                                                                    Avx.Max(minusHalf, 
-                                                                            Avx.Min(Avx.Multiply(nHB, Avx.Multiply(Avx.Subtract(nHB, one), halfCVdbhSquared)),
-                                                                                    half)), 
-                                                                    correctionMask);
+                        Vector128<float> DrelBiasheight = Avx.BlendVariable(zero, 
+                                                                            Avx.Max(minusHalf, 
+                                                                                    Avx.Min(Avx.Multiply(nHB, Avx.Multiply(Avx.Subtract(nHB, one), halfCVdbhSquared)),
+                                                                                            half)), 
+                                                                            correctionMask);
                         this.State.DrelBiasheight[speciesIndex] = DrelBiasheight;
 
                         Vector128<float> DrelBiasBasArea = Avx.Max(minusHalf, Avx.Min(CVdbhSquared, half));
                         this.State.DrelBiasBasArea[speciesIndex] = DrelBiasBasArea;
 
                         Vector128<float> nHLB = this.Parameters.nHLB[speciesIndex];
-                        Vector128<float> DrelBiasLCL = Avx.Blend(zero, 
-                                                                 Avx.Max(minusHalf, 
-                                                                         Avx.Min(Avx.Multiply(nHLB, Avx.Multiply(Avx.Subtract(nHLB, one), halfCVdbhSquared)),
-                                                                                 half)),
-                                                                 correctionMask);
+                        Vector128<float> DrelBiasLCL = Avx.BlendVariable(zero, 
+                                                                         Avx.Max(minusHalf, 
+                                                                                 Avx.Min(Avx.Multiply(nHLB, Avx.Multiply(Avx.Subtract(nHLB, one), halfCVdbhSquared)),
+                                                                                         half)),
+                                                                         correctionMask);
                         this.State.DrelBiasLCL[speciesIndex] = DrelBiasLCL;
 
                         Vector128<float> nKB = this.Parameters.nKB[speciesIndex];
-                        Vector128<float> DrelBiasCrowndiameter = Avx.Blend(zero, 
-                                                                           Avx.Max(minusHalf, 
-                                                                                   Avx.Min(Avx.Multiply(nKB, Avx.Multiply(Avx.Subtract(nKB, one), halfCVdbhSquared)),
-                                                                                           half)),
-                                                                           correctionMask);
+                        Vector128<float> DrelBiasCrowndiameter = Avx.BlendVariable(zero, 
+                                                                                   Avx.Max(minusHalf, 
+                                                                                           Avx.Min(Avx.Multiply(nKB, Avx.Multiply(Avx.Subtract(nKB, one), halfCVdbhSquared)),
+                                                                                                   half)),
+                                                                                   correctionMask);
                         this.State.DrelBiasCrowndiameter[speciesIndex] = DrelBiasCrowndiameter;
 
                         // calculate the biom_stem scale -------------------
@@ -1305,7 +1302,7 @@ namespace BayesianPG.ThreePG
                         Vector128<float> wsscalet = AvxExtensions.BroadcastScalarToVector128(this.Bias.wsscalet[speciesIndex]);
                         Vector128<float> wsscaleC = AvxExtensions.BroadcastScalarToVector128(this.Bias.wsscaleC[speciesIndex]);
                         exponent = Avx.Add(exponent, Avx.Add(Avx.Multiply(wsscalet, lnAge), Avx.Multiply(wsscaleC, lnCompetitionTotal)));
-                        Vector128<float> wsWeibullScale = Avx.Blend(zero, MathV.Exp(exponent), correctionMask);
+                        Vector128<float> wsWeibullScale = Avx.BlendVariable(zero, MathV.Exp(exponent), correctionMask);
                         this.State.wsWeibullScale[speciesIndex] = wsWeibullScale;
 
                         Vector128<float> wsshape0 = AvxExtensions.BroadcastScalarToVector128(this.Bias.wsshape0[speciesIndex]);
@@ -1315,11 +1312,11 @@ namespace BayesianPG.ThreePG
                         Vector128<float> wsshapet = AvxExtensions.BroadcastScalarToVector128(this.Bias.wsshapet[speciesIndex]);
                         Vector128<float> wsshapeC = AvxExtensions.BroadcastScalarToVector128(this.Bias.wsshapeC[speciesIndex]);
                         exponent = Avx.Add(exponent, Avx.Add(Avx.Multiply(wsshapet, lnAge), Avx.Multiply(wsshapeC, lnCompetitionTotal)));
-                        Vector128<float> wsWeibullShape = Avx.Blend(zero, MathV.Exp(exponent), correctionMask);
+                        Vector128<float> wsWeibullShape = Avx.BlendVariable(zero, MathV.Exp(exponent), correctionMask);
                         this.State.wsWeibullShape[speciesIndex] = wsWeibullShape;
 
                         one = AvxExtensions.BroadcastScalarToVector128(1.0F);
-                        Vector128<float> wsWeibullShape_gamma = ThreePGSimd128.GammaDistribution(Avx.Add(one, Avx.Divide(one, wsWeibullShape)));
+                        Vector128<float> wsWeibullShape_gamma = ThreePGAvx128.GammaDistribution(Avx.Add(one, Avx.Divide(one, wsWeibullShape)));
 
                         float wsLocation0scalar = this.Bias.wslocation0[speciesIndex];
                         float wsLocationBscalar = this.Bias.wslocationB[speciesIndex];
@@ -1345,15 +1342,15 @@ namespace BayesianPG.ThreePG
                             exponent = Avx.Add(exponent, Avx.Add(Avx.Multiply(wslocationt, lnAge), Avx.Multiply(wslocationC, lnCompetitionTotal)));
                             wsWeibullLocation = MathV.Exp(exponent);
                         }
-                        wsWeibullLocation = Avx.Blend(zero, Avx.Max(wsWeibullLocation, AvxExtensions.BroadcastScalarToVector128(0.01F)), correctionMask);
+                        wsWeibullLocation = Avx.BlendVariable(zero, Avx.Max(wsWeibullLocation, AvxExtensions.BroadcastScalarToVector128(0.01F)), correctionMask);
                         this.State.wsWeibullLocation[speciesIndex] = wsWeibullLocation;
 
                         Ex = Avx.Add(wsWeibullLocation, Avx.Multiply(wsWeibullScale, wsWeibullShape_gamma));
                         // now convert the Ex from weibull scale to actual scale of diameter units in cm
                         one = AvxExtensions.BroadcastScalarToVector128(1.0F);
-                        Varx = Avx.Multiply(Avx.Multiply(wsWeibullScale, wsWeibullScale), Avx.Subtract(ThreePGSimd128.GammaDistribution(Avx.Add(one, Avx.Divide(AvxExtensions.BroadcastScalarToVector128(2.0F), wsWeibullShape))),
+                        Varx = Avx.Multiply(Avx.Multiply(wsWeibullScale, wsWeibullScale), Avx.Subtract(ThreePGAvx128.GammaDistribution(Avx.Add(one, Avx.Divide(AvxExtensions.BroadcastScalarToVector128(2.0F), wsWeibullShape))),
                                                                                                        Avx.Multiply(wsWeibullShape_gamma, wsWeibullShape_gamma)));
-                        Vector128<float> CVwsDistribution = Avx.Blend(zero, Avx.Divide(Avx.Sqrt(Varx), Ex), correctionMask);
+                        Vector128<float> CVwsDistribution = Avx.BlendVariable(zero, Avx.Divide(Avx.Sqrt(Varx), Ex), correctionMask);
                         this.State.CVwsDistribution[speciesIndex] = CVwsDistribution;
 
                         // DF the nWS is replaced with 1 / nWs because the equation is inverted to predict dbh from ws, instead of ws from dbh
@@ -1361,11 +1358,11 @@ namespace BayesianPG.ThreePG
                         half = AvxExtensions.BroadcastScalarToVector128(0.5F);
                         Vector128<float> halfCVwsSquared = Avx.Multiply(half, Avx.Multiply(CVwsDistribution, CVwsDistribution));
                         minusHalf = Avx.Subtract(Vector128<float>.Zero, half);
-                        Vector128<float> wsrelBias = Avx.Blend(zero, 
-                                                               Avx.Max(minusHalf,
-                                                                       Avx.Min(Avx.Multiply(Avx.Multiply(nWsReciprocal, Avx.Subtract(nWsReciprocal, one)), halfCVwsSquared),
-                                                                               half)),
-                                                               correctionMask);
+                        Vector128<float> wsrelBias = Avx.BlendVariable(zero, 
+                                                                       Avx.Max(minusHalf,
+                                                                               Avx.Min(Avx.Multiply(Avx.Multiply(nWsReciprocal, Avx.Subtract(nWsReciprocal, one)), halfCVwsSquared),
+                                                                                       half)),
+                                                                       correctionMask);
                         this.State.wsrelBias[speciesIndex] = wsrelBias;
                     }
                 }
@@ -1418,7 +1415,7 @@ namespace BayesianPG.ThreePG
                     Vector128<float> wsrelBias = this.State.wsrelBias[speciesIndex];
                     Vector128<float> dbh = Avx.Multiply(MathV.Pow(Avx.Divide(biom_tree, aWs), nWsReciprocal), Avx.Add(one, wsrelBias));
                     Vector128<float> uncorrectedDbh = this.State.dbh[speciesIndex];
-                    this.State.dbh[speciesIndex] = Avx.Blend(uncorrectedDbh, dbh, correctionMask);
+                    this.State.dbh[speciesIndex] = Avx.BlendVariable(uncorrectedDbh, dbh, correctionMask);
 
                     Vector128<float> DrelBiasBasArea = this.State.DrelBiasBasArea[speciesIndex];
                     this.State.basal_area[speciesIndex] = Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(0.0001F * 0.25F * MathF.PI), Avx.Multiply(Avx.Multiply(dbh, dbh), Avx.Multiply(stems_n, Avx.Add(one, DrelBiasBasArea))));
@@ -1456,7 +1453,7 @@ namespace BayesianPG.ThreePG
                             throw new NotSupportedException("Unhandled height model " + this.Settings.height_model + ".");
                     }
                     Vector128<float> uncorrectedHeight = this.State.height[speciesIndex];
-                    this.State.height[speciesIndex] = Avx.Blend(uncorrectedHeight, height, correctionMask);
+                    this.State.height[speciesIndex] = Avx.BlendVariable(uncorrectedHeight, height, correctionMask);
 
                     // check that the height and LCL allometric equations have not predicted that height - LCL < 0
                     // and if so reduce LCL so that height - LCL = 0(assumes height allometry is more reliable than LCL allometry)
@@ -1473,10 +1470,10 @@ namespace BayesianPG.ThreePG
                     Vector128<float> crown_width = Avx.Multiply(aK, Avx.Multiply(MathV.Fmpow(dbh, nKB, height, nKH, competition_total, nKC, height_rel, nKrh), Avx.Add(AvxExtensions.BroadcastScalarToVector128(1.0F), DrelBiasCrowndiameter)));
 
                     Vector128<float> lai = this.State.lai[speciesIndex];
-                    byte laiNonzeroMask = (byte)Avx.MoveMask(Avx.CompareGreaterThan(lai, zero));
-                    crown_width = Avx.Blend(zero, crown_width, laiNonzeroMask);
+                    Vector128<float> laiNonzeroMask = Avx.CompareGreaterThan(lai, zero);
+                    crown_width = Avx.BlendVariable(zero, crown_width, laiNonzeroMask);
                     Vector128<float> uncorrectedCrownWidth = this.State.crown_width[speciesIndex];
-                    this.State.crown_width[speciesIndex] = Avx.Blend(uncorrectedCrownWidth, crown_width, correctionMask);
+                    this.State.crown_width[speciesIndex] = Avx.BlendVariable(uncorrectedCrownWidth, crown_width, correctionMask);
 
                     Vector128<float> pfsConst = this.State.pfsConst[speciesIndex];
                     Vector128<float> pfsPower = this.State.pfsPower[speciesIndex];
@@ -1496,7 +1493,7 @@ namespace BayesianPG.ThreePG
                 }
 
                 Vector128<float> uncorrectedCompetitionTotal = this.State.competition_total;
-                this.State.competition_total = Avx.Blend(uncorrectedCompetitionTotal, updated_competition_total, correctionMask);
+                this.State.competition_total = Avx.BlendVariable(uncorrectedCompetitionTotal, updated_competition_total, correctionMask);
             }
         }
 
@@ -1525,16 +1522,17 @@ namespace BayesianPG.ThreePG
             Vector128<float> zero = Vector128<float>.Zero;
             int n_m = age.Length;
             Vector128<float>[] output = new Vector128<float>[n_m];
-            byte tgZeroMask = (byte)Avx.MoveMask(Avx.CompareEqual(tg, Vector128<float>.Zero));
+            Vector128<float> tgZeroMask = Avx.CompareEqual(tg, Vector128<float>.Zero);
+            int tgZeroMaskAsInt = Avx.MoveMask(tgZeroMask);
             for (int timestep = 0; timestep < n_m; ++timestep)
             {
                 Vector128<float> parameter = gx; // tg = 0 => exp(-Inf) = 0 analytically but NaN in code
-                if (tgZeroMask != Constant.Simd128x4.MaskAllTrue)
+                if (tgZeroMaskAsInt != Constant.Simd128x4.MaskAllTrue)
                 {
                     // SLA, fracBB, wood_density: could special case for all ng = 1 and 2
                     // exp(-log(2) * power) = exp(-log(2))^power = 0.5^power = (2^-1)^power = 2^(-power)
                     Vector128<float> minusPower = Avx.Subtract(zero, MathV.Pow(Avx.Divide(AvxExtensions.BroadcastScalarToVector128(age[timestep]), tg), ng));
-                    parameter = Avx.Add(parameter, Avx.Blend(Avx.Multiply(g0_minus_gx, MathV.Exp2(minusPower)), zero, tgZeroMask));
+                    parameter = Avx.Add(parameter, Avx.BlendVariable(Avx.Multiply(g0_minus_gx, MathV.Exp2(minusPower)), zero, tgZeroMask));
                 }
                 output[timestep] = parameter;
             }
@@ -1577,7 +1575,7 @@ namespace BayesianPG.ThreePG
             // scatter
             for (int layerBoundaryIndex = 0; layerBoundaryIndex < values.Length; ++layerBoundaryIndex)
             {
-                Vector128<int> sortIndex = Avx2Extensions.Set128(sortIndices0[layerBoundaryIndex], sortIndices1[layerBoundaryIndex], sortIndices2[layerBoundaryIndex], sortIndices3[layerBoundaryIndex]);
+                Vector128<int> sortIndex = AvxExtensions.Set128(sortIndices0[layerBoundaryIndex], sortIndices1[layerBoundaryIndex], sortIndices2[layerBoundaryIndex], sortIndices3[layerBoundaryIndex]);
                 sortIndices[layerBoundaryIndex] = sortIndex;
             }
         }
@@ -1608,7 +1606,7 @@ namespace BayesianPG.ThreePG
 
             // sort all height and crown height
             Span<Vector128<int>> height_ind = stackalloc Vector128<int>[2 * n_sp];
-            ThreePGSimd128.GetAscendingOrderIndices(height_all, height_ind); // sort order of height_all
+            ThreePGAvx128.GetAscendingOrderIndices(height_all, height_ind); // sort order of height_all
             Vector128<int>[] buffer = new Vector128<int>[ones.Length];
             for (int index = 0; index < height_ind.Length; ++index)
             {
@@ -1698,12 +1696,12 @@ namespace BayesianPG.ThreePG
                 {
                     for (int speciesIndex = 0; speciesIndex < this.State.height.Length; ++speciesIndex)
                     {
-                        byte isTallerMask = (byte)Avx.MoveMask(Avx.CompareGreaterThan(this.State.height[speciesIndex], height_layer[layerIndex]));
-                        if (isTallerMask != Constant.Simd128x4.MaskAllFalse)
+                        Vector128<float> isTallerMask = Avx.CompareGreaterThan(this.State.height[speciesIndex], height_layer[layerIndex]);
+                        if (Avx.MoveMask(isTallerMask) != Constant.Simd128x4.MaskAllFalse)
                         {
                             Vector128<int> layer_id = this.State.layer_id[speciesIndex];
                             Vector128<int> layerIDincrement = Avx.Add(layer_id, one);
-                            layer_id = Avx2.Blend(layer_id, layerIDincrement, isTallerMask);
+                            layer_id = Avx2.BlendVariable(layer_id, layerIDincrement, isTallerMask.AsInt32());
                             this.State.layer_id[speciesIndex] = layer_id;
 
                             maxLayerID = Avx.Max(maxLayerID, layer_id);
@@ -1730,19 +1728,19 @@ namespace BayesianPG.ThreePG
                 Vector128<float> layerSum = Vector128<float>.Zero;
                 for (int speciesIndex = 0; speciesIndex < n_sp; ++speciesIndex)
                 {
-                    byte isEqualMask = (byte)Avx.MoveMask(Avx.CompareEqual(this.State.layer_id[speciesIndex], layerIndex128).AsSingle());
-                    if (isEqualMask != Constant.Simd128x4.MaskAllFalse)
+                    Vector128<float> isEqualMask = Avx.CompareEqual(this.State.layer_id[speciesIndex], layerIndex128).AsSingle();
+                    if (Avx.MoveMask(isEqualMask) != Constant.Simd128x4.MaskAllFalse)
                     {
                         Vector128<float> layerSumX = Avx.Add(layerSum, x[speciesIndex]);
-                        layerSum = Avx.Blend(layerSum, layerSumX, isEqualMask);
+                        layerSum = Avx.BlendVariable(layerSum, layerSumX, isEqualMask);
                     }
                 }
                 for (int speciesIndex = 0; speciesIndex < n_sp; ++speciesIndex)
                 {
-                    byte isEqualMask = (byte)Avx.MoveMask(Avx.CompareEqual(this.State.layer_id[speciesIndex], layerIndex128).AsSingle());
-                    if (isEqualMask != Constant.Simd128x4.MaskAllFalse)
+                    Vector128<float> isEqualMask = Avx.CompareEqual(this.State.layer_id[speciesIndex], layerIndex128).AsSingle();
+                    if (Avx.MoveMask(isEqualMask) != Constant.Simd128x4.MaskAllFalse)
                     {
-                        Vector128<float> ySumBlend = Avx.Blend(y[speciesIndex], layerSum, isEqualMask);
+                        Vector128<float> ySumBlend = Avx.BlendVariable(y[speciesIndex], layerSum, isEqualMask);
                         y[speciesIndex] = ySumBlend;
                     }
                 }
@@ -1752,15 +1750,16 @@ namespace BayesianPG.ThreePG
         private static Vector128<float>[] GetLitterfallRate(float[] age, Vector128<float> f1, Vector128<float> f0, Vector128<float> tg)
         {
             Vector128<float> minus_kg = Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(-12.0F), Avx.Divide(MathV.Ln(Avx.Add(AvxExtensions.BroadcastScalarToVector128(1.0F), Avx.Divide(f1, f0))), tg));
-            byte tgf1ZeroMask = (byte)Avx.MoveMask(Avx.CompareEqual(Avx.Multiply(tg, f1), Vector128<float>.Zero));
+            Vector128<float> tgf1ZeroMask = Avx.CompareEqual(Avx.Multiply(tg, f1), Vector128<float>.Zero);
+            int tgf1ZeroMaskAsInt = Avx.MoveMask(tgf1ZeroMask);
             int n_m = age.Length;
             Vector128<float>[] f = new Vector128<float>[n_m];
             for (int timestep = 0; timestep < n_m; ++timestep)
             {
                 Vector128<float> litterfallRate = Avx.Divide(Avx.Multiply(f1, f0), Avx.Add(f0, Avx.Multiply(Avx.Subtract(f1, f0), MathV.Exp(Avx.Multiply(minus_kg, AvxExtensions.BroadcastScalarToVector128(age[timestep]))))));
-                if (tgf1ZeroMask != Constant.Simd128x4.MaskAllFalse)
+                if (tgf1ZeroMaskAsInt != Constant.Simd128x4.MaskAllFalse)
                 {
-                    litterfallRate = Avx.Blend(litterfallRate, f1, tgf1ZeroMask);
+                    litterfallRate = Avx.BlendVariable(litterfallRate, f1, tgf1ZeroMask);
                 }
                 f[timestep] = litterfallRate;
             }
@@ -1774,10 +1773,10 @@ namespace BayesianPG.ThreePG
             {
                 Vector128<float> stems_n = this.State.stems_n[speciesIndex];
                 Vector128<float> biom_stem = this.State.biom_stem[speciesIndex];
-                byte noStemsMask = (byte)Avx.MoveMask(Avx.CompareLessThanOrEqual(stems_n, zero));
+                Vector128<float> noStemsMask = Avx.CompareLessThanOrEqual(stems_n, zero);
                 // mean stem mass per tree, kg
                 Vector128<float> biom_tree = Avx.Divide(Avx.Multiply(biom_stem, AvxExtensions.BroadcastScalarToVector128(1000.0F)), stems_n);
-                biom_tree = Avx.Blend(biom_tree, zero, noStemsMask);
+                biom_tree = Avx.BlendVariable(biom_tree, zero, noStemsMask);
                 this.State.biom_tree[speciesIndex] = biom_tree;
 
                 Vector128<float> sla = this.Trajectory.Species.SLA[speciesIndex][timestep];
@@ -1808,7 +1807,7 @@ namespace BayesianPG.ThreePG
             Vector128<float> zero = Vector128<float>.Zero;
             for (int iteration = 0; iteration < 6; ++iteration)
             {
-                int nZeroMask = Avx.MoveMask(Avx.CompareLessThanOrEqual(n, zero)); // added in 3PG+
+                Vector128<float> nZeroMask = Avx.CompareLessThanOrEqual(n, zero); // added in 3PG+
                 
                 Vector128<float> x2 = Avx.Multiply(wSx1000, MathV.Pow(n, oneMinusThinPower));
                 Vector128<float> fN = Avx.Subtract(Avx.Subtract(x2, Avx.Multiply(x1, n)), Avx.Multiply(oneMinus_mS, WS));
@@ -1817,11 +1816,11 @@ namespace BayesianPG.ThreePG
                 Vector128<float> dN = Avx.Divide(minus_fN, dfN);
 
                 Vector128<float> dNabsoluteValue = AvxExtensions.Abs(dN);
-                int accuracyMetMask = Avx.MoveMask(Avx.CompareLessThanOrEqual(dNabsoluteValue, accuracy));
-                byte completedMask = (byte)(nZeroMask | accuracyMetMask);
-                n = Avx.Blend(Avx.Add(n, dN), n, completedMask);
+                Vector128<float> accuracyMetMask = Avx.CompareLessThanOrEqual(dNabsoluteValue, accuracy);
+                Vector128<float> completedMask = Avx.Or(nZeroMask, accuracyMetMask);
+                n = Avx.BlendVariable(Avx.Add(n, dN), n, completedMask);
 
-                if (completedMask == Constant.Simd128x4.MaskAllTrue)
+                if (Avx.MoveMask(completedMask) == Constant.Simd128x4.MaskAllTrue)
                 {
                     break;
                 }
@@ -1872,8 +1871,8 @@ namespace BayesianPG.ThreePG
 
                 // guarantee cumulative volume is nondecreasing, https://github.com/trotsiuk/r3PG/issues/63
                 Vector128<float> volume_change = Avx.Max(Avx.Subtract(volume, this.State.volume_previous[speciesIndex]), zero);
-                byte laiZeroMask = (byte)Avx.MoveMask(Avx.CompareLessThanOrEqual(this.State.lai[speciesIndex], zero));
-                volume_change = Avx.Blend(volume_change, zero, laiZeroMask);
+                Vector128<float> laiZeroMask = Avx.CompareLessThanOrEqual(this.State.lai[speciesIndex], zero);
+                volume_change = Avx.BlendVariable(volume_change, zero, laiZeroMask);
 
                 Vector128<float> volume_cum = this.State.volume_cum[speciesIndex];
                 volume_cum = Avx.Add(volume_cum, volume_change);
@@ -1911,7 +1910,7 @@ namespace BayesianPG.ThreePG
                 Vector128<float> height = this.State.height[speciesIndex];
                 Vector128<float> crownLength = this.State.crown_length[speciesIndex];
                 heightCrown[speciesIndex] = Avx.Subtract(height, crownLength);
-                heightMidcrown[speciesIndex] = Avx.Subtract(height, Avx.Multiply(Avx2Extensions.BroadcastScalarToVector128(0.5F), crownLength));
+                heightMidcrown[speciesIndex] = Avx.Subtract(height, Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(0.5F), crownLength));
 
                 Vector128<float> crownWidth = this.State.crown_width[speciesIndex];
                 TreeCrownShape crownShape = this.Parameters.CrownShape[speciesIndex];
@@ -1920,48 +1919,48 @@ namespace BayesianPG.ThreePG
                 if (crownShape == TreeCrownShape.Cone)
                 {
                     Vector128<float> crownWidthSquared = Avx.Multiply(crownWidth, crownWidth);
-                    crownSA = Avx.Add(Avx.Multiply(Avx2Extensions.BroadcastScalarToVector128(0.25F * MathF.PI), crownWidthSquared),
-                                      Avx.Multiply(Avx2Extensions.BroadcastScalarToVector128(0.5F * MathF.PI), 
+                    crownSA = Avx.Add(Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(0.25F * MathF.PI), crownWidthSquared),
+                                      Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(0.5F * MathF.PI), 
                                                    Avx.Multiply(crownWidth, 
-                                                                Avx.Sqrt(Avx.Add(Avx.Multiply(Avx2Extensions.BroadcastScalarToVector128(0.25F), crownWidthSquared), Avx.Multiply(crownLength, crownLength))))));
-                    crownVolume = Avx.Multiply(Avx2Extensions.BroadcastScalarToVector128(MathF.PI / 12.0F), Avx.Multiply(crownWidthSquared, crownLength));
+                                                                Avx.Sqrt(Avx.Add(Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(0.25F), crownWidthSquared), Avx.Multiply(crownLength, crownLength))))));
+                    crownVolume = Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(MathF.PI / 12.0F), Avx.Multiply(crownWidthSquared, crownLength));
                 }
                 else if (crownShape == TreeCrownShape.Ellipsoid)
                 {
-                    Vector128<float> half = Avx2Extensions.BroadcastScalarToVector128(0.5F);
-                    Vector128<float> power = Avx2Extensions.BroadcastScalarToVector128(1.6075F);
+                    Vector128<float> half = AvxExtensions.BroadcastScalarToVector128(0.5F);
+                    Vector128<float> power = AvxExtensions.BroadcastScalarToVector128(1.6075F);
                     Vector128<float> halfCrownLengthPower = MathV.Pow(Avx.Multiply(half, crownLength), power);
                     Vector128<float> halfCrownWidthPower = MathV.Pow(Avx.Multiply(half, crownWidth), power);
                     Vector128<float> halfCrownLengthWidthProduct = Avx.Multiply(halfCrownWidthPower, halfCrownLengthPower);
                     Vector128<float> halfCrownSum = Avx.Add(halfCrownLengthWidthProduct, halfCrownLengthWidthProduct);
-                    crownSA = Avx.Multiply(Avx2Extensions.BroadcastScalarToVector128(4.0F * MathF.PI),
+                    crownSA = Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(4.0F * MathF.PI),
                                            MathV.Pow(Avx.Add(Avx.Multiply(halfCrownWidthPower, halfCrownWidthPower), 
-                                                             Avx.Multiply(Avx2Extensions.BroadcastScalarToVector128(1.0F / 3.0F), halfCrownSum)),
-                                                     Avx2Extensions.BroadcastScalarToVector128(1.0F / 1.6075F)));
-                    crownVolume = Avx.Multiply(Avx2Extensions.BroadcastScalarToVector128(MathF.PI * 4.0F / 24.0F), Avx.Multiply(Avx.Multiply(crownWidth, crownWidth), crownLength));
+                                                             Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(1.0F / 3.0F), halfCrownSum)),
+                                                     AvxExtensions.BroadcastScalarToVector128(1.0F / 1.6075F)));
+                    crownVolume = Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(MathF.PI * 4.0F / 24.0F), Avx.Multiply(Avx.Multiply(crownWidth, crownWidth), crownLength));
                 }
                 else if (crownShape == TreeCrownShape.HalfEllipsoid)
                 {
-                    Vector128<float> power = Avx2Extensions.BroadcastScalarToVector128(1.6075F);
+                    Vector128<float> power = AvxExtensions.BroadcastScalarToVector128(1.6075F);
                     Vector128<float> crownLengthPower = MathV.Pow(crownLength, power);
-                    Vector128<float> half = Avx2Extensions.BroadcastScalarToVector128(0.5F);
+                    Vector128<float> half = AvxExtensions.BroadcastScalarToVector128(0.5F);
                     Vector128<float> halfCrownWidthPower = MathV.Pow(Avx.Multiply(half, crownWidth), power);
-                    crownSA = Avx.Add(Avx.Multiply(Avx2Extensions.BroadcastScalarToVector128(MathF.PI * 0.25F), 
+                    crownSA = Avx.Add(Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(MathF.PI * 0.25F), 
                                                    Avx.Multiply(crownWidth, crownWidth)),
-                                      Avx.Multiply(Avx2Extensions.BroadcastScalarToVector128(4.0F / 2.0F * MathF.PI),
-                                                   MathV.Pow(Avx.Multiply(Avx2Extensions.BroadcastScalarToVector128(1.0F / 3.0F),
+                                      Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(4.0F / 2.0F * MathF.PI),
+                                                   MathV.Pow(Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(1.0F / 3.0F),
                                                                           Avx.Add(Avx.Multiply(halfCrownWidthPower, halfCrownWidthPower),
                                                                                   Avx.Add(Avx.Multiply(halfCrownWidthPower, crownLengthPower),
                                                                                           Avx.Multiply(halfCrownWidthPower, crownLengthPower)))),
-                                                             Avx2Extensions.BroadcastScalarToVector128(1.0F / 1.6075F))));
-                    crownVolume = Avx.Multiply(Avx2Extensions.BroadcastScalarToVector128(MathF.PI * 4.0F / 24.0F),
+                                                             AvxExtensions.BroadcastScalarToVector128(1.0F / 1.6075F))));
+                    crownVolume = Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(MathF.PI * 4.0F / 24.0F),
                                                Avx.Multiply(crownWidth, Avx.Multiply(crownWidth, crownLength)));
                 }
                 else if (crownShape == TreeCrownShape.Rectangular)
                 {
                     Vector128<float> crownWidthSquared = Avx.Multiply(crownWidth, crownWidth);
                     crownSA = Avx.Add(Avx.Add(crownWidthSquared, crownWidthSquared),
-                                      Avx.Multiply(Avx2Extensions.BroadcastScalarToVector128(4.0F),
+                                      Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(4.0F),
                                                    Avx.Multiply(crownWidth, crownLength)));
                     crownVolume = Avx.Multiply(crownWidthSquared, crownLength);
                 }
@@ -1972,15 +1971,15 @@ namespace BayesianPG.ThreePG
 
                 Vector128<float> lai = this.State.lai[speciesIndex];
                 Vector128<float> zero = Vector128<float>.Zero;
-                byte laiNonzeroMask = (byte)Avx.MoveMask(Avx.CompareGreaterThan(lai, zero));
-                crownVolume = Avx.Blend(zero, crownVolume, laiNonzeroMask);
+                Vector128<float> laiNonzeroMask = Avx.CompareGreaterThan(lai, zero);
+                crownVolume = Avx.BlendVariable(zero, crownVolume, laiNonzeroMask);
                 crownVolumeBySpecies[speciesIndex] = crownVolume;
 
                 // calculate the ratio of tree leaf area to crown surface area restrict kLS to 1
                 Vector128<float> stems_n = this.State.stems_n[speciesIndex];
-                Vector128<float> lai_sa_ratio = Avx.Divide(Avx.Multiply(Avx2Extensions.BroadcastScalarToVector128(10000.0F), lai), 
+                Vector128<float> lai_sa_ratio = Avx.Divide(Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(10000.0F), lai), 
                                                            Avx.Multiply(stems_n, crownSA));
-                lai_sa_ratio = Avx.Blend(zero, lai_sa_ratio, laiNonzeroMask);
+                lai_sa_ratio = Avx.BlendVariable(zero, lai_sa_ratio, laiNonzeroMask);
 
                 this.State.lai_sa_ratio[speciesIndex] = lai_sa_ratio;
             }
@@ -2007,29 +2006,29 @@ namespace BayesianPG.ThreePG
             Span<Vector128<float>> minLeafedOutCrownHeightByLayer = stackalloc Vector128<float>[maxLayerCount];
             for (int layerIndex = 0; layerIndex < maxLayerCount; ++layerIndex)
             {
-                byte layerHasLeafedOutSpeciesMask = 0; // all false
+                Vector128<float> layerHasLeafedOutSpeciesMask = Vector128<float>.Zero; // all false
                 Vector128<int> layerIndex128 = AvxExtensions.Set128(layerIndex);
-                Vector128<float> maxLeafedOutHeightInLayer = Avx2Extensions.BroadcastScalarToVector128(Single.MinValue);
-                Vector128<float> minLeafedOutCrownHeightInLayer = Avx2Extensions.BroadcastScalarToVector128(Single.MaxValue);
+                Vector128<float> maxLeafedOutHeightInLayer = AvxExtensions.BroadcastScalarToVector128(Single.MinValue);
+                Vector128<float> minLeafedOutCrownHeightInLayer = AvxExtensions.BroadcastScalarToVector128(Single.MaxValue);
                 Vector128<float> zero = Vector128<float>.Zero;
                 for (int speciesIndex = 0; speciesIndex < n_sp; ++speciesIndex)
                 {
                     Vector128<int> layer_id = this.State.layer_id[speciesIndex];
-                    int isEqualMask = Avx.MoveMask(Avx.CompareEqual(layer_id, layerIndex128).AsSingle());
-                    if (isEqualMask != Constant.Simd128x4.MaskAllFalse)
+                    Vector128<float> isEqualMask = Avx.CompareEqual(layer_id, layerIndex128).AsSingle();
+                    if (Avx.MoveMask(isEqualMask) != Constant.Simd128x4.MaskAllFalse)
                     {
                         Vector128<float> lai = this.State.lai[speciesIndex];
-                        int laiNonzeroMask = Avx.MoveMask(Avx.CompareGreaterThan(lai, zero));
-                        byte combinedMask = (byte)(isEqualMask & laiNonzeroMask);
+                        Vector128<float> laiNonzeroMask = Avx.CompareGreaterThan(lai, zero);
+                        Vector128<float> combinedMask = Avx.And(isEqualMask, laiNonzeroMask);
                         Vector128<float> height = this.State.height[speciesIndex];
-                        maxLeafedOutHeightInLayer = Avx.Blend(maxLeafedOutHeightInLayer, Avx.Max(maxLeafedOutHeightInLayer, height), combinedMask);
-                        minLeafedOutCrownHeightInLayer = Avx.Blend(minLeafedOutCrownHeightInLayer, Avx.Min(minLeafedOutCrownHeightInLayer, heightCrown[speciesIndex]), combinedMask);
-                        layerHasLeafedOutSpeciesMask |= combinedMask;
+                        maxLeafedOutHeightInLayer = Avx.BlendVariable(maxLeafedOutHeightInLayer, Avx.Max(maxLeafedOutHeightInLayer, height), combinedMask);
+                        minLeafedOutCrownHeightInLayer = Avx.BlendVariable(minLeafedOutCrownHeightInLayer, Avx.Min(minLeafedOutCrownHeightInLayer, heightCrown[speciesIndex]), combinedMask);
+                        layerHasLeafedOutSpeciesMask = Avx.Or(layerHasLeafedOutSpeciesMask, combinedMask);
                     }
                 }
 
-                maxLeafedOutHeightByLayer[layerIndex] = Avx.Blend(zero, maxLeafedOutHeightInLayer, layerHasLeafedOutSpeciesMask);
-                minLeafedOutCrownHeightByLayer[layerIndex] = Avx.Blend(zero, minLeafedOutCrownHeightInLayer, layerHasLeafedOutSpeciesMask);
+                maxLeafedOutHeightByLayer[layerIndex] = Avx.BlendVariable(zero, maxLeafedOutHeightInLayer, layerHasLeafedOutSpeciesMask);
+                minLeafedOutCrownHeightByLayer[layerIndex] = Avx.BlendVariable(zero, minLeafedOutCrownHeightInLayer, layerHasLeafedOutSpeciesMask);
                 // leave default values of zero if no species in layer have leaves on
             }
 
@@ -2066,12 +2065,12 @@ namespace BayesianPG.ThreePG
                 Vector128<float> crownVolume = crownVolumeBySpecies[speciesIndex];
                 Vector128<float> stems_n = this.State.stems_n[speciesIndex];
                 Vector128<float> canopyVolumeFraction = Avx.Divide(Avx.Multiply(crownVolume, stems_n),
-                                                                   Avx.Multiply(Avx2Extensions.BroadcastScalarToVector128(10000.0F),
+                                                                   Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(10000.0F),
                                                                                 Avx.Subtract(height_max_l[speciesIndex], heightCrown_min_l[speciesIndex])));
 
                 Vector128<float> zero = Vector128<float>.Zero;
-                byte laiNonzeroMask = (byte)Avx.MoveMask(Avx.CompareGreaterThan(lai, zero));
-                canopyVolumeFraction = Avx.Blend(zero, canopyVolumeFraction, laiNonzeroMask);
+                Vector128<float> laiNonzeroMask = Avx.CompareGreaterThan(lai, zero);
+                canopyVolumeFraction = Avx.BlendVariable(zero, canopyVolumeFraction, laiNonzeroMask);
                 this.State.canopy_vol_frac[speciesIndex] = canopyVolumeFraction;
 
                 DebugV.Assert(Avx.CompareGreaterThanOrEqual(canopyVolumeFraction, zero));
@@ -2088,7 +2087,7 @@ namespace BayesianPG.ThreePG
                 // where(canopy_vol_frac[i] < 0.01F) { canopy_vol_frac[i] = 0.01F } // commented out in Fortran
                 // minimum height of layer
                 Vector128<float> heightMidcrown_l = Avx.Add(heightCrown_min_l[speciesIndex],
-                                                            Avx.Multiply(Avx2Extensions.BroadcastScalarToVector128(0.5F),
+                                                            Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(0.5F),
                                                                          Avx.Subtract(height_max_l[speciesIndex], heightCrown_min_l[speciesIndex])));
 
                 // determine the ratio between the mid height of the given species and the mid height of the layer.
@@ -2113,24 +2112,24 @@ namespace BayesianPG.ThreePG
                 Vector128<float> lai = this.State.lai[speciesIndex];
                 // Constant to partition light between species and to account for vertical canopy heterogeneity
                 // (see Equations 2 and 3 of Forrester et al., 2014, Forest Ecosystems, 1:17)
-                Vector128<float> speciesLambdaV = Avx.Add(Avx2Extensions.BroadcastScalarToVector128(0.012306F),
-                                                          Avx.Add(Avx.Multiply(Avx2Extensions.BroadcastScalarToVector128(0.2366090F),
+                Vector128<float> speciesLambdaV = Avx.Add(AvxExtensions.BroadcastScalarToVector128(0.012306F),
+                                                          Avx.Add(Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(0.2366090F),
                                                                                Avx.Multiply(k, 
                                                                                             Avx.Divide(lai, kL_l[speciesIndex]))),
-                                                                  Avx.Add(Avx.Multiply(Avx2Extensions.BroadcastScalarToVector128(0.029118F),
+                                                                  Avx.Add(Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(0.029118F),
                                                                                        heightMidcrown_r[speciesIndex]),
-                                                                          Avx.Multiply(Avx2Extensions.BroadcastScalarToVector128(0.608381F),
+                                                                          Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(0.608381F),
                                                                                        Avx.Multiply(k,
                                                                                                     Avx.Multiply(Avx.Divide(lai, kL_l[speciesIndex]), 
                                                                                                                  heightMidcrown_r[speciesIndex]))))));
 
                 // check for leaf off
                 Vector128<float> zero = Vector128<float>.Zero;
-                byte laiNonzeroMask = (byte)Avx.MoveMask(Avx.CompareGreaterThan(lai, zero));
-                speciesLambdaV = Avx.Blend(zero, speciesLambdaV, laiNonzeroMask);
+                Vector128<float> laiNonzeroMask = Avx.CompareGreaterThan(lai, zero);
+                speciesLambdaV = Avx.BlendVariable(zero, speciesLambdaV, laiNonzeroMask);
                 this.State.lambda_v[speciesIndex] = speciesLambdaV;
 
-                DebugV.Assert(Avx.And(Avx.CompareGreaterThanOrEqual(speciesLambdaV, Vector128<float>.Zero), Avx.CompareLessThan(speciesLambdaV, Avx2Extensions.BroadcastScalarToVector128(Single.PositiveInfinity))));
+                DebugV.Assert(Avx.And(Avx.CompareGreaterThanOrEqual(speciesLambdaV, Vector128<float>.Zero), Avx.CompareLessThan(speciesLambdaV, AvxExtensions.BroadcastScalarToVector128(Single.PositiveInfinity))));
             }
 
             // make sure the sum of all lambda_v = 1 in each leafed out layer
@@ -2140,10 +2139,10 @@ namespace BayesianPG.ThreePG
             {
                 Vector128<float> lambda_v = this.State.lambda_v[speciesIndex];
                 Vector128<float> lambda_v_normalized = Avx.Divide(lambda_v, lambdaV_l[speciesIndex]);
-                byte lambdaV_l_nonzeroMask = (byte)Avx.MoveMask(Avx.CompareNotEqual(lambdaV_l[speciesIndex], Vector128<float>.Zero));
-                this.State.lambda_v[speciesIndex] = Avx.Blend(lambda_v, lambda_v_normalized, lambdaV_l_nonzeroMask);
+                Vector128<float> lambdaV_l_nonzeroMask = Avx.CompareNotEqual(lambdaV_l[speciesIndex], Vector128<float>.Zero);
+                this.State.lambda_v[speciesIndex] = Avx.BlendVariable(lambda_v, lambda_v_normalized, lambdaV_l_nonzeroMask);
             }
-            DebugV.Assert(Avx.And(Avx.CompareGreaterThanOrEqual(this.State.lambda_v.Sum(), Vector128<float>.Zero), Avx.CompareLessThan(this.State.lambda_v.Sum(), Avx.Multiply(Avx2Extensions.BroadcastScalarToVector128(1.0001F), Avx.ConvertToVector128Single(nLayers))))); // minimum is zero if no layers are leafed out, should be one otherwise
+            DebugV.Assert(Avx.And(Avx.CompareGreaterThanOrEqual(this.State.lambda_v.Sum(), Vector128<float>.Zero), Avx.CompareLessThan(this.State.lambda_v.Sum(), Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(1.0001F), Avx.ConvertToVector128Single(nLayers))))); // minimum is zero if no layers are leafed out, should be one otherwise
 
             // calculate the weighted kLS based on kL / sumkL
             Span<Vector128<float>> kLSweightedave = stackalloc Vector128<float>[n_sp]; // calculates the contribution each species makes to the sum of all kLS products in a given layer(see Equation 6 of Forrester et al., 2014, Forest Ecosystems, 1:17)
@@ -2164,7 +2163,7 @@ namespace BayesianPG.ThreePG
             float solarAngle = this.State.GetSolarZenithAngle(timestepEndDate);
             for (int speciesIndex = 0; speciesIndex < n_sp; ++speciesIndex)
             {
-                kLSweightedave[speciesIndex] = Avx.Min(kLSweightedave[speciesIndex], Avx2Extensions.BroadcastScalarToVector128(1.0F));
+                kLSweightedave[speciesIndex] = Avx.Min(kLSweightedave[speciesIndex], AvxExtensions.BroadcastScalarToVector128(1.0F));
 
                 // Constant to account for horizontal canopy heterogeneity such as gaps between trees and the change
                 // in zenith angle (and shading) with latitude and season.
@@ -2174,32 +2173,32 @@ namespace BayesianPG.ThreePG
                 // Equations 5a and 5b (used in Equation 2).
                 // horizontal heterogeneity, 3-PGmix manual 11.1 equations A21 and A22
                 Vector128<float> canopy_vol_frac = this.State.canopy_vol_frac[speciesIndex];
-                Vector128<float> powerCanopyVolFrac = MathV.Pow(Avx2Extensions.BroadcastScalarToVector128(0.1F), canopy_vol_frac);
-                Vector128<float> speciesLambdaH = Avx.Add(Avx2Extensions.BroadcastScalarToVector128(0.8285F),
-                                                          Avx.Subtract(Avx.Multiply(Avx.Subtract(Avx2Extensions.BroadcastScalarToVector128(1.09498F),
-                                                                                                 Avx.Multiply(Avx2Extensions.BroadcastScalarToVector128(0.781928F),
+                Vector128<float> powerCanopyVolFrac = MathV.Pow(AvxExtensions.BroadcastScalarToVector128(0.1F), canopy_vol_frac);
+                Vector128<float> speciesLambdaH = Avx.Add(AvxExtensions.BroadcastScalarToVector128(0.8285F),
+                                                          Avx.Subtract(Avx.Multiply(Avx.Subtract(AvxExtensions.BroadcastScalarToVector128(1.09498F),
+                                                                                                 Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(0.781928F),
                                                                                                               kLSweightedave[speciesIndex])),
                                                                                     powerCanopyVolFrac),
-                                                                       Avx.Multiply(Avx2Extensions.BroadcastScalarToVector128(0.6714096F), 
+                                                                       Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(0.6714096F), 
                                                                                     powerCanopyVolFrac)));
                 if (solarAngle > 30.0F)
                 {
-                    speciesLambdaH = Avx.Add(speciesLambdaH, Avx2Extensions.BroadcastScalarToVector128(0.00097F * MathF.Pow(1.08259F, solarAngle)));
+                    speciesLambdaH = Avx.Add(speciesLambdaH, AvxExtensions.BroadcastScalarToVector128(0.00097F * MathF.Pow(1.08259F, solarAngle)));
                 }
 
                 // check for leaf off
                 Vector128<float> zero = Vector128<float>.Zero;
-                byte laiNonzeroMask = (byte)Avx.MoveMask(Avx.CompareGreaterThan(this.State.lai[speciesIndex], zero));
-                speciesLambdaH = Avx.Blend(zero, speciesLambdaH, laiNonzeroMask);
+                Vector128<float> laiNonzeroMask = Avx.CompareGreaterThan(this.State.lai[speciesIndex], zero);
+                speciesLambdaH = Avx.BlendVariable(zero, speciesLambdaH, laiNonzeroMask);
                 this.State.lambda_h[speciesIndex] = speciesLambdaH;
 
-                //DebugV.Assert(Avx.And(Avx.CompareGreaterThanOrEqual(speciesLambdaH, Vector128<float>.Zero), Avx.CompareLessThanOrEqual(speciesLambdaH, Avx2Extensions.BroadcastScalarToVector128(1.25F))));
+                //DebugV.Assert(Avx.And(Avx.CompareGreaterThanOrEqual(speciesLambdaH, Vector128<float>.Zero), Avx.CompareLessThanOrEqual(speciesLambdaH, AvxExtensions.BroadcastScalarToVector128(1.25F))));
             }
 
             float days_in_month = timestepEndDate.DaysInMonth();
             float solar_rad = this.Climate.MeanDailySolarRadiation[timestep];
-            Vector128<float> RADt = Avx2Extensions.BroadcastScalarToVector128(solar_rad * days_in_month); // total available radiation, MJ m⁻² month⁻¹
-            Vector128<float> one = Avx2Extensions.BroadcastScalarToVector128(1.0F);
+            Vector128<float> RADt = AvxExtensions.BroadcastScalarToVector128(solar_rad * days_in_month); // total available radiation, MJ m⁻² month⁻¹
+            Vector128<float> one = AvxExtensions.BroadcastScalarToVector128(1.0F);
             Span<Vector128<float>> aparl = stackalloc Vector128<float>[n_sp]; // the absorbed apar for the given layer
             for (int layerIndex = 0; layerIndex < maxLayerCount; ++layerIndex)
             {
@@ -2208,11 +2207,11 @@ namespace BayesianPG.ThreePG
                 Vector128<float> maxAParL = zero;
                 for (int speciesIndex = 0; speciesIndex < n_sp; ++speciesIndex)
                 {
-                    byte isEqualMask = (byte)Avx.MoveMask(Avx.CompareEqual(this.State.layer_id[speciesIndex], layerIndex128).AsSingle());
-                    if (isEqualMask != Constant.Simd128x4.MaskAllFalse)
+                    Vector128<float> isEqualMask = Avx.CompareEqual(this.State.layer_id[speciesIndex], layerIndex128).AsSingle();
+                    if (Avx.MoveMask(isEqualMask) != Constant.Simd128x4.MaskAllFalse)
                     {
                         Vector128<float> aparlInLayer = Avx.Multiply(RADt, Avx.Subtract(one, MathV.Exp(Avx.Subtract(zero, kL_l[speciesIndex]))));
-                        Vector128<float> aparlBlend = Avx.Blend(aparl[speciesIndex], aparlInLayer, isEqualMask);
+                        Vector128<float> aparlBlend = Avx.BlendVariable(aparl[speciesIndex], aparlInLayer, isEqualMask);
                         aparl[speciesIndex] = aparlBlend;
                         maxAParL = Avx.Max(maxAParL, aparlBlend);
                     }
@@ -2221,7 +2220,7 @@ namespace BayesianPG.ThreePG
                 DebugV.Assert(Avx.CompareGreaterThanOrEqual(RADt, zero));
             }
 
-            Vector128<float> RADtReciprocal = Avx2Extensions.BroadcastScalarToVector128(1.0F / (solar_rad * days_in_month));
+            Vector128<float> RADtReciprocal = AvxExtensions.BroadcastScalarToVector128(1.0F / (solar_rad * days_in_month));
             for (int speciesIndex = 0; speciesIndex < n_sp; ++speciesIndex)
             {
                 Vector128<float> lambda_h = this.State.lambda_h[speciesIndex];
@@ -2234,7 +2233,7 @@ namespace BayesianPG.ThreePG
                 Vector128<float> speciesAparFraction = Avx.Multiply(aparOfSpecies, RADtReciprocal);
                 this.State.fi[speciesIndex] = speciesAparFraction;
 
-                DebugV.Assert(Avx.And(Avx.CompareGreaterThanOrEqual(aparOfSpecies, Vector128<float>.Zero), Avx.And(Avx.CompareGreaterThanOrEqual(speciesAparFraction, Vector128<float>.Zero), Avx.CompareLessThanOrEqual(speciesAparFraction, Avx2Extensions.BroadcastScalarToVector128(1.0F)))));
+                DebugV.Assert(Avx.And(Avx.CompareGreaterThanOrEqual(aparOfSpecies, Vector128<float>.Zero), Avx.And(Avx.CompareGreaterThanOrEqual(speciesAparFraction, Vector128<float>.Zero), Avx.CompareLessThanOrEqual(speciesAparFraction, AvxExtensions.BroadcastScalarToVector128(1.0F)))));
             }
 
             // calculate the LAI above the given species for within canopy VPD calculations
@@ -2244,7 +2243,7 @@ namespace BayesianPG.ThreePG
             // now calculate the LAI of all layers above and part of the current layer if the species
             // is in the lower half of the layer then also take the proportion of the LAI above
             // the proportion is based on the Relative height of the mid crown
-            Vector128<float> justUnderOne = Avx2Extensions.BroadcastScalarToVector128(0.9999999999999F);
+            Vector128<float> justUnderOne = AvxExtensions.BroadcastScalarToVector128(0.9999999999999F);
             for (int speciesIndex = 0; speciesIndex < n_sp; ++speciesIndex)
             {
                 Vector128<float> zero = Vector128<float>.Zero;
@@ -2255,21 +2254,21 @@ namespace BayesianPG.ThreePG
                     Vector128<int> thisLayerID = this.State.layer_id[speciesIndex];
                     Vector128<int> otherLayerID = this.State.layer_id[otherSpeciesIndex];
                     Vector128<float> otherSpeciesLai = this.State.lai[otherSpeciesIndex];
-                    byte isLessThanMask = (byte)Avx.MoveMask(Avx.CompareLessThan(otherLayerID, thisLayerID).AsSingle());
-                    if (isLessThanMask != Constant.Simd128x4.MaskAllFalse)
+                    Vector128<float> isLessThanMask = Avx.CompareLessThan(otherLayerID, thisLayerID).AsSingle();
+                    if (Avx.MoveMask(isLessThanMask) != Constant.Simd128x4.MaskAllFalse)
                     {
-                        lai_above = Avx.Blend(lai_above, Avx.Add(lai_above, otherSpeciesLai), isLessThanMask);
+                        lai_above = Avx.BlendVariable(lai_above, Avx.Add(lai_above, otherSpeciesLai), isLessThanMask);
                     }
-                    byte isEqualMask = (byte)Avx.MoveMask(Avx.CompareEqual(otherLayerID, thisLayerID).AsSingle());
-                    if (isEqualMask != Constant.Simd128x4.MaskAllFalse)
+                    Vector128<float> isEqualMask = Avx.CompareEqual(otherLayerID, thisLayerID).AsSingle();
+                    if (Avx.MoveMask(isEqualMask) != Constant.Simd128x4.MaskAllFalse)
                     {
-                        sameLayerLai = Avx.Blend(sameLayerLai, Avx.Add(sameLayerLai, otherSpeciesLai), isEqualMask);
+                        sameLayerLai = Avx.BlendVariable(sameLayerLai, Avx.Add(sameLayerLai, otherSpeciesLai), isEqualMask);
                     }
                 }
 
                 sameLayerLai = Avx.Multiply(sameLayerLai, Avx.Subtract(one, heightMidcrown_r[speciesIndex]));
-                byte midcrownMask = (byte)Avx.MoveMask(Avx.CompareLessThan(heightMidcrown_r[speciesIndex], justUnderOne));
-                sameLayerLai = Avx.Blend(zero, sameLayerLai, midcrownMask);
+                Vector128<float> midcrownMask = Avx.CompareLessThan(heightMidcrown_r[speciesIndex], justUnderOne);
+                sameLayerLai = Avx.BlendVariable(zero, sameLayerLai, midcrownMask);
                 lai_above = Avx.Add(lai_above, sameLayerLai);
                 this.State.lai_above[speciesIndex] = lai_above;
             }
@@ -2292,11 +2291,11 @@ namespace BayesianPG.ThreePG
                 if (fullCanAgeNonzeroMask == Constant.Simd128x4.MaskAllTrue)
                 {
                     Vector128<float> age = AvxExtensions.BroadcastScalarToVector128(this.Trajectory.Species.age_m[speciesIndex][timestep]);
-                    byte ageMask = (byte)Avx.MoveMask(Avx.CompareLessThan(age, fullCanAge));
-                    if (ageMask > 0)
+                    Vector128<float> ageMask = Avx.CompareLessThan(age, fullCanAge);
+                    if (Avx.MoveMask(ageMask) != Constant.Simd128x4.MaskAllFalse)
                     {
                         Vector128<float> partialCanopyCover = Avx.Divide(Avx.Add(age, AvxExtensions.BroadcastScalarToVector128(0.01F)), fullCanAge);
-                        canopy_cover = Avx.Blend(canopy_cover, partialCanopyCover, ageMask);
+                        canopy_cover = Avx.BlendVariable(canopy_cover, partialCanopyCover, ageMask);
                     }
                 }
                 else if (fullCanAgeNonzeroMask != Constant.Simd128x4.MaskAllFalse)
@@ -2330,8 +2329,8 @@ namespace BayesianPG.ThreePG
             for (int speciesIndex = 0; speciesIndex < n_sp; ++speciesIndex)
             {
                 Vector128<float> transp_veg = zero;
-                byte laiNonzeroMask = (byte)Avx.MoveMask(Avx.CompareGreaterThan(this.State.lai[speciesIndex], zero));
-                if (laiNonzeroMask != Constant.Simd128x4.MaskAllFalse)
+                Vector128<float> laiNonzeroMask = Avx.CompareGreaterThan(this.State.lai[speciesIndex], zero);
+                if (Avx.MoveMask(laiNonzeroMask) != Constant.Simd128x4.MaskAllFalse)
                 {
                     // SolarRad in MJ / m2 / day---> * 10 ^ 6 J / m2 / day---> / day_length converts to only daytime period--->W / m2
                     Vector128<float> Qa = this.Parameters.Qa[speciesIndex];
@@ -2347,7 +2346,7 @@ namespace BayesianPG.ThreePG
                     
                     transp_veg = Avx.Multiply(Avx.Divide(Avx.Multiply(conduct_canopy, Avx.Add(Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(Constant.e20), netRad), defTerm)), div), AvxExtensions.BroadcastScalarToVector128(days_in_month / Constant.lambda * day_length));
                     // in J / m2 / s then the "/lambda*h" converts to kg / m2 / day and the days in month then coverts this to kg/ m2 / month
-                    transp_veg = Avx.Blend(zero, transp_veg, laiNonzeroMask);
+                    transp_veg = Avx.BlendVariable(zero, transp_veg, laiNonzeroMask);
                 }
                 this.State.transp_veg[speciesIndex] = transp_veg;
             }
@@ -2356,10 +2355,10 @@ namespace BayesianPG.ThreePG
             // ending `so` mean soil
             Vector128<float> lai_total = this.State.lai.Sum();
             Vector128<float> one = AvxExtensions.BroadcastScalarToVector128(1.0F);
-            byte laiTotalZeroMask = (byte)Avx.MoveMask(Avx.CompareLessThanOrEqual(lai_total, zero));
-            Vector128<float> fiveLaiTotalReciprocal = Avx.Blend(Avx.Divide(one, Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(5.0F), lai_total)),
-                                                                one,
-                                                                laiTotalZeroMask);
+            Vector128<float> laiTotalZeroMask = Avx.CompareLessThanOrEqual(lai_total, zero);
+            Vector128<float> fiveLaiTotalReciprocal = Avx.BlendVariable(Avx.Divide(one, Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(5.0F), lai_total)),
+                                                                        one,
+                                                                        laiTotalZeroMask);
 
             float vpd_day = this.Climate.MeanDailyVpd[timestep];
             Vector128<float> defTerm_so = Avx.Multiply(Avx.Multiply(AvxExtensions.BroadcastScalarToVector128(Constant.rhoAir * Constant.lambda * Constant.VPDconv * vpd_day),
@@ -2381,8 +2380,8 @@ namespace BayesianPG.ThreePG
         private void Transpiration3PGpjs(int timestep, DateTime timestepEndDate)
         {
             Vector128<float> vpdSpSum = this.State.VPD_sp.Sum();
-            byte zeroVpdMask = (byte)Avx.MoveMask(Avx.CompareEqual(vpdSpSum, Vector128<float>.Zero));
-            if (zeroVpdMask == Constant.Simd128x4.MaskAllTrue)
+            Vector128<float> zeroVpdMask = Avx.CompareEqual(vpdSpSum, Vector128<float>.Zero);
+            if (Avx.MoveMask(zeroVpdMask) == Constant.Simd128x4.MaskAllTrue)
             {
                 Array.Clear(this.State.transp_veg);
                 return;
@@ -2413,7 +2412,7 @@ namespace BayesianPG.ThreePG
                 // in J / m2 / s then the "/lambda*h" converts to kg / m2 / day and the days in month then coverts this to kg/ m2 / month
                 Vector128<float> zero = Vector128<float>.Zero;
                 transp_veg = Avx.Max(transp_veg, zero); // transpiration can't be negative
-                transp_veg = Avx.Blend(transp_veg, zero, zeroVpdMask); // zero transp_veg where VPD sum is zero
+                transp_veg = Avx.BlendVariable(transp_veg, zero, zeroVpdMask); // zero transp_veg where VPD sum is zero
                 this.State.transp_veg[speciesIndex] = transp_veg;
             }
         }

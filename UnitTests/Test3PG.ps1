@@ -1,6 +1,6 @@
 ﻿$unitTestDirectory = ([System.IO.Path]::Combine($env:USERPROFILE, "Documents\PhD\BayesianPG\UnitTests"))
-$buildDirectory = ([System.IO.Path]::Combine($unitTestDirectory, "bin\x64\Debug\net6.0"))
-#$buildDirectory = ([System.IO.Path]::Combine($unitTestDirectory, "bin\x64\Release\net6.0"))
+$buildDirectory = ([System.IO.Path]::Combine($unitTestDirectory, "bin\x64\Debug\net8.0"))
+#$buildDirectory = ([System.IO.Path]::Combine($unitTestDirectory, "bin\x64\Release\net8.0"))
 $outputDirectory = ([System.IO.Path]::Combine($unitTestDirectory, "..\TestResults"))
 
 Import-Module -Name ([System.IO.Path]::Combine($buildDirectory, "BayesianPG.dll"));

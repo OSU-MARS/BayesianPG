@@ -103,7 +103,7 @@ namespace BayesianPG.Test
                 //}
 
                 ThreePGScalar threePGScalar = sitesByName.Values[siteIndex];
-                ThreePGSimd128 threePG128 = new(threePGScalar)
+                ThreePGAvx128 threePG128 = new(threePGScalar)
                 {
                     Bias = threePGScalar.Bias
                 };
@@ -296,7 +296,7 @@ namespace BayesianPG.Test
 
             // for now, skip first month as not all values are computed
             int maxTimestepVerified = Math.Min(expectedTimesteps, maxTimestep);
-            Vector128<float> tolerance128 = Avx2Extensions.BroadcastScalarToVector128((float)tolerance);
+            Vector128<float> tolerance128 = AvxExtensions.BroadcastScalarToVector128((float)tolerance);
             for (int timestepIndex = 1; timestepIndex < maxTimestepVerified; ++timestepIndex)
             {
                 int expectedSpecies = expectedValues.GetLength(1);
@@ -304,7 +304,7 @@ namespace BayesianPG.Test
                 for (int speciesIndex = 0; speciesIndex < expectedSpecies; ++speciesIndex)
                 {
                     Vector128<int> actualValue = actual[timestepIndex, speciesIndex];                    
-                    Vector128<int> expectedValue = Avx2Extensions.BroadcastScalarToVector128(expectedValues[timestepIndex, speciesIndex]);
+                    Vector128<int> expectedValue = AvxExtensions.BroadcastScalarToVector128(expectedValues[timestepIndex, speciesIndex]);
                     Vector128<int> difference = Avx.Subtract(actualValue, expectedValue);
                     AssertV.IsTrue(Avx.CompareLessThanOrEqual(AvxExtensions.Abs(difference.AsSingle()), tolerance128), threePG.Site.Name + ": " + variable + "[" + timestepIndex + ", " + speciesIndex + "]: difference = " + difference + " at iteration " + iteration + ".");
                 }
@@ -476,7 +476,7 @@ namespace BayesianPG.Test
             }
         }
 
-        private static void VerifySpeciesParameters(ThreePGSimd128 threePG)
+        private static void VerifySpeciesParameters(ThreePGAvx128 threePG)
         {
             TreeSpeciesParameters<float> expectedParameters = TestConstant.TreeParameters; // shorthand for readability
             for (int speciesIndex = 0; speciesIndex < threePG.Parameters.n_sp; ++speciesIndex)
@@ -740,7 +740,7 @@ namespace BayesianPG.Test
             }
         }
 
-        private static void VerifyStandTrajectory(ThreePGSimd128 threePG128, ThreePGStandTrajectory<float, int> expectedTrajectory, StandTrajectoryTolerance tolerances, int iteration)
+        private static void VerifyStandTrajectory(ThreePGAvx128 threePG128, ThreePGStandTrajectory<float, int> expectedTrajectory, StandTrajectoryTolerance tolerances, int iteration)
         {
             ThreePGStandTrajectory<Vector128<float>, Vector128<int>> actualTrajectory = threePG128.Trajectory;
 

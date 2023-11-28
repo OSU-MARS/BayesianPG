@@ -13,7 +13,7 @@ namespace BayesianPG.Xlsx
 
         public SiteManagementWorksheet()
         {
-            this.Management = new();
+            this.Management = [];
         }
 
         public override void OnEndParsing()
@@ -64,7 +64,7 @@ namespace BayesianPG.Xlsx
             if (speciesIndex == -1)
             {
                 speciesIndex = management.n_sp;
-                management.AllocateSpecies(new string[] { species });
+                management.AllocateSpecies([ species ]);
             }
 
             float age = Single.Parse(row.Row[this.Header.Age], CultureInfo.InvariantCulture);

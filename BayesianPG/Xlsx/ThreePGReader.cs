@@ -3,13 +3,8 @@ using System.Collections.Generic;
 
 namespace BayesianPG.Xlsx
 {
-    public class ThreePGReader : XlsxReader
+    public class ThreePGReader(string xlsxFilePath) : XlsxReader(xlsxFilePath)
     {
-        public ThreePGReader(string xlsxFilePath)
-            : base(xlsxFilePath)
-        {
-        }
-
         public SortedList<string, ThreePGScalar> ReadSites()
         {
             SiteWorksheet sites = this.ReadWorksheet<SiteWorksheet>("site");

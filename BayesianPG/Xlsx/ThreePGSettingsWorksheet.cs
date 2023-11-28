@@ -1,7 +1,6 @@
 ﻿using BayesianPG.ThreePG;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Xml;
 
 namespace BayesianPG.Xlsx
@@ -12,7 +11,7 @@ namespace BayesianPG.Xlsx
 
         public ThreePGSettingsWorksheet()
         {
-            this.Settings = new();
+            this.Settings = [];
         }
 
         public override void ParseRow(XlsxRow row)

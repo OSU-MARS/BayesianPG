@@ -17,7 +17,7 @@
         // convert VPD to saturation deficit = 18/29/1000
         public const float VPDconv = 0.000622F;
 
-        public static readonly int[] DayOfYear = { 15, 46, 74, 105, 135, 166, 196, 227, 258, 288, 319, 349 };
+        public static readonly int[] DayOfYear = [ 15, 46, 74, 105, 135, 166, 196, 227, 258, 288, 319, 349 ];
 
         public static class OpenXml
         {
@@ -64,8 +64,8 @@
             public const byte Extract1 = 1;
             public const byte Extract2 = 2;
             public const byte Extract3 = 3;
-            public const byte MaskAllFalse = 0x0;
-            public const byte MaskAllTrue = 0xf;
+            public const int MaskAllFalse = 0x0;
+            public const int MaskAllTrue = 0xf;
             public const byte Shuffle0to1 = 0xe0; // 3 << 6  | 2 << 4 | 0 << 1 | 0 = 1110 0000 = 0xe0
             public const byte Shuffle0to2 = 0xc4; // 3 << 6  | 0 << 4 | 1 << 2 | 0 = 1100 0100 = 0xc4
             public const byte Shuffle0to3 = 0x24; // 0 << 6  | 2 << 4 | 1 << 2 | 0 = 0010 0100 = 0x24

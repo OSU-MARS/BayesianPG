@@ -13,7 +13,7 @@ namespace BayesianPG.Xlsx
 
         public SiteWorksheet()
         {
-            this.Sites = new();
+            this.Sites = [];
         }
 
         public override void ParseRow(XlsxRow row)

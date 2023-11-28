@@ -51,11 +51,8 @@ namespace BayesianPG.Extensions
             Vector128<int> integerExponent = Avx.ShiftLeftLogical(integerPower, 23);
             Vector128<float> exponent = Avx.Add(integerExponent, fractionalInterpolant.AsInt32()).AsSingle();
 
-            byte zeroMask = (byte)Avx.MoveMask(Avx.CompareLessThan(power, AvxExtensions.BroadcastScalarToVector128(-MathV.FloatExp2MaximumPower)));
-            if (zeroMask != 0)
-            {
-                exponent = Avx.Blend(exponent, Vector128<float>.Zero, zeroMask);
-            }
+            Vector128<float> zeroMask = Avx.CompareLessThan(power, AvxExtensions.BroadcastScalarToVector128(-MathV.FloatExp2MaximumPower));
+            exponent = Avx.BlendVariable(exponent, Vector128<float>.Zero, zeroMask);
             return exponent;
         }
 

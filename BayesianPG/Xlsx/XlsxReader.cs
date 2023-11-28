@@ -21,7 +21,7 @@ namespace BayesianPG.Xlsx
         public XlsxReader(string xlsxFilePath)
         {
             this.isDisposed = false;
-            this.sharedStrings = new();
+            this.sharedStrings = [];
             this.stream = new(xlsxFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             this.xlsx = SpreadsheetDocument.Open(stream, false);
 

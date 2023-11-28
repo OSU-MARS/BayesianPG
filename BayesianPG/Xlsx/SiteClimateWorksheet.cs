@@ -20,7 +20,7 @@ namespace BayesianPG.Xlsx
             this.previousMonth = Int32.MinValue;
             this.previousYear = Int32.MinValue;
 
-            this.Sites = new();
+            this.Sites = [];
         }
 
         public override void ParseRow(XlsxRow row)

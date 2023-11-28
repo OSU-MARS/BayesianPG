@@ -10,7 +10,7 @@ namespace BayesianPG.Test
         static TestConstant()
         {
             TestConstant.TreeParameters = new();
-            TestConstant.TreeParameters.AllocateSpecies(new string[] { "Fagus sylvatica" });
+            TestConstant.TreeParameters.AllocateSpecies([ "Fagus sylvatica" ]);
             // Fagus sylvatica
             TestConstant.TreeParameters.pFS2[0] = 0.7F;
             TestConstant.TreeParameters.pFS20[0] = 0.06F;
@@ -96,7 +96,7 @@ namespace BayesianPG.Test
             TestConstant.TreeParameters.molPAR_MJ[0] = 2.3F;
 
             TestConstant.TreeSizeDistributions = new();
-            TestConstant.TreeSizeDistributions.AllocateSpecies(new string[] { "Fagus sylvatica" });
+            TestConstant.TreeSizeDistributions.AllocateSpecies([ "Fagus sylvatica" ]);
             // Fagus sylvatica
             TestConstant.TreeSizeDistributions.Dscale0[0] = 0.194387984F;
             TestConstant.TreeSizeDistributions.DscaleB[0] = 1.2246192F;

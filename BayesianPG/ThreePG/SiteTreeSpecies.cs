@@ -46,13 +46,13 @@ namespace BayesianPG.ThreePG
 
         public SiteTreeSpecies()
         {
-            this.InitialFoliageBiomass = Array.Empty<float>();
-            this.InitialRootBiomass = Array.Empty<float>();
-            this.InitialStemBiomass = Array.Empty<float>();
-            this.InitialStemsPerHectare = Array.Empty<float>();
-            this.MonthPlanted = Array.Empty<int>();
-            this.SoilFertility = Array.Empty<float>();
-            this.YearPlanted = Array.Empty<int>();
+            this.InitialFoliageBiomass = [];
+            this.InitialRootBiomass = [];
+            this.InitialStemBiomass = [];
+            this.InitialStemsPerHectare = [];
+            this.MonthPlanted = [];
+            this.SoilFertility = [];
+            this.YearPlanted = [];
         }
 
         public override void AllocateSpecies(string[] names)

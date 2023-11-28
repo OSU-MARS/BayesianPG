@@ -11,7 +11,7 @@ namespace BayesianPG.Cmdlets
     public class GetStandTrajectories : Cmdlet
     {
         [Parameter]
-        public Simd Simd { get; set; }
+        public SimdInstructions Simd { get; set; }
 
         [Parameter(Mandatory = true)]
         [ValidateNotNullOrEmpty]
@@ -19,7 +19,7 @@ namespace BayesianPG.Cmdlets
 
         public GetStandTrajectories()
         {
-            this.Simd = Simd.Vex128;
+            this.Simd = SimdInstructions.Vex128;
         }
 
         protected override void ProcessRecord()
@@ -29,7 +29,7 @@ namespace BayesianPG.Cmdlets
             using ThreePGReader reader = new(this.Xlsx);
             SortedList<string, ThreePGScalar> sitesByName = reader.ReadSites();
 
-            if (this.Simd == Simd.Scalar)
+            if (this.Simd == SimdInstructions.Scalar)
             {
                 for (int index = 0; index < sitesByName.Count; ++index)
                 {
@@ -38,14 +38,14 @@ namespace BayesianPG.Cmdlets
                 }
                 this.WriteObject(sitesByName);
             }
-            else if (this.Simd == Simd.Vex128)
+            else if (this.Simd == SimdInstructions.Vex128)
             {
-                SortedList<string, ThreePGSimd128> sitesByName128 = new(sitesByName.Count);
+                SortedList<string, ThreePGAvx128> sitesByName128 = new(sitesByName.Count);
                 for (int index = 0; index < sitesByName.Count; ++index)
                 {
                     ThreePGScalar threePGscalar = sitesByName.Values[index];
                     
-                    ThreePGSimd128 threePG128 = new(threePGscalar)
+                    ThreePGAvx128 threePG128 = new(threePGscalar)
                     {
                         Bias = threePGscalar.Bias
                     };

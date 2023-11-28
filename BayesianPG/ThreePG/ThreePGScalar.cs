@@ -5,13 +5,9 @@ using System.Linq;
 
 namespace BayesianPG.ThreePG
 {
-    public class ThreePGScalar : ThreePGpjsMix<float, int>
+    public class ThreePGScalar(Site site, SiteClimate climate, SiteTreeSpecies species, TreeSpeciesParameters<float> parameters, TreeSpeciesManagement management, ThreePGSettings settings) 
+        : ThreePGpjsMix<float, int>(site, climate, species, parameters, management, settings)
     {
-        public ThreePGScalar(Site site, SiteClimate climate, SiteTreeSpecies species, TreeSpeciesParameters<float> parameters, TreeSpeciesManagement management, ThreePGSettings settings)
-            : base(site, climate, species, parameters, management, settings)
-        {
-        }
-
         private void InitializeParametersWeatherAndFirstMonth()
         {
             // CO₂ modifier

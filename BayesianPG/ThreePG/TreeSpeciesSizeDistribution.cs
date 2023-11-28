@@ -139,41 +139,41 @@ namespace BayesianPG.ThreePG
 
         public TreeSpeciesSizeDistribution()
         {
-            this.Dscale0 = Array.Empty<float>();
-            this.DscaleB = Array.Empty<float>();
-            this.Dscalerh = Array.Empty<float>();
-            this.Dscalet = Array.Empty<float>();
-            this.DscaleC = Array.Empty<float>();
+            this.Dscale0 = [];
+            this.DscaleB = [];
+            this.Dscalerh = [];
+            this.Dscalet = [];
+            this.DscaleC = [];
 
-            this.Dshape0 = Array.Empty<float>();
-            this.DshapeB = Array.Empty<float>();
-            this.Dshaperh = Array.Empty<float>();
-            this.Dshapet = Array.Empty<float>();
-            this.DshapeC = Array.Empty<float>();
+            this.Dshape0 = [];
+            this.DshapeB = [];
+            this.Dshaperh = [];
+            this.Dshapet = [];
+            this.DshapeC = [];
 
-            this.Dlocation0 = Array.Empty<float>();
-            this.DlocationB = Array.Empty<float>();
-            this.Dlocationrh = Array.Empty<float>();
-            this.Dlocationt = Array.Empty<float>();
-            this.DlocationC = Array.Empty<float>();
+            this.Dlocation0 = [];
+            this.DlocationB = [];
+            this.Dlocationrh = [];
+            this.Dlocationt = [];
+            this.DlocationC = [];
 
-            this.wsscale0 = Array.Empty<float>();
-            this.wsscaleB = Array.Empty<float>();
-            this.wsscalerh = Array.Empty<float>();
-            this.wsscalet = Array.Empty<float>();
-            this.wsscaleC = Array.Empty<float>();
+            this.wsscale0 = [];
+            this.wsscaleB = [];
+            this.wsscalerh = [];
+            this.wsscalet = [];
+            this.wsscaleC = [];
 
-            this.wsshape0 = Array.Empty<float>();
-            this.wsshapeB = Array.Empty<float>();
-            this.wsshaperh = Array.Empty<float>();
-            this.wsshapet = Array.Empty<float>();
-            this.wsshapeC = Array.Empty<float>();
+            this.wsshape0 = [];
+            this.wsshapeB = [];
+            this.wsshaperh = [];
+            this.wsshapet = [];
+            this.wsshapeC = [];
 
-            this.wslocation0 = Array.Empty<float>();
-            this.wslocationB = Array.Empty<float>();
-            this.wslocationrh = Array.Empty<float>();
-            this.wslocationt = Array.Empty<float>();
-            this.wslocationC = Array.Empty<float>();
+            this.wslocation0 = [];
+            this.wslocationB = [];
+            this.wslocationrh = [];
+            this.wslocationt = [];
+            this.wslocationC = [];
         }
 
         public override void AllocateSpecies(int additionalSpecies)
