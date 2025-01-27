@@ -6,3 +6,6 @@
 using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>", Scope = "type", Target = "~T:BayesianPG.Test.Xlsx.StandTrajectoryHeader")]
+[assembly: SuppressMessage("Usage", "MSTEST0037:Use proper 'Assert' methods", Justification = "readability", Scope = "type", Target = "~M:BayesianPG.Test.Test3PG")]
+[assembly: SuppressMessage("Usage", "MSTEST0037:Use proper 'Assert' methods", Justification = "readability", Scope = "type", Target = "~T:BayesianPG.Test.AssertV")]
+[assembly: SuppressMessage("Usage", "MSTEST0037:Use proper 'Assert' methods", Justification = "readability", Scope = "type", Target = "~T:BayesianPG.Test.TestSimd")]
