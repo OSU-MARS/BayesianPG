@@ -32,7 +32,7 @@ namespace BayesianPG.ThreePG
             }
 
             // verify species names are unique
-            HashSet<string> uniqueNames = new(names);
+            HashSet<string> uniqueNames = [.. names];
             for (int index = 0; index < this.Species.Length; ++index)
             {
                 if (uniqueNames.Add(this.Species[index]) == false)
