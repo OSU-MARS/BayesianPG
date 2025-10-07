@@ -277,7 +277,7 @@ namespace BayesianPG.ThreePG
                     // ThreePGHeightModel.Power => aH * MathF.Pow(dbh, nHB) * MathF.Pow(competition_total, nHC),
                     ThreePGHeightModel.Power => aH * MathF.Exp(MathF.Log(dbh) * nHB + MathF.Log(competition_total) * nHC),
                     ThreePGHeightModel.Exponent => 1.3F + aH * MathF.Exp(-nHB / dbh) + nHC * competition_total * dbh,
-                    _ => throw new NotSupportedException("Unhandled height model " + this.Settings.height_model + ".")
+                    _ => throw new NotSupportedException($"Unhandled height model {this.Settings.height_model}.")
                 };
                 this.State.height[speciesIndex] = height;
             }
@@ -406,7 +406,7 @@ namespace BayesianPG.ThreePG
                 }
                 else
                 {
-                    throw new NotSupportedException("Unhandled light model " + this.Settings.light_model + ".");
+                    throw new NotSupportedException($"Unhandled light model {this.Settings.light_model}.");
                 }
 
                 // determine various environmental modifiers which were not calculated before
@@ -484,7 +484,7 @@ namespace BayesianPG.ThreePG
                     }
                     else
                     {
-                        throw new NotSupportedException("Unhandled model " + this.Settings.phys_model + ".");
+                        throw new NotSupportedException($"Unhandled model {this.Settings.phys_model}.");
                     }
                     this.State.f_phys[speciesIndex] = f_phys;
 
@@ -556,7 +556,7 @@ namespace BayesianPG.ThreePG
                 }
                 else
                 {
-                    throw new NotSupportedException("Unhandled model " + this.Settings.transp_model + ".");
+                    throw new NotSupportedException($"Unhandled model {this.Settings.transp_model}.");
                 }
 
                 float transp_total = this.State.transp_veg.Sum() + evapotra_soil;
@@ -1309,7 +1309,7 @@ namespace BayesianPG.ThreePG
                             crown_length = 1.3F + aHL * MathF.Exp(-nHLB / dbh) + nHLC * competition_total * dbh;
                             break;
                         default:
-                            throw new NotSupportedException("Unhandled height model " + this.Settings.height_model + ".");
+                            throw new NotSupportedException($"Unhandled height model {this.Settings.height_model}.");
                     }
                     this.State.height[speciesIndex] = height;
 
@@ -1715,7 +1715,7 @@ namespace BayesianPG.ThreePG
                     }
                     else
                     {
-                        throw new NotSupportedException("Unhandled crown shape '" + crownShape + "' for species " + speciesIndex + ".");
+                        throw new NotSupportedException($"Unhandled crown shape '{crownShape}' for species {speciesIndex}.");
                     }
                 }
                 crownVolumeBySpecies[speciesIndex] = crownVolume;

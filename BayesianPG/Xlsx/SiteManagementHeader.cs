@@ -53,7 +53,7 @@ namespace BayesianPG.Xlsx
                         this.Foliage = index;
                         break;
                     default:
-                        throw new NotSupportedException("Unhandled column name '" + column + "'.");
+                        throw new NotSupportedException($"Unhandled column name '{column}'.");
                 }
             }
 

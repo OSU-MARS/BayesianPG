@@ -100,7 +100,7 @@ namespace BayesianPG.Xlsx
             string parameter = row.Row[0];
             if (row.Columns != this.Sizes.n_sp + 1)
             {
-                throw new XmlException(parameter + " parameter values for " + (this.Sizes.n_sp - row.Columns + 1) + " species are missing.", null, row.Number, 2);
+                throw new XmlException("{parameter} parameter values for {(this.Sizes.n_sp - row.Columns + 1)} species are missing.", null, row.Number, 2);
             }
 
             // for now, sanity range checking
@@ -198,7 +198,7 @@ namespace BayesianPG.Xlsx
                     this.wideformPresence.wslocationC = TreeSpeciesWorksheet.Parse(parameter, row, this.Sizes.wslocationC, this.wideformPresence.wslocationC, 0.0F, 4.0F);
                     break;
                 default:
-                    throw new NotSupportedException("Unhandled parameter name " + parameter + ".");
+                    throw new NotSupportedException($"Unhandled parameter name {parameter}.");
             }
         }
 
@@ -286,128 +286,128 @@ namespace BayesianPG.Xlsx
                 // check all parameters specified
                 if (this.Dscale0 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.Dscale0) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.Dscale0)} is missing.", null);
                 }
                 if (this.DscaleB == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.DscaleB) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.DscaleB)} is missing.", null);
                 }
                 if (this.Dscalerh == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.Dscalerh) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.Dscalerh)} is missing.", null);
                 }
                 if (this.Dscalet == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.Dscalet) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.Dscalet)} is missing.", null);
                 }
                 if (this.DscaleC == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.DscaleC) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.DscaleC)} is missing.", null);
                 }
 
                 if (this.Dshape0 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.Dshape0) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.Dshape0)} is missing.", null);
                 }
                 if (this.DshapeB == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.DshapeB) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.DshapeB)} is missing.", null);
                 }
                 if (this.Dshaperh == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.Dshaperh) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.Dshaperh)} is missing.", null);
                 }
                 if (this.Dshapet == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.Dshapet) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.Dshapet)} is missing.", null);
                 }
                 if (this.DshapeC == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.DshapeC) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.DshapeC)} is missing.", null);
                 }
 
                 if (this.Dlocation0 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.Dlocation0) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.Dlocation0)} is missing.", null);
                 }
                 if (this.DlocationB == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.DlocationB) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.DlocationB)} is missing.", null);
                 }
                 if (this.Dlocationrh == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.Dlocationrh) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.Dlocationrh)} is missing.", null);
                 }
                 if (this.Dlocationt == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.Dlocationt) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.Dlocationt)} is missing.", null);
                 }
                 if (this.DlocationC == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.DlocationC) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.DlocationC)} is missing.", null);
                 }
 
                 if (this.wsscale0 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.wsscale0) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.wsscale0)} is missing.", null);
                 }
                 if (this.wsscaleB == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.wsscaleB) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.wsscaleB)} is missing.", null);
                 }
                 if (this.wsscalerh == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.wsscalerh) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.wsscalerh)} is missing.", null);
                 }
                 if (this.wsscalet == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.wsscalet) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.wsscalet)} is missing.", null);
                 }
                 if (this.wsscaleC == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.wsscaleC) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.wsscaleC)} is missing.", null);
                 }
 
                 if (this.wsshape0 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.wsshape0) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.wsshape0)} is missing.", null);
                 }
                 if (this.wsshapeB == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.wsshapeB) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.wsshapeB)} is missing.", null);
                 }
                 if (this.wsshaperh == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.wsshaperh) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.wsshaperh)} is missing.", null);
                 }
                 if (this.wsshapet == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.wsshapet) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.wsshapet)} is missing.", null);
                 }
                 if (this.wsshapeC == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.wsshapeC) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.wsshapeC)} is missing.", null);
                 }
 
                 if (this.wslocation0 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.wslocation0) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.wslocation0)} is missing.", null);
                 }
                 if (this.wslocationB == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.wslocationB) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.wslocationB)} is missing.", null);
                 }
                 if (this.wslocationrh == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.wslocationrh) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.wslocationrh)} is missing.", null);
                 }
                 if (this.wslocationt == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.wslocationt) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.wslocationt)} is missing.", null);
                 }
                 if (this.wslocationC == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.wslocationC) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.wslocationC)} is missing.", null);
                 }
             }
         }

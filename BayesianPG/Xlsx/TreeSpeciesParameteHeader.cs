@@ -433,7 +433,7 @@ namespace BayesianPG.Xlsx
                         this.molPAR_MJ = index;
                         break;
                     default:
-                        throw new NotSupportedException("Unhandled column name '" + column + "'.");
+                        throw new NotSupportedException($"Unhandled column name '{column}'.");
                 }
             }
 

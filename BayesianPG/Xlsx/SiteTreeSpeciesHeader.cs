@@ -57,7 +57,7 @@ namespace BayesianPG.Xlsx
                         this.Biom_foliage = index;
                         break;
                     default:
-                        throw new NotSupportedException("Unhandled column name '" + column + "'.");
+                        throw new NotSupportedException($"Unhandled column name '{column}'.");
                 }
             }
 

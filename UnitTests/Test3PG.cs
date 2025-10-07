@@ -137,12 +137,12 @@ namespace BayesianPG.Test
                     if (MathF.Abs(expectedValue) < differenceThreshold)
                     {
                         float difference = actualValue - expectedValue;
-                        Assert.IsTrue(MathF.Abs(difference) <= differenceThreshold, threePG + ": " + variable + "[" + timestepIndex + ", " + speciesIndex + "]: difference = " + difference + " at iteration " + iteration + ".");
+                        Assert.IsTrue(MathF.Abs(difference) <= differenceThreshold, $"{threePG.Site.Name}: {variable}[{timestepIndex}, {speciesIndex}]: difference = {difference} at iteration {iteration}.");
                     }
                     else
                     {
                         float ratio = actualValue / expectedValue;
-                        Assert.IsTrue((ratio >= minRatio) && (ratio <= maxRatio), threePG + ": " + variable + "[" + timestepIndex + ", " + speciesIndex + "]: ratio = " + ratio + " at iteration " + iteration + ".");
+                        Assert.IsTrue((ratio >= minRatio) && (ratio <= maxRatio), $"{threePG.Site.Name}: {variable}[{timestepIndex}, {speciesIndex}]: ratio = {ratio} at iteration {iteration}.");
                     }
                 }
             }
@@ -165,7 +165,7 @@ namespace BayesianPG.Test
                     int actualValue = actual[timestepIndex, speciesIndex];
                     int expectedValue = expectedValues[timestepIndex, speciesIndex];
                     int difference = actualValue - expectedValue;
-                    Assert.IsTrue(MathF.Abs(difference) <= tolerance, threePG.Site.Name + ": " + variable + "[" + timestepIndex + ", " + speciesIndex + "]: difference = " + difference + " at iteration " + iteration + ".");
+                    Assert.IsTrue(MathF.Abs(difference) <= tolerance, $"{threePG.Site.Name}: {variable}[{timestepIndex}, {speciesIndex}]: difference = {difference} at iteration {iteration}.");
                 }
             }
         }
@@ -192,12 +192,12 @@ namespace BayesianPG.Test
                 if (MathF.Abs(expectedValue) < differenceThreshold)
                 {
                     float difference = actualValue - expectedValue;
-                    Assert.IsTrue(MathF.Abs(difference) <= differenceThreshold, threePG.Site.Name + ": " + variable + "[" + timestepIndex + "]: difference = " + difference + " at iteration " + iteration + ".");
+                    Assert.IsTrue(MathF.Abs(difference) <= differenceThreshold, $"{threePG.Site.Name}: {variable}[{timestepIndex}]: difference = {difference} at iteration {iteration}.");
                 }
                 else
                 {
                     float ratio = actualValue / expectedValue;
-                    Assert.IsTrue((ratio >= minRatio) && (ratio <= maxRatio), threePG.Site.Name + ": " + variable + "[" + timestepIndex + "]: ratio = " + ratio + " at iteration " + iteration + ".");
+                    Assert.IsTrue((ratio >= minRatio) && (ratio <= maxRatio), $"{threePG.Site.Name}: {variable}[{timestepIndex}]: ratio = {ratio} at iteration {iteration}.");
                 }
             }
         }
@@ -227,12 +227,12 @@ namespace BayesianPG.Test
                     if (MathF.Abs(expectedValue) < differenceThreshold)
                     {
                         float difference = actualValue - expectedValue;
-                        Assert.IsTrue(MathF.Abs(difference) <= differenceThreshold, threePG.Site.Name + ": " + variable + "[" + speciesIndex + "][" + timestepIndex + "]: difference = " + difference + " at iteration " + iteration + ".");
+                        Assert.IsTrue(MathF.Abs(difference) <= differenceThreshold, $"{threePG.Site.Name}: {variable}[{speciesIndex}][{timestepIndex}]: difference = {difference} at iteration {iteration}.");
                     }
                     else
                     {
                         float ratio = actualValue / expectedValue;
-                        Assert.IsTrue((ratio >= minRatio) && (ratio <= maxRatio), threePG.Site.Name + ": " + variable + "[" + speciesIndex + "][" + timestepIndex + "]: ratio = " + ratio + " at iteration " + iteration + ".");
+                        Assert.IsTrue((ratio >= minRatio) && (ratio <= maxRatio), $"{threePG.Site.Name}: {variable}[{speciesIndex}][{timestepIndex}]: ratio = {ratio} at iteration {iteration}.");
                     }
                 }
             }
@@ -249,7 +249,7 @@ namespace BayesianPG.Test
             {
                 string actualValue = actual[timestepIndex];
                 string expectedValue = expectedValues[timestepIndex];
-                Assert.IsTrue(String.Equals(actualValue, expectedValue, StringComparison.Ordinal), threePG.Site.Name + ": " + variable + "[" + timestepIndex + "]: '" + actualValue + "' instead of '" + expectedValue + "' at " + iteration + ".");
+                Assert.IsTrue(String.Equals(actualValue, expectedValue, StringComparison.Ordinal), $"{threePG.Site.Name}: {variable}[{timestepIndex}]: '{actualValue}' instead of '{expectedValue}' at {iteration}.");
             }
         }
 
@@ -277,12 +277,12 @@ namespace BayesianPG.Test
                     if (MathF.Abs(expectedValue) < differenceThreshold)
                     {
                         Vector128<float> difference = Avx.Subtract(actualValue, expectedValue128);
-                        AssertV.IsTrue(Avx.CompareLessThanOrEqual(AvxExtensions.Abs(difference), differenceThreshold128), threePG + ": " + variable + "[" + timestep + ", " + speciesIndex + "]: difference = " + difference + " at iteration " + iteration + ".");
+                        AssertV.IsTrue(Avx.CompareLessThanOrEqual(AvxExtensions.Abs(difference), differenceThreshold128), $"{threePG.Site.Name}: {variable}[{timestep}, {speciesIndex}]: difference = {difference} at iteration {iteration}.");
                     }
                     else
                     {
                         Vector128<float> ratio = Avx.Divide(actualValue, expectedValue128);
-                        AssertV.IsTrue(Avx.And(Avx.CompareGreaterThanOrEqual(ratio, minRatio), Avx.CompareLessThanOrEqual(ratio, maxRatio)), threePG + ": " + variable + "[" + timestep + ", " + speciesIndex + "]: ratio = " + ratio + " at iteration " + iteration + ".");
+                        AssertV.IsTrue(Avx.And(Avx.CompareGreaterThanOrEqual(ratio, minRatio), Avx.CompareLessThanOrEqual(ratio, maxRatio)), $"{threePG}: {variable}[{timestep}, {speciesIndex}]: ratio = {ratio} at iteration {iteration}.");
                     }
                 }
             }
@@ -306,7 +306,7 @@ namespace BayesianPG.Test
                     Vector128<int> actualValue = actual[timestepIndex, speciesIndex];                    
                     Vector128<int> expectedValue = AvxExtensions.BroadcastScalarToVector128(expectedValues[timestepIndex, speciesIndex]);
                     Vector128<int> difference = Avx.Subtract(actualValue, expectedValue);
-                    AssertV.IsTrue(Avx.CompareLessThanOrEqual(AvxExtensions.Abs(difference.AsSingle()), tolerance128), threePG.Site.Name + ": " + variable + "[" + timestepIndex + ", " + speciesIndex + "]: difference = " + difference + " at iteration " + iteration + ".");
+                    AssertV.IsTrue(Avx.CompareLessThanOrEqual(AvxExtensions.Abs(difference.AsSingle()), tolerance128), $"{threePG.Site.Name}: {variable}[{timestepIndex}, {speciesIndex}]: difference = {difference} at iteration {iteration}.");
                 }
             }
         }
@@ -335,12 +335,12 @@ namespace BayesianPG.Test
                 if (MathF.Abs(expectedValue) < differenceThreshold)
                 {
                     Vector128<float> difference = Avx.Subtract(actualValue, expectedValue128);
-                    AssertV.IsTrue(Avx.CompareLessThanOrEqual(AvxExtensions.Abs(difference), differenceThreshold128), threePG.Site.Name + ": " + variable + "[" + timestepIndex + "]: difference = " + difference + " at iteration " + iteration + ".");
+                    AssertV.IsTrue(Avx.CompareLessThanOrEqual(AvxExtensions.Abs(difference), differenceThreshold128), $"{threePG.Site.Name}: {variable}[{timestepIndex}]: difference = {difference} at iteration {iteration}.");
                 }
                 else
                 {
                     Vector128<float> ratio = Avx.Divide(actualValue, expectedValue128);
-                    AssertV.IsTrue(Avx.And(Avx.CompareGreaterThanOrEqual(ratio, minRatio), Avx.CompareLessThanOrEqual(ratio, maxRatio)), threePG.Site.Name + ": " + variable + "[" + timestepIndex + "]: ratio = " + ratio + " at iteration " + iteration + ".");
+                    AssertV.IsTrue(Avx.And(Avx.CompareGreaterThanOrEqual(ratio, minRatio), Avx.CompareLessThanOrEqual(ratio, maxRatio)), $"{threePG.Site.Name}: {variable}[{timestepIndex}]: ratio = {ratio} at iteration {iteration}.");
                 }
             }
         }
@@ -372,12 +372,12 @@ namespace BayesianPG.Test
                     if (MathF.Abs(expectedValue) < differenceThreshold)
                     {
                         Vector128<float> difference = Avx.Subtract(actualValue, expectedValue128);
-                        AssertV.IsTrue(Avx.CompareLessThanOrEqual(AvxExtensions.Abs(difference), differenceThreshold128), threePG.Site.Name + ": " + variable + "[" + speciesIndex + "][" + timestepIndex + "]: difference = " + difference + " at iteration " + iteration + ".");
+                        AssertV.IsTrue(Avx.CompareLessThanOrEqual(AvxExtensions.Abs(difference), differenceThreshold128), $"{threePG.Site.Name}: {variable}[{speciesIndex}][{timestepIndex}]: difference = {difference} at iteration {iteration}.");
                     }
                     else
                     {
                         Vector128<float> ratio = Avx.Divide(actualValue, expectedValue128);
-                        AssertV.IsTrue(Avx.And(Avx.CompareGreaterThanOrEqual(ratio, minRatio), Avx.CompareLessThanOrEqual(ratio, maxRatio)), threePG.Site.Name + ": " + variable + "[" + speciesIndex + "][" + timestepIndex + "]: ratio = " + ratio + " at iteration " + iteration + ".");
+                        AssertV.IsTrue(Avx.And(Avx.CompareGreaterThanOrEqual(ratio, minRatio), Avx.CompareLessThanOrEqual(ratio, maxRatio)), $"{threePG.Site.Name}: {variable}[{speciesIndex}][{timestepIndex}]: ratio = {ratio} at iteration {iteration}.");
                     }
                 }
             }
@@ -638,7 +638,7 @@ namespace BayesianPG.Test
             // Test3PG.VerifyArray(threePG, nameof(actualTrajectory.DayLength), actualTrajectory.DayLength, actualTrajectory.MonthCount, expectedTrajectory.DayLength, tolerances.DayLength, tolerances.MaxTimestep, iteration);
             Test3PG.VerifyArray(threePG, nameof(actualTrajectory.evapo_transp), actualTrajectory.evapo_transp, actualTrajectory.MonthCount, expectedTrajectory.evapo_transp, tolerances.Evapotranspiration, tolerances.MaxTimestep, iteration);
             Test3PG.VerifyArray(threePG, nameof(actualTrajectory.f_transp_scale), actualTrajectory.f_transp_scale, actualTrajectory.MonthCount, expectedTrajectory.f_transp_scale, tolerances.TranspirationScale, tolerances.MaxTimestep, iteration);
-            Assert.IsTrue((actualTrajectory.From.Year == expectedTrajectory.From.Year) && (actualTrajectory.From.Month == expectedTrajectory.From.Month), nameof(actualTrajectory.From) + " at iteration " + iteration + ".");
+            Assert.IsTrue((actualTrajectory.From.Year == expectedTrajectory.From.Year) && (actualTrajectory.From.Month == expectedTrajectory.From.Month), $"{nameof(actualTrajectory.From)} at iteration {iteration}.");
             Test3PG.VerifyArray(threePG, nameof(actualTrajectory.irrig_supl), actualTrajectory.irrig_supl, actualTrajectory.MonthCount, expectedTrajectory.irrig_supl, tolerances.IrrigationSupplied, tolerances.MaxTimestep, iteration);
             Test3PG.VerifyArray(threePG, nameof(actualTrajectory.prcp_runoff), actualTrajectory.prcp_runoff, actualTrajectory.MonthCount, expectedTrajectory.prcp_runoff, tolerances.PrecipitationRunoff, tolerances.MaxTimestep, iteration);
             Test3PG.VerifyArray(threePG, nameof(actualTrajectory.conduct_soil), actualTrajectory.conduct_soil, actualTrajectory.MonthCount, expectedTrajectory.conduct_soil, tolerances.SoilConductance, tolerances.MaxTimestep, iteration);
@@ -758,7 +758,7 @@ namespace BayesianPG.Test
             // Test3PG.VerifyArray(threePG, nameof(actualTrajectory.DayLength), actualTrajectory.DayLength, actualTrajectory.MonthCount, expectedTrajectory.DayLength, tolerances.DayLength, tolerances.MaxTimestep, iteration);
             Test3PG.VerifyArray(threePG128, nameof(actualTrajectory.evapo_transp), actualTrajectory.evapo_transp, actualTrajectory.MonthCount, expectedTrajectory.evapo_transp, tolerances.Evapotranspiration, tolerances.MaxTimestep, iteration);
             Test3PG.VerifyArray(threePG128, nameof(actualTrajectory.f_transp_scale), actualTrajectory.f_transp_scale, actualTrajectory.MonthCount, expectedTrajectory.f_transp_scale, tolerances.TranspirationScale, tolerances.MaxTimestep, iteration);
-            Assert.IsTrue((actualTrajectory.From.Year == expectedTrajectory.From.Year) && (actualTrajectory.From.Month == expectedTrajectory.From.Month), nameof(actualTrajectory.From) + " at iteration " + iteration + ".");
+            Assert.IsTrue((actualTrajectory.From.Year == expectedTrajectory.From.Year) && (actualTrajectory.From.Month == expectedTrajectory.From.Month), $"{nameof(actualTrajectory.From)} at iteration {iteration}.");
             Test3PG.VerifyArray(threePG128, nameof(actualTrajectory.irrig_supl), actualTrajectory.irrig_supl, actualTrajectory.MonthCount, expectedTrajectory.irrig_supl, tolerances.IrrigationSupplied, tolerances.MaxTimestep, iteration);
             Test3PG.VerifyArray(threePG128, nameof(actualTrajectory.prcp_runoff), actualTrajectory.prcp_runoff, actualTrajectory.MonthCount, expectedTrajectory.prcp_runoff, tolerances.PrecipitationRunoff, tolerances.MaxTimestep, iteration);
             Test3PG.VerifyArray(threePG128, nameof(actualTrajectory.conduct_soil), actualTrajectory.conduct_soil, actualTrajectory.MonthCount, expectedTrajectory.conduct_soil, tolerances.SoilConductance, tolerances.MaxTimestep, iteration);

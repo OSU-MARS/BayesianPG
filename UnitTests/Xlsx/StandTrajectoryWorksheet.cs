@@ -49,7 +49,7 @@ namespace BayesianPG.Test.Xlsx
             }
             else if (date < trajectory.From)
             {
-                throw new XmlException("Date " + date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + " is before trajectory start month " + trajectory.From.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ".", null, row.Number, this.Header.date + 1);
+                throw new XmlException($"Date {date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} is before trajectory start month {trajectory.From.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}.", null, row.Number, this.Header.date + 1);
             }
 
             // find or allocate species

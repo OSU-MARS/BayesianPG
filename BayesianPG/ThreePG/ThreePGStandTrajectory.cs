@@ -44,7 +44,7 @@ namespace BayesianPG.ThreePG
         {
             if (to < from)
             {
-                throw new ArgumentException("Trajectory end date " + to.ToString("yyyy-MM") + " is before trajectory start date " + from.ToString("yyyy-MM") + ".");
+                throw new ArgumentException($"Trajectory end date {to:yyyy-MM} is before trajectory start date {from:yyyy-MM}.");
             }
         }
 

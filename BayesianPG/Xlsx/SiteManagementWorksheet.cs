@@ -35,7 +35,7 @@ namespace BayesianPG.Xlsx
                             {
                                 string site = this.Management.Keys[siteIndex];
                                 string species = siteManagement.Species[speciesIndex];
-                                throw new XmlException("Management age " + age + " for species `" + species + "' on site '" + site + "' preceeds management at age " + previousAge + ". Management ages must be specified in increasing order (on a per species basis).");
+                                throw new XmlException($"Management age {age} for species `{species}' on site '{site}' preceeds management at age {previousAge}. Management ages must be specified in increasing order (on a per species basis).");
                             }
 
                             previousAge = age;

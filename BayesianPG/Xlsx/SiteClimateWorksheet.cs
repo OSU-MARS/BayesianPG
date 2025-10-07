@@ -86,7 +86,7 @@ namespace BayesianPG.Xlsx
                         if (String.Equals(climateName, this.previousClimateName, StringComparison.OrdinalIgnoreCase))
                         {
                             // ...and it's not a transition between climates
-                            throw new XmlException(row.Row[this.Header.ClimateID] + ": " + nameof(year) + "-" + nameof(month), null, row.Number, this.Header.Year);
+                            throw new XmlException($"{row.Row[this.Header.ClimateID]}: {nameof(year)}-{nameof(month)}.", null, row.Number, this.Header.Year);
                         }
                     }
                 }

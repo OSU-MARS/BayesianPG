@@ -16,7 +16,7 @@ namespace BayesianPG.ThreePG
         {
             if ((climate.From.Year != site.From.Year) || (climate.From.Month != site.From.Month))
             {
-                throw new ArgumentException("Climate start month " + climate.From.ToString("yyyy-MM") + " does not match site start month " + site.From.ToString("yyyy-MM"));
+                throw new ArgumentException($"Climate start month {climate.From:yyyy-MM} does not match site start month {site.From:yyyy-MM}.");
             }
             if (settings.management)
             {

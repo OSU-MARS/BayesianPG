@@ -27,7 +27,7 @@ namespace BayesianPG.Xlsx
 
             if ((xlsx.WorkbookPart == null) || (xlsx.WorkbookPart.Workbook.Sheets == null))
             {
-                throw new NotSupportedException("Could not find workbook in file '" + xlsxFilePath + "'. The workbook is null or is missing a sheets part.");
+                throw new NotSupportedException($"Could not find workbook in file '{xlsxFilePath}'. The workbook is null or is missing a sheets part.");
             }
             this.workbook = xlsx.WorkbookPart;
 
@@ -92,7 +92,7 @@ namespace BayesianPG.Xlsx
             // AAA-XFD: remaining columns, indices 702+ = (A-Z + 1) * 26 * 26 + (A-Z + 1) * 26 + A-Z
             if ((cellReference.Length < 2) || (cellReference[0] < 'A') || (cellReference[0] > 'Z'))
             {
-                throw new ArgumentOutOfRangeException(nameof(cellReference), "Cell reference '" + cellReference + "' is too short or does not begin with a letter.");
+                throw new ArgumentOutOfRangeException(nameof(cellReference), $"Cell reference '{cellReference}' is too short or does not begin with a letter.");
             }
 
             int firstColumn = cellReference[0] - 'A';
@@ -121,7 +121,7 @@ namespace BayesianPG.Xlsx
             char lastCharacterInReference = cellReference[^1];
             if ((cellReference.Length < 2) || (Char.IsDigit(lastCharacterInReference) == false))
             {
-                throw new ArgumentOutOfRangeException(nameof(cellReference), "Cell reference '" + cellReference + "' is too short or does not end with a number.");
+                throw new ArgumentOutOfRangeException(nameof(cellReference), $"Cell reference '{cellReference}' is too short or does not end with a number.");
             }
 
             int lastIndex = cellReference.Length - 1;
@@ -217,7 +217,7 @@ namespace BayesianPG.Xlsx
                                             char character = value[index];
                                             if ((character > '9') || (character < '0'))
                                             {
-                                                throw new FormatException("Shared string index '" + value + "' is not an integer greater than or equal to zero.");
+                                                throw new FormatException($"Shared string index '{value}' is not an integer greater than or equal to zero.");
                                             }
                                             sharedStringIndex = 10 * sharedStringIndex + character - '0';
                                         }
@@ -233,7 +233,7 @@ namespace BayesianPG.Xlsx
                                 else
                                 {
                                     // allow blank cells since tmp_ave is optional in climate
-                                    // throw new XmlException("Value element <" + valueElement + "> not found for cell " + rowReader.GetAttribute(Constant.OpenXml.Attribute.CellReference) + " of type t=\"" + cellType + "\".");
+                                    // throw new XmlException($"Value element <{valueElement}> not found for cell {rowReader.GetAttribute(Constant.OpenXml.Attribute.CellReference)} of type t=\"{cellType}\".");
                                     row.Row[column] = String.Empty;
                                     rowReader.Read();
                                 }
@@ -255,7 +255,7 @@ namespace BayesianPG.Xlsx
                         {
                             if (rowHasCellsWithContent == false)
                             {
-                                throw new XmlException("Header row of " + worksheetName + " is empty.");
+                                throw new XmlException($"Header row of {worksheetName} is empty.");
                             }
 
                             worksheet.ParseHeader(row);

@@ -37,7 +37,7 @@ namespace BayesianPG.ThreePG
             {
                 if (uniqueNames.Add(this.Species[index]) == false)
                 {
-                    throw new ArgumentException("Species " + this.Species[index] + " is already present.", nameof(names));
+                    throw new ArgumentException($"Species {this.Species[index]} is already present.", nameof(names));
                 }
             }
 

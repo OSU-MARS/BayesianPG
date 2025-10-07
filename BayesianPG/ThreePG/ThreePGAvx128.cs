@@ -317,7 +317,7 @@ namespace BayesianPG.ThreePG
                     // ThreePGHeightModel.Power => Avx.Multiply(aH, Avx.Multiply(MathV.Pow(dbh, nHB), MathV.Pow(competition_total, nHC))),
                     ThreePGHeightModel.Power => Avx.Multiply(aH, MathV.Fmpow(dbh, nHB, competition_total, nHC)),
                     ThreePGHeightModel.Exponent => Avx.Add(AvxExtensions.BroadcastScalarToVector128(1.3F), Avx.Add(Avx.Multiply(aH, MathV.Exp(Avx.Divide(Avx.Subtract(Vector128<float>.Zero, nHB), dbh))), Avx.Multiply(nHC, Avx.Multiply(competition_total, dbh)))),
-                    _ => throw new NotSupportedException("Unhandled height model " + this.Settings.height_model + ".")
+                    _ => throw new NotSupportedException($"Unhandled height model {this.Settings.height_model}.")
                 };
                 this.State.height[speciesIndex] = height;
             }
@@ -440,7 +440,7 @@ namespace BayesianPG.ThreePG
                 }
                 else
                 {
-                    throw new NotSupportedException("Unhandled light model " + this.Settings.light_model + ".");
+                    throw new NotSupportedException($"Unhandled light model {this.Settings.light_model}.");
                 }
 
                 // determine various environmental modifiers which were not calculated before
@@ -531,7 +531,7 @@ namespace BayesianPG.ThreePG
                     }
                     else
                     {
-                        throw new NotSupportedException("Unhandled model " + this.Settings.phys_model + ".");
+                        throw new NotSupportedException($"Unhandled model {this.Settings.phys_model}.");
                     }
                     this.State.f_phys[speciesIndex] = f_phys;
 
@@ -609,7 +609,7 @@ namespace BayesianPG.ThreePG
                 }
                 else
                 {
-                    throw new NotSupportedException("Unhandled model " + this.Settings.transp_model + ".");
+                    throw new NotSupportedException($"Unhandled model {this.Settings.transp_model}.");
                 }
 
                 Vector128<float> transp_total = Avx.Add(this.State.transp_veg.Sum(), evapotra_soil);
@@ -1403,7 +1403,7 @@ namespace BayesianPG.ThreePG
                         else if (zeroStemsMask != Constant.Simd128x4.MaskAllFalse)
                         {
                             // for now, assume SIMD lanes contain variations on the same stand with the same planting and simlation dates
-                            throw new NotSupportedException("Species '" + this.Species.Species[speciesIndex] + "' has different ages in different SIMD lanes.");
+                            throw new NotSupportedException($"Species '{this.Species.Species[speciesIndex]}' has different ages in different SIMD lanes.");
                         }
                     }
 
@@ -1450,7 +1450,7 @@ namespace BayesianPG.ThreePG
                             crown_length = Avx.Add(breastHeight, Avx.Add(Avx.Multiply(aHL, MathV.Exp(Avx.Divide(Avx.Subtract(zero, nHLB), dbh))), Avx.Multiply(nHLC, competitionTotalDbh)));
                             break;
                         default:
-                            throw new NotSupportedException("Unhandled height model " + this.Settings.height_model + ".");
+                            throw new NotSupportedException($"Unhandled height model {this.Settings.height_model}.");
                     }
                     Vector128<float> uncorrectedHeight = this.State.height[speciesIndex];
                     this.State.height[speciesIndex] = Avx.BlendVariable(uncorrectedHeight, height, correctionMask);
@@ -1865,7 +1865,7 @@ namespace BayesianPG.ThreePG
                 }
                 else
                 {
-                    throw new NotSupportedException("All aV values must either be zero or all must be nonzero (mask 0x" + aVzeroMask.ToString("x", CultureInfo.InvariantCulture) + ").");
+                    throw new NotSupportedException($"All aV values must either be zero or all must be nonzero (mask 0x{aVzeroMask.ToString("x", CultureInfo.InvariantCulture)}).");
                 }
                 this.State.volume[speciesIndex] = volume;
 
@@ -1966,7 +1966,7 @@ namespace BayesianPG.ThreePG
                 }
                 else
                 {
-                    throw new NotSupportedException("Unhandled crown shape '" + crownShape + "' for species " + speciesIndex + ".");
+                    throw new NotSupportedException($"Unhandled crown shape '{crownShape}' for species {speciesIndex}.");
                 }
 
                 Vector128<float> lai = this.State.lai[speciesIndex];
@@ -2300,7 +2300,7 @@ namespace BayesianPG.ThreePG
                 }
                 else if (fullCanAgeNonzeroMask != Constant.Simd128x4.MaskAllFalse)
                 {
-                    throw new NotSupportedException("All full canopy ages must either be zero or nonzero (mask 0x" + fullCanAgeNonzeroMask.ToString("x", CultureInfo.InstalledUICulture) + ").");
+                    throw new NotSupportedException($"All full canopy ages must either be zero or nonzero (mask 0x{fullCanAgeNonzeroMask.ToString("x", CultureInfo.InstalledUICulture)}).");
                 }
                 this.State.canopy_cover[speciesIndex] = canopy_cover;
 

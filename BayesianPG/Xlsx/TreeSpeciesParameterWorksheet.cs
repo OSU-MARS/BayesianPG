@@ -31,18 +31,18 @@ namespace BayesianPG.Xlsx
             {
                 if (this.Parameters.Tmin[speciesIndex] > this.Parameters.Topt[speciesIndex])
                 {
-                    throw new XmlException("Minimum temperature for '" + this.Parameters.Species[speciesIndex] + "' is greater than its optimal temperature.");
+                    throw new XmlException($"Minimum temperature for '{this.Parameters.Species[speciesIndex]}' is greater than its optimal temperature.");
                 }
                 if (this.Parameters.Topt[speciesIndex] > this.Parameters.Tmax[speciesIndex])
                 {
-                    throw new XmlException("Optimal temperature for '" + this.Parameters.Species[speciesIndex] + "' is greater than its maximum temperature.");
+                    throw new XmlException($"Optimal temperature for '{this.Parameters.Species[speciesIndex]}' is greater than its maximum temperature.");
                 }
 
                 int leafgrow = this.Parameters.leafgrow[speciesIndex];
                 int leaffall = this.Parameters.leaffall[speciesIndex];
                 if ((leafgrow != 0) && (leafgrow == leaffall))
                 {
-                    throw new XmlException("Deciduous species '" + this.Parameters.Species[speciesIndex] + "' grows and loses its leaves in the same month.");
+                    throw new XmlException($"Deciduous species '{this.Parameters.Species[speciesIndex]}' grows and loses its leaves in the same month.");
                 }
             }
         }
@@ -67,11 +67,11 @@ namespace BayesianPG.Xlsx
             int value = Int32.Parse(row.Row[columnIndex], CultureInfo.InvariantCulture);
             if (value < minimumValue)
             {
-                throw new XmlException("Value of " + value + " for " + parameterName + " is below the minimum value of " + minimumValue + ".", null, row.Number, columnIndex);
+                throw new XmlException($"Value of {value} for {parameterName} is below the minimum value of {minimumValue}.", null, row.Number, columnIndex);
             }
             if (value > maximumValue)
             {
-                throw new XmlException("Value of " + value + " for " + parameterName + " is above the maximum value of " + maximumValue + ".", null, row.Number, columnIndex);
+                throw new XmlException($"Value of {value} for {parameterName} is above the maximum value of {maximumValue}.", null, row.Number, columnIndex);
             }
 
             return value;
@@ -190,7 +190,7 @@ namespace BayesianPG.Xlsx
             string parameter = row.Row[0];
             if (row.Columns != this.Parameters.n_sp + 1)
             {
-                throw new XmlException(parameter + " parameter values for " + (this.Parameters.n_sp - row.Columns + 1) + " species are missing.", null, row.Number, 2);
+                throw new XmlException($"{parameter} parameter values for {(this.Parameters.n_sp - row.Columns + 1)} species are missing.", null, row.Number, 2);
             }
 
             // for now, sanity range checking
@@ -445,7 +445,7 @@ namespace BayesianPG.Xlsx
                     this.wideformPresence.molPAR_MJ = TreeSpeciesWorksheet.Parse(parameter, row, this.Parameters.molPAR_MJ, this.wideformPresence.molPAR_MJ, 0.0F, 5.0F);
                     break;
                 default:
-                    throw new NotSupportedException("Unhandled parameter name " + parameter + ".");
+                    throw new NotSupportedException($"Unhandled parameter name {parameter}.");
             }
         }
 
@@ -453,7 +453,7 @@ namespace BayesianPG.Xlsx
         {
             if (previouslyParsed)
             {
-                throw new XmlException("Repeated specification of " + parameterName + ".", null, row.Number, 1);
+                throw new XmlException($"Repeated specification of {parameterName}.", null, row.Number, 1);
             }
 
             for (int destinationIndex = 0, sourceIndex = 1; sourceIndex < row.Columns; ++destinationIndex, ++sourceIndex)
@@ -461,11 +461,11 @@ namespace BayesianPG.Xlsx
                 int value = Int32.Parse(row.Row[sourceIndex]);
                 if (value < minimumValue)
                 {
-                    throw new XmlException("Value of " + value + " for " + parameterName + " is below the minimum value of " + minimumValue + ".", null, row.Number, sourceIndex);
+                    throw new XmlException($"Value of {value} for {parameterName} is below the minimum value of {minimumValue}.", null, row.Number, sourceIndex);
                 }
                 if (value > maximumValue)
                 {
-                    throw new XmlException("Value of " + value + " for " + parameterName + " is above the maximum value of " + maximumValue + ".", null, row.Number, sourceIndex);
+                    throw new XmlException($"Value of {value} for {parameterName} is above the maximum value of {maximumValue}.", null, row.Number, sourceIndex);
                 }
                 parameterValues[destinationIndex] = value;
             }
@@ -478,7 +478,7 @@ namespace BayesianPG.Xlsx
         {
             if (previouslyParsed)
             {
-                throw new XmlException("Repeated specification of " + parameterName + ".", null, row.Number, 1);
+                throw new XmlException($"Repeated specification of {parameterName}.", null, row.Number, 1);
             }
 
             for (int destinationIndex = 0, sourceIndex = 1; sourceIndex < row.Columns; ++destinationIndex, ++sourceIndex)
@@ -690,342 +690,342 @@ namespace BayesianPG.Xlsx
                 // check all parameters specified
                 if (this.pFS2 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.pFS2) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.pFS2)} is missing.", null);
                 }
                 if (this.pFS20 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.pFS20) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.pFS20)} is missing.", null);
                 }
                 if (this.aWS == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.aWS) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.aWS)} is missing.", null);
                 }
                 if (this.nWS == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.nWS) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.nWS)} is missing.", null);
                 }
                 if (this.pRx == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.pRx) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.pRx)} is missing.", null);
                 }
                 if (this.pRn == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.pRn) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.pRn)} is missing.", null);
                 }
                 if (this.gammaF1 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.gammaF1) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.gammaF1)} is missing.", null);
                 }
                 if (this.gammaF0 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.gammaF0) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.gammaF0)} is missing.", null);
                 }
                 if (this.tgammaF == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.tgammaF) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.tgammaF)} is missing.", null);
                 }
                 if (this.gammaR == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.gammaR) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.gammaR)} is missing.", null);
                 }
                 if (this.leafgrow == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.leafgrow) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.leafgrow)} is missing.", null);
                 }
                 if (this.leaffall == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.leaffall) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.leaffall)} is missing.", null);
                 }
 
                 // NPP & conductance modifiers
                 if (this.Tmin == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.Tmin) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.Tmin)} is missing.", null);
                 }
                 if (this.Topt == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.Topt) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.Topt)} is missing.", null);
                 }
                 if (this.Tmax == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.Tmax) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.Tmax)} is missing.", null);
                 }
                 if (this.kF == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.kF) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.kF)} is missing.", null);
                 }
                 if (this.SWconst0 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.SWconst0) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.SWconst0)} is missing.", null);
                 }
                 if (this.SWpower0 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.SWpower0) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.SWpower0)} is missing.", null);
                 }
                 if (this.fCalpha700 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.fCalpha700) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.fCalpha700)} is missing.", null);
                 }
                 if (this.fCg700 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.fCg700) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.fCg700)} is missing.", null);
                 }
                 if (this.m0 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.m0) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.m0)} is missing.", null);
                 }
                 if (this.fN0 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.fN0) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.fN0)} is missing.", null);
                 }
                 if (this.fNn == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.fNn) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.fNn)} is missing.", null);
                 }
                 if (this.MaxAge == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.MaxAge) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.MaxAge)} is missing.", null);
                 }
                 if (this.nAge == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.nAge) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.nAge)} is missing.", null);
                 }
                 if (this.rAge == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.rAge) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.rAge)} is missing.", null);
                 }
 
                 if (this.gammaN1 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.gammaN1) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.gammaN1)} is missing.", null);
                 }
                 if (this.gammaN0 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.gammaN0) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.gammaN0)} is missing.", null);
                 }
                 if (this.tgammaN == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.tgammaN) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.tgammaN)} is missing.", null);
                 }
                 if (this.ngammaN == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.ngammaN) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.ngammaN)} is missing.", null);
                 }
                 if (this.wSx1000 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.wSx1000) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.wSx1000)} is missing.", null);
                 }
                 if (this.thinPower == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.thinPower) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.thinPower)} is missing.", null);
                 }
                 if (this.mF == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.mF) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.mF)} is missing.", null);
                 }
                 if (this.mR == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.mR) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.mR)} is missing.", null);
                 }
                 if (this.mS == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.mS) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.mS)} is missing.", null);
                 }
 
                 // canopy structure and processes
                 if (this.SLA0 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.SLA0) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.SLA0)} is missing.", null);
                 }
                 if (this.SLA1 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.SLA1) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.SLA1)} is missing.", null);
                 }
                 if (this.tSLA == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.tSLA) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.tSLA)} is missing.", null);
                 }
                 if (this.k == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.k) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.k)} is missing.", null);
                 }
                 if (this.fullCanAge == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.fullCanAge) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.fullCanAge)} is missing.", null);
                 }
                 if (this.MaxIntcptn == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.MaxIntcptn) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.MaxIntcptn)} is missing.", null);
                 }
                 if (this.LAImaxIntcptn == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.LAImaxIntcptn) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.LAImaxIntcptn)} is missing.", null);
                 }
                 if (this.cVPD == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.cVPD) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.cVPD)} is missing.", null);
                 }
                 if (this.alphaCx == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.alphaCx) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.alphaCx)} is missing.", null);
                 }
                 if (this.y == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.y) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.y)} is missing.", null);
                 }
                 if (this.MinCond == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.MinCond) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.MinCond)} is missing.", null);
                 }
                 if (this.MaxCond == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.MaxCond) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.MaxCond)} is missing.", null);
                 }
                 if (this.LAIgcx == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.LAIgcx) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.LAIgcx)} is missing.", null);
                 }
                 if (this.CoeffCond == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.CoeffCond) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.CoeffCond)} is missing.", null);
                 }
                 if (this.BLcond == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.BLcond) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.BLcond)} is missing.", null);
                 }
                 if (this.RGcGw == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.RGcGw) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.RGcGw)} is missing.", null);
                 }
                 if (this.D13CTissueDif == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.D13CTissueDif) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.D13CTissueDif)} is missing.", null);
                 }
                 if (this.aFracDiffu == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.aFracDiffu) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.aFracDiffu)} is missing.", null);
                 }
                 if (this.bFracRubi == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.bFracRubi) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.bFracRubi)} is missing.", null);
                 }
 
                 // wood and stand properties
                 if (this.fracBB0 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.fracBB0) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.fracBB0)} is missing.", null);
                 }
                 if (this.fracBB1 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.fracBB1) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.fracBB1)} is missing.", null);
                 }
                 if (this.tBB == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.tBB) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.tBB)} is missing.", null);
                 }
                 if (this.rho0 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.rho0) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.rho0)} is missing.", null);
                 }
                 if (this.rho1 == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.rho1) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.rho1)} is missing.", null);
                 }
                 if (this.tRho == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.tRho) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.tRho)} is missing.", null);
                 }
                 if (this.CrownShape == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.CrownShape) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.CrownShape)} is missing.", null);
                 }
 
                 // height and volume
                 if (this.aH == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.aH) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.aH)} is missing.", null);
                 }
                 if (this.nHB == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.nHB) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.nHB)} is missing.", null);
                 }
                 if (this.nHC == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.nHC) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.nHC)} is missing.", null);
                 }
                 if (this.aV == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.aV) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.aV)} is missing.", null);
                 }
                 if (this.nVB == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.nVB) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.nVB)} is missing.", null);
                 }
                 if (this.nVH == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.nVH) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.nVH)} is missing.", null);
                 }
                 if (this.nVBH == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.nVBH) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.nVBH)} is missing.", null);
                 }
                 if (this.aK == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.aK) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.aK)} is missing.", null);
                 }
                 if (this.nKB == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.nKB) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.nKB)} is missing.", null);
                 }
                 if (this.nKH == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.nKH) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.nKH)} is missing.", null);
                 }
                 if (this.nKC == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.nKC) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.nKC)} is missing.", null);
                 }
                 if (this.nKrh == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.nKrh) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.nKrh)} is missing.", null);
                 }
                 if (this.aHL == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.aHL) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.aHL)} is missing.", null);
                 }
                 if (this.nHLB == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.nHLB) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.nHLB)} is missing.", null);
                 }
                 if (this.nHLL == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.nHLL) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.nHLL)} is missing.", null);
                 }
                 if (this.nHLC == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.nHLC) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.nHLC)} is missing.", null);
                 }
                 if (this.nHLrh == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.nHLrh) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.nHLrh)} is missing.", null);
                 }
 
                 // δ¹³C
                 if (this.Qa == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.Qa) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.Qa)} is missing.", null);
                 }
                 if (this.Qb == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.Qb) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.Qb)} is missing.", null);
                 }
                 if (this.gDM_mol == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.gDM_mol) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.gDM_mol)} is missing.", null);
                 }
                 if (this.molPAR_MJ == false)
                 {
-                    throw new XmlException("Row for " + nameof(this.molPAR_MJ) + " is missing.", null);
+                    throw new XmlException($"Row for {nameof(this.molPAR_MJ)} is missing.", null);
                 }
             }
         }

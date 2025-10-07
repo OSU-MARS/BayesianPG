@@ -14,7 +14,7 @@ namespace BayesianPG.Xlsx
             string[] range = worksheetDimension.Split(':');
             if ((range == null) || (range.Length != 2))
             {
-                throw new XmlException(String.Format("Worksheet dimension reference '{0}' is malformed.", worksheetDimension));
+                throw new XmlException($"Worksheet dimension reference '{worksheetDimension}' is malformed.");
             }
 
             this.Index = 0;

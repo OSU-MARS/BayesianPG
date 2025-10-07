@@ -11,11 +11,11 @@ namespace BayesianPG.Xlsx
             float value = Single.Parse(row.Row[columnIndex], CultureInfo.InvariantCulture);
             if (value < minimumValue)
             {
-                throw new XmlException("Value of " + value + " for " + parameterName + " is below the minimum value of " + minimumValue + ".", null, row.Number, columnIndex);
+                throw new XmlException($"Value of {value} for {parameterName} is below the minimum value of {minimumValue}.", null, row.Number, columnIndex);
             }
             if (value > maximumValue)
             {
-                throw new XmlException("Value of " + value + " for " + parameterName + " is above the maximum value of " + maximumValue + ".", null, row.Number, columnIndex);
+                throw new XmlException($"Value of {value} for {parameterName} is above the maximum value of {maximumValue}.", null, row.Number, columnIndex);
             }
 
             return value;
@@ -25,7 +25,7 @@ namespace BayesianPG.Xlsx
         {
             if (previouslyParsed)
             {
-                throw new XmlException("Repeated specification of " + parameterName + ".", null, row.Number, 1);
+                throw new XmlException($"Repeated specification of {parameterName}.", null, row.Number, 1);
             }
 
             for (int destinationIndex = 0, sourceIndex = 1; sourceIndex < row.Columns; ++destinationIndex, ++sourceIndex)
@@ -33,11 +33,11 @@ namespace BayesianPG.Xlsx
                 float value = Single.Parse(row.Row[sourceIndex], CultureInfo.InvariantCulture);
                 if (value < minimumValue)
                 {
-                    throw new XmlException("Value of " + value + " for " + parameterName + " is below the minimum value of " + minimumValue + ".", null, row.Number, sourceIndex);
+                    throw new XmlException($"Value of {value} for {parameterName} is below the minimum value of {minimumValue}.", null, row.Number, sourceIndex);
                 }
                 if (value > maximumValue)
                 {
-                    throw new XmlException("Value of " + value + " for " + parameterName + " is above the maximum value of " + maximumValue + ".", null, row.Number, sourceIndex);
+                    throw new XmlException($"Value of {value} for {parameterName} is above the maximum value of {maximumValue}.", null, row.Number, sourceIndex);
                 }
                 parameterValues[destinationIndex] = value;
             }

@@ -73,7 +73,7 @@ namespace BayesianPG.Xlsx
                         this.D13CAtm = index;
                         break;
                     default:
-                        throw new NotSupportedException("Unhandled column name '" + column + "'.");
+                        throw new NotSupportedException($"Unhandled column name '{column}'.");
                 }
             }
 

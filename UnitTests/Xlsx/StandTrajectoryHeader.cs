@@ -581,7 +581,7 @@ namespace BayesianPG.Test.Xlsx
                         this.DrelBiasCrowndiameter = index;
                         break;
                     default:
-                        throw new NotSupportedException("Unhandled column name '" + column + "'.");
+                        throw new NotSupportedException($"Unhandled column name '{column}'.");
                 }
             }
 
@@ -1678,7 +1678,7 @@ namespace BayesianPG.Test.Xlsx
         //                // ignored fields repeated from site and climate inputs
         //                break;
         //            default:
-        //                throw new NotSupportedException("Unhandled column name '" + column + "'.");
+        //                throw new NotSupportedException($"Unhandled column name '{column}'.");
         //        }
         //    }
         //}

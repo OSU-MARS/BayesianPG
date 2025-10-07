@@ -63,7 +63,7 @@ namespace BayesianPG.Xlsx
                         this.TrajectoryColumns = index;
                         break;
                     default:
-                        throw new NotSupportedException("Unhandled column name '" + column + "'.");
+                        throw new NotSupportedException($"Unhandled column name '{column}'.");
                 }
             }
 

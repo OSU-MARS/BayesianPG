@@ -57,7 +57,7 @@ namespace BayesianPG.Cmdlets
             }
             else
             {
-                throw new NotSupportedException("Unhandled SIMD width " + this.Simd + ".");
+                throw new NotSupportedException($"Unhandled SIMD width {this.Simd}.");
             }
         }
     }
